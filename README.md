@@ -1,5 +1,6 @@
-# Apparition - an immaterial appearance that seems real, and is generally sudden or startling in its manifestation
-Home/Office Automation/Monitoring
+# Apparition - Home/Office Automation/Monitoring 
+
+Apparition is an immaterial appearance that seems real, and is generally sudden or startling in its manifestation -- something akin to what a monitoring and automation solution may appear to be.
 
 Proposed tooling:
 * C++ as primary backbone
