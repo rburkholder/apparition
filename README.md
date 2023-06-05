@@ -1,8 +1,8 @@
-# Apparition - Home/Office Automation/Monitoring 
+# Apparition - Home/Office Automation/Monitoring
 
 _an immaterial appearance that seems real, and is generally sudden or startling in its manifestation -- something akin to what a monitoring and automation solution may appear to be_
 
-The philosophy with Apparition is to compose an automation/monitoring/alert tool from a series of mature packages integrated under one roof.
+The philosophy with Apparition is to compose an automation/monitoring/alert tool from a series of mature packages, all integrated under one roof.  The tool should work in the background and only manifest itself when needed.
 
 Proposed tooling:
 * C++ as primary backend
@@ -15,7 +15,7 @@ Proposed tooling:
     * [tutorial](https://github.com/jbeder/yaml-cpp/wiki/Tutorial)
     * [blog entry](https://www.fatalerrors.org/a/c-read-and-write-yaml-configuration-file.html)
   * [wt](https://www.webtoolkit.eu/wt) - server side REST/UI
-  * [jwt-cpp](https://thalhammer.github.io/jwt-cpp/), [cpp-jwt](https://github.com/arun11299/cpp-jwt) 
+  * [jwt-cpp](https://thalhammer.github.io/jwt-cpp/), [cpp-jwt](https://github.com/arun11299/cpp-jwt)
   * [boost beast](https://www.boost.org/doc/libs/1_82_0/libs/beast/doc/html/index.html) - REST, WebSocket
 * [Prometheus](https://prometheus.io/docs/introduction/overview/) - time series open-source systems monitoring and alerting toolkit
 * [Grafana](https://grafana.com/) - data visualization aka visibility stack
