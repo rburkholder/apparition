@@ -4,7 +4,6 @@
 * git clone --depth=1 https://github.com/jbeder/yaml-cpp.git
 * cd yaml-cpp
 * mkdir build
-* mkdir build
 * cd build
 * cmake ..
 * make
