@@ -17,6 +17,7 @@ Proposed tooling:
   * [jwt-cpp](https://thalhammer.github.io/jwt-cpp/), [cpp-jwt](https://github.com/arun11299/cpp-jwt) - consideration for javascript websocket tokens
   * [wt](https://www.webtoolkit.eu/wt) - server side REST/UI
   * [yaml](https://github.com/jbeder/yaml-cpp) - YAML in/out for config files
+    * [installation notes](docs/yaml-cpp.md)
     * [tutorial](https://github.com/jbeder/yaml-cpp/wiki/Tutorial)
     * [blog entry](https://www.fatalerrors.org/a/c-read-and-write-yaml-configuration-file.html)
 * [Bootstrap](https://getbootstrap.com/) - web page dynamics
