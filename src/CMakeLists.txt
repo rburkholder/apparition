@@ -14,11 +14,13 @@ find_package(Boost ${TF_BOOST_VERSION} REQUIRED COMPONENTS system date_time file
 set(
   file_h
     AppApparition.hpp
+    FileNotify.hpp
   )
 
 set(
   file_cpp
     AppApparition.cpp
+    FileNotify.cpp
   )
 
 add_executable(

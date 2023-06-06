@@ -13,9 +13,43 @@
  ************************************************************************/
 
 /*
- * File:    AppApparition.hpp
+ * File:    FileNotify.hpp
  * Author:  raymond@burkholder.net
  * Project: Apparition
- * Created: 2023/06/04 23:52:32
+ * Created: 2023/06/05 18:46:39
  */
 
+#include <thread>
+#include <functional>
+#include <string_view>
+
+class FileNotify {
+public:
+
+  enum class EType { unknown_, delete_, create_, modify_ };
+  using fNotify_t = std::function<void( EType, const std::string_view& )>;
+
+  FileNotify(
+    fNotify_t&& fConfig
+  , fNotify_t&& fScript
+  );
+  ~FileNotify();
+
+  void Start();
+  void Stop();
+
+protected:
+private:
+
+  int m_fdINotify;
+  int m_wdScript;
+  int m_wdConfig;
+
+  bool m_bActive;
+  std::thread m_threadINotify;
+
+  fNotify_t m_fNotifyConfig;
+  fNotify_t m_fNotifyScript;
+
+  void Close();
+};

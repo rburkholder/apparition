@@ -1,5 +1,5 @@
 /************************************************************************
- * Copyright(c) 2022, One Unified. All rights reserved.                 *
+ * Copyright(c) 2023, One Unified. All rights reserved.                 *
  * email: info@oneunified.net                                           *
  *                                                                      *
  * This file is provided as is WITHOUT ANY WARRANTY                     *
@@ -19,136 +19,73 @@
  * Created: 2023/06/04 23:52:32
  */
 
-#include <cerrno>
-#include <assert.h>
-#include <unistd.h>
-
-#include <sys/inotify.h>
-
+#include <memory>
 #include <iostream>
 
-#include "AppApparition.hpp"
+#include <boost/asio/signal_set.hpp>
+#include <boost/asio/execution/context.hpp>
+#include <boost/asio/executor_work_guard.hpp>
+#include <stdexcept>
 
-namespace {
-  const size_t c_size_inotify_event (sizeof( inotify_event ) );
-  const size_t c_size_inotify_buffer ( 1024 * ( c_size_inotify_event + 16 ) );
-}
+#include "FileNotify.hpp"
+
+#include "AppApparition.hpp"
 
 int main( int argc, char* argv[] ) {
 
   std::cout << "apparition - (C)2023 One Unified Net Limited" << std::endl;
 
-  // https://www.linuxjournal.com/article/8478
-  int fdINotify = inotify_init();
-  if ( 0 > fdINotify ) {
-    std::cout << "inotify_init error " << fdINotify << std::endl;
-    return 1;
-  }
+  boost::asio::io_context m_context;
+  std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type> > pWork
+    = std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type> >( boost::asio::make_work_guard( m_context) );
 
-  int wdScript = inotify_add_watch (
-    fdINotify,
-    "scripts",
-    IN_MODIFY | IN_CREATE | IN_DELETE
-    );
+  // https://www.boost.org/doc/libs/1_79_0/doc/html/boost_asio/reference/signal_set.html
+  boost::asio::signal_set signals( m_context, SIGINT ); // SIGINT is called
+  //signals.add( SIGKILL ); // not allowed here
+  signals.add( SIGHUP ); // use this as a day change?
+  //signals.add( SIGINFO ); // control T - doesn't exist on linux
+  //signals.add( SIGTERM );
+  //signals.add( SIGQUIT );
+  //signals.add( SIGABRT );
 
-  if ( 0 > wdScript ) {
-    std::cout << "inotify_add_watch scripts error " << fdINotify << std::endl;
-    return 1;
-  }
+  bool bOk( true );
+  std::unique_ptr<FileNotify> pFileNotify;
 
-  int wdConfig = inotify_add_watch (
-    fdINotify,
-    "config",
-    IN_MODIFY | IN_CREATE | IN_DELETE
-    );
-
-  if ( 0 > wdConfig ) {
-    std::cout << "inotify_add_watch config error " << fdINotify << std::endl;
-    return 1;
-  }
-
-  char bufINotify[ c_size_inotify_buffer ];
-
-  timeval time;
-  time.tv_sec = 5;
-  time.tv_usec = 0;
-
-  fd_set rfds;
-  FD_ZERO ( &rfds );
-  FD_SET ( fdINotify, &rfds );
-
-  // TODO: convert to poll or epoll
-  // TODO: run in loop in dedicated thread
-  int result = select( fdINotify + 1, &rfds, NULL, NULL, &time );
-  if ( 0 > result ) {
-    std::cout << "select error " << result << std::endl;
-    return 1;
-  }
-  else {
-    if ( 0 == result ) {
-      std::cout << "select time out " << result << std::endl;
-      return 1;
-    }
-    else {
-      if ( FD_ISSET ( fdINotify, &rfds ) ) {
-        const int length = read( fdINotify, bufINotify, c_size_inotify_buffer );
-        if ( 0 > length ) {
-          if ( EINTR == errno ) {
-            return 0; // or loop
-          }
-          else {
-            std::cout << "read length error " << length << "," << errno << std::endl;
-          }
-        }
-        else {
-          if ( 0 == length ) {
-            std::cout << "read length is zero" << std::endl;
-            return 1;
-          }
-          else {
-            int ix {};
-            while ( length > ix ) {
-
-              inotify_event *event;
-              event = (inotify_event*) &bufINotify[ ix ];
-
-              std::cout << "wd(" << event->wd << "),";
-
-              if ( 0 < event->len ) {
-                std::cout << "name=" << event->name << ":";
-              }
-              if ( 0 < ( IN_DELETE & event->mask ) ) {
-                std::cout << "delete";
-              }
-              if ( 0 < ( IN_CREATE & event->mask ) ) {
-                std::cout << "create";
-              }
-              if ( 0 < ( IN_MODIFY & event->mask ) ) {
-                std::cout << "modify";
-              }
-
-              std::cout << std::endl;
-
-              ix += c_size_inotify_event + event->len;
-            }
-          }
-        }
-
+  try {
+    pFileNotify = std::make_unique<FileNotify>(
+      []( FileNotify::EType type, const std::string_view& sv ){
+        std::cout << "config " << sv << std::endl;
+      },
+      []( FileNotify::EType type, const std::string_view& sv ){
+        std::cout << "script " << sv << std::endl;
       }
-      else {
-        std::cout << "select has nothing set" << std::endl;
-      }
-    }
+    );
+  }
+  catch ( std::runtime_error& e ) {
+    bOk = false;
+    std::cout << "FileNotify error: " << e.what() << std::endl;
   }
 
-  result = inotify_rm_watch ( fdINotify, wdScript );
-  assert( 0 == result );
+  if ( bOk ) {
+    signals.async_wait(
+      [&pFileNotify,&pWork](const boost::system::error_code& error_code, int signal_number){
+        std::cout
+          << "\nsignal"
+          << "(" << error_code.category().name()
+          << "," << error_code.value()
+          << "," << signal_number
+          << "): "
+          << error_code.message()
+          << std::endl;
 
-  result = inotify_rm_watch ( fdINotify, wdConfig );
-  assert( 0 == result );
+        if ( SIGINT == signal_number) {
+          pFileNotify.reset();
+          pWork->reset();
+        }
+      } );
 
-  result = close( fdINotify );
-  assert( 0 == result );
+    m_context.run();
+  }
 
   return 0;
 }
