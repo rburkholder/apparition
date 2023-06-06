@@ -14,12 +14,14 @@ find_package(Boost ${TF_BOOST_VERSION} REQUIRED COMPONENTS system date_time file
 set(
   file_hpp
     AppApparition.hpp
+    ConfigYaml.hpp
     FileNotify.hpp
   )
 
 set(
   file_cpp
     AppApparition.cpp
+    ConfigYaml.cpp
     FileNotify.cpp
   )
 
@@ -43,8 +45,8 @@ target_link_directories(
 
 target_link_libraries(
   ${PROJECT_NAME}
+      yaml-cpp
       ${Boost_LIBRARIES}
-      dl
-      pthread
+#      pthread
   )
 

@@ -20,6 +20,7 @@
  */
 
 #include <memory>
+#include <string>
 #include <iostream>
 #include <filesystem>
 
@@ -29,6 +30,7 @@
 #include <stdexcept>
 
 #include "FileNotify.hpp"
+#include "ConfigYaml.hpp"
 
 #include "AppApparition.hpp"
 
@@ -53,15 +55,50 @@ int main( int argc, char* argv[] ) {
   //signals.add( SIGQUIT );
   //signals.add( SIGABRT );
 
+  ConfigYaml yaml;
+
   std::unique_ptr<FileNotify> pFileNotify;
 
   try {
     pFileNotify = std::make_unique<FileNotify>(
-      []( FileNotify::EType type, const std::string_view& sv ){ // fConfig
-        std::cout << "config " << sv << std::endl;
+      [&yaml]( FileNotify::EType type, const std::string& s ){ // fConfig
+        std::filesystem::path path( "config/" + s );
+        std::cout << path << " ";
+        if ( ConfigYaml::Test( path ) ) {
+
+          switch ( type ) {
+            case FileNotify::EType::create_:
+              std::cout << "create" << std::endl;
+              yaml.Load( path );
+              break;
+            case FileNotify::EType::modify_:
+              std::cout << "modify" << std::endl;
+              yaml.Modify( path );
+              break;
+            case FileNotify::EType::delete_:
+              std::cout << "delete" << std::endl;
+              yaml.Delete( path );
+              break;
+          }
+        }
+        else {
+          std::cout << "noop" << std::endl;;
+        }
       },
-      []( FileNotify::EType type, const std::string_view& sv ){ // fScript
-        std::cout << "script " << sv << std::endl;
+      []( FileNotify::EType type, const std::string& sv ){ // fScript
+        std::cout << "script ";
+        switch ( type ) {
+          case FileNotify::EType::create_:
+            std::cout << "create ";
+            break;
+          case FileNotify::EType::modify_:
+            std::cout << "modify ";
+            break;
+          case FileNotify::EType::delete_:
+            std::cout << "delete ";
+            break;
+        }
+        std::cout << sv << std::endl;
       }
     );
   }
@@ -76,13 +113,11 @@ int main( int argc, char* argv[] ) {
   else {
 
     static const std::filesystem::path pathConfig( "config" );
-    static const std::filesystem::path pathConfigExt( ".yaml" );
     for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathConfig } ) {
       if ( dir_entry.is_regular_file() ) {
-        if ( dir_entry.path().has_extension() ) {
-          if  ( pathConfigExt == dir_entry.path().extension() ) {
-            std::cout << dir_entry << '\n';
-          }
+        if ( ConfigYaml::Test( dir_entry.path() ) ) {
+          std::cout << "load " << dir_entry << '\n';
+          yaml.Load( dir_entry.path() );
         }
       }
     }

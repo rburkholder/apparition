@@ -1,0 +1,6 @@
+script: 
+  name: rtl433-1.das
+  mqtt:
+    connector: rabbit
+    topic: rtl433/1
+
