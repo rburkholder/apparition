@@ -38,6 +38,7 @@ int main( int argc, char* argv[] ) {
   std::cout << "ctrl-c to end" << std::endl;
 
   int response {};
+  bool bError( false );
 
   boost::asio::io_context m_context;
   std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type> > pWork
@@ -52,7 +53,6 @@ int main( int argc, char* argv[] ) {
   //signals.add( SIGQUIT );
   //signals.add( SIGABRT );
 
-  bool bOk( true );
   std::unique_ptr<FileNotify> pFileNotify;
 
   try {
@@ -66,11 +66,14 @@ int main( int argc, char* argv[] ) {
     );
   }
   catch ( std::runtime_error& e ) {
-    bOk = false;
+    bError = true;
     std::cout << "FileNotify error: " << e.what() << std::endl;
   }
 
-  if ( bOk ) {
+  if ( bError ) {
+    response = 1;
+  }
+  else {
 
     static const std::filesystem::path pathConfig( "config" );
     static const std::filesystem::path pathConfigExt( ".yaml" );
@@ -110,9 +113,6 @@ int main( int argc, char* argv[] ) {
       } );
 
     m_context.run();
-  }
-  else {
-    response = 1;
   }
 
   return response;
