@@ -19,15 +19,15 @@
  * Created: 2023/06/05 18:46:39
  */
 
+#include <string>
 #include <thread>
 #include <functional>
-#include <string_view>
 
 class FileNotify {
 public:
 
-  enum class EType { unknown_, delete_, create_, modify_ };
-  using fNotify_t = std::function<void( EType, const std::string_view& )>;
+  enum class EType { unknown_, scan_, delete_, create_, modify_ };
+  using fNotify_t = std::function<void( EType, const std::string& )>;
 
   FileNotify(
     fNotify_t&& fConfig

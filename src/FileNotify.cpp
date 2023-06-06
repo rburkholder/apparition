@@ -142,17 +142,17 @@ FileNotify::FileNotify(
                     }
                     assert( EType::unknown_ != type );
 
-                    std::string_view sv;
+                    std::string s;
                     if ( 0 < event->len ) {
-                      sv = std::string_view( event->name, event->len );
+                      s = std::string( event->name ); // auto finds nulls at end
                     }
 
                     if ( m_wdConfig == event->wd ) {
-                      m_fNotifyConfig( type, sv );
+                      m_fNotifyConfig( type, s );
                     }
                     else {
                       if ( m_wdScript == event->wd ) {
-                        m_fNotifyScript( type, sv );
+                        m_fNotifyScript( type, s );
                       }
                     }
 
