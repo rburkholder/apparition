@@ -79,8 +79,10 @@ int main( int argc, char* argv[] ) {
     static const std::filesystem::path pathConfigExt( ".yaml" );
     for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathConfig } ) {
       if ( dir_entry.is_regular_file() ) {
-        if  ( pathConfigExt == dir_entry.path().extension() ) {
-          std::cout << dir_entry << '\n';
+        if ( dir_entry.path().has_extension() ) {
+          if  ( pathConfigExt == dir_entry.path().extension() ) {
+            std::cout << dir_entry << '\n';
+          }
         }
       }
     }
@@ -89,8 +91,10 @@ int main( int argc, char* argv[] ) {
     static const std::filesystem::path pathScriptExt( ".das" );
     for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathScript } ) {
       if ( dir_entry.is_regular_file() ) {
-        if  ( pathScriptExt == dir_entry.path().extension() ) {
-          std::cout << dir_entry << '\n';
+        if ( dir_entry.path().has_extension() ) {
+          if  ( pathScriptExt == dir_entry.path().extension() ) {
+            std::cout << dir_entry << '\n';
+          }
         }
       }
     }
