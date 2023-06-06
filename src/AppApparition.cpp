@@ -34,6 +34,9 @@
 int main( int argc, char* argv[] ) {
 
   std::cout << "apparition - (C)2023 One Unified Net Limited" << std::endl;
+  std::cout << "ctrl-c to end" << std::endl;
+
+  int response {};
 
   boost::asio::io_context m_context;
   std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type> > pWork
@@ -42,7 +45,7 @@ int main( int argc, char* argv[] ) {
   // https://www.boost.org/doc/libs/1_79_0/doc/html/boost_asio/reference/signal_set.html
   boost::asio::signal_set signals( m_context, SIGINT ); // SIGINT is called
   //signals.add( SIGKILL ); // not allowed here
-  signals.add( SIGHUP ); // use this as a day change?
+  signals.add( SIGHUP ); // use this as a config change?
   //signals.add( SIGINFO ); // control T - doesn't exist on linux
   //signals.add( SIGTERM );
   //signals.add( SIGQUIT );
@@ -53,10 +56,10 @@ int main( int argc, char* argv[] ) {
 
   try {
     pFileNotify = std::make_unique<FileNotify>(
-      []( FileNotify::EType type, const std::string_view& sv ){
+      []( FileNotify::EType type, const std::string_view& sv ){ // fConfig
         std::cout << "config " << sv << std::endl;
       },
-      []( FileNotify::EType type, const std::string_view& sv ){
+      []( FileNotify::EType type, const std::string_view& sv ){ // fScript
         std::cout << "script " << sv << std::endl;
       }
     );
@@ -86,6 +89,9 @@ int main( int argc, char* argv[] ) {
 
     m_context.run();
   }
+  else {
+    response = 1;
+  }
 
-  return 0;
+  return response;
 }
