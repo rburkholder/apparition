@@ -35,9 +35,6 @@ public:
   );
   ~FileNotify();
 
-  void Start();
-  void Stop();
-
 protected:
 private:
 
