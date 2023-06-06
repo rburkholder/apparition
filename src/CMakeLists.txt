@@ -1,4 +1,4 @@
-# apparition/src
+# src/apparition
 cmake_minimum_required (VERSION 3.13)
 
 PROJECT(apparition)
@@ -12,7 +12,7 @@ set(BOOST_INCLUDEDIR "/usr/local/include/boost")
 find_package(Boost ${TF_BOOST_VERSION} REQUIRED COMPONENTS system date_time filesystem serialization regex log log_setup)
 
 set(
-  file_h
+  file_hpp
     AppApparition.hpp
     FileNotify.hpp
   )
@@ -25,10 +25,9 @@ set(
 
 add_executable(
   ${PROJECT_NAME}
-    ${file_h}
+    ${file_hpp}
     ${file_cpp}
   )
-
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC BOOST_LOG_DYN_LINK )
 
