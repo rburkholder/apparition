@@ -14,20 +14,22 @@ Proposed tooling:
     * [tutorial](https://github.com/GaijinEntertainment/daScript/blob/master/examples/tutorial/tutorial01.cpp)
     * [documentation](https://dascript.org/doc/index.html)
       * [index](https://dascript.org/doc/genindex.html)
-  * [jwt-cpp](https://thalhammer.github.io/jwt-cpp/), [cpp-jwt](https://github.com/arun11299/cpp-jwt)
+  * [jwt-cpp](https://thalhammer.github.io/jwt-cpp/), [cpp-jwt](https://github.com/arun11299/cpp-jwt) - consideration for javascript websocket tokens
   * [wt](https://www.webtoolkit.eu/wt) - server side REST/UI
   * [yaml](https://github.com/jbeder/yaml-cpp) - YAML in/out for config files
     * [tutorial](https://github.com/jbeder/yaml-cpp/wiki/Tutorial)
     * [blog entry](https://www.fatalerrors.org/a/c-read-and-write-yaml-configuration-file.html)
+* [Bootstrap](https://getbootstrap.com/) - web page dynamics
+* [Node-RED](https://nodered.org/) - visual event editor, used in addition to daScript
 * [Prometheus](https://prometheus.io/docs/introduction/overview/) - time series open-source systems monitoring and alerting toolkit
 * [Grafana](https://grafana.com/) - data visualization aka visibility stack
   * [github](https://github.com/grafana/grafana)
-* [Bootstrap](https://getbootstrap.com/) - web page dynamics
 * [RabbitMQ / MQTT](https://www.rabbitmq.com/mqtt.html) - event backbone
-* [Node-RED](https://nodered.org/) - visual event editor
 
-Thinking behind this solution:
+Thoughts influencing the design & implementation of this solution:
 
+* config is supplied through a series of yaml files, which are primarily used to load scripts and attach the scripts to mqtt events
+  * system configuration is thus easily version controlled, replaceable, and reproducible
 * Prometheus supplies time series collection & management for historical review.  It offers compaction, particularly needed for sensors, such as the Ecowitt WS90 which issues multiple variables every 8 seconds or so.
 * daScript provides a rich text based scripting environment for handling events, triggers, and logic
 * MQTT broker to act as a backbone for messaging between sub-systems
