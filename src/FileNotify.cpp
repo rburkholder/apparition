@@ -62,7 +62,7 @@ FileNotify::FileNotify(
 
   m_wdScript = inotify_add_watch(
     m_fdINotify,
-    "scripts",
+    "script",
     IN_MODIFY | IN_CREATE | IN_DELETE
     );
 

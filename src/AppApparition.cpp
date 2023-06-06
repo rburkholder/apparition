@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <iostream>
+#include <filesystem>
 
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/execution/context.hpp>
@@ -67,6 +68,26 @@ int main( int argc, char* argv[] ) {
   catch ( std::runtime_error& e ) {
     bOk = false;
     std::cout << "FileNotify error: " << e.what() << std::endl;
+  }
+
+  static const std::filesystem::path pathConfig( "config" );
+  static const std::filesystem::path pathConfigExt( ".yaml" );
+  for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathConfig } ) {
+    if ( dir_entry.is_regular_file() ) {
+      if  ( pathConfigExt == dir_entry.path().extension() ) {
+        std::cout << dir_entry << '\n';
+      }
+    }
+  }
+
+  static const std::filesystem::path pathScript( "script" );
+  static const std::filesystem::path pathScriptExt( ".das" );
+  for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathScript } ) {
+    if ( dir_entry.is_regular_file() ) {
+      if  ( pathScriptExt == dir_entry.path().extension() ) {
+        std::cout << dir_entry << '\n';
+      }
+    }
   }
 
   if ( bOk ) {
