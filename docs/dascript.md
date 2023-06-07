@@ -34,7 +34,7 @@ index fbeb39c..975b507 100644
 * cd build
 * cmake -G "Unix Makefiles" ..
 * make daScript
-* # ignore the following, used in-place for now, see src/CMakeLists.txt
+* #ignore the following, used in-place for now, see src/CMakeLists.txt
 * #sudo cp -r ../include/daScript /usr/local/include
 * #sudo cp -R ../include/ska /usr/local/include/daScript/
 * #sudo cp ./liblibDaScript.a /usr/local/lib/libDaScript.a
