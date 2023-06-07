@@ -31,6 +31,7 @@
 
 #include "FileNotify.hpp"
 #include "ConfigYaml.hpp"
+#include "ScriptDas.hpp"
 
 #include "AppApparition.hpp"
 
@@ -56,6 +57,7 @@ int main( int argc, char* argv[] ) {
   //signals.add( SIGABRT );
 
   ConfigYaml yaml;
+  ScriptDas script;
 
   std::unique_ptr<FileNotify> pFileNotify;
 
@@ -63,9 +65,9 @@ int main( int argc, char* argv[] ) {
     pFileNotify = std::make_unique<FileNotify>(
       [&yaml]( FileNotify::EType type, const std::string& s ){ // fConfig
         std::filesystem::path path( "config/" + s );
-        std::cout << path << " ";
-        if ( ConfigYaml::Test( path ) ) {
+        std::cout << path << ' ';
 
+        if ( ConfigYaml::Test( path ) ) {
           switch ( type ) {
             case FileNotify::EType::create_:
               std::cout << "create" << std::endl;
@@ -79,26 +81,42 @@ int main( int argc, char* argv[] ) {
               std::cout << "delete" << std::endl;
               yaml.Delete( path );
               break;
+            default:
+              assert( false );
+              break;
           }
         }
         else {
           std::cout << "noop" << std::endl;;
         }
       },
-      []( FileNotify::EType type, const std::string& sv ){ // fScript
-        std::cout << "script ";
-        switch ( type ) {
-          case FileNotify::EType::create_:
-            std::cout << "create ";
-            break;
-          case FileNotify::EType::modify_:
-            std::cout << "modify ";
-            break;
-          case FileNotify::EType::delete_:
-            std::cout << "delete ";
-            break;
+      [&script]( FileNotify::EType type, const std::string& s ){ // fScript
+        std::filesystem::path path( "script/" + s );
+        std::cout << path << ' ';
+
+        if ( ScriptDas::Test( path ) ) {
+          switch ( type ) {
+            case FileNotify::EType::create_:
+              std::cout << "create" << std::endl;
+              script.Load( path );
+              break;
+            case FileNotify::EType::modify_:
+              std::cout << "modify" << std::endl;
+              script.Modify( path );
+              break;
+            case FileNotify::EType::delete_:
+              std::cout << "delete" << std::endl;
+              script.Delete( path );
+              break;
+            default:
+              assert( false );
+              break;
+          }
         }
-        std::cout << sv << std::endl;
+        else {
+          std::cout << "noop" << std::endl;
+        }
+        std::cout << s << std::endl;
       }
     );
   }
@@ -133,6 +151,8 @@ int main( int argc, char* argv[] ) {
         }
       }
     }
+
+    script.Run();
 
     signals.async_wait(
       [&pFileNotify,&pWork](const boost::system::error_code& error_code, int signal_number){
