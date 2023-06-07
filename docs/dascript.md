@@ -1,10 +1,10 @@
 # daScript installation
 
-pushd 3rd_party/
-sudo apt install flex bison
-git clone --depth=1 https://github.com/GaijinEntertainment/daScript
-cd daScript
-
+* pushd 3rd_party/
+* sudo apt install flex bison
+* git clone --depth=1 https://github.com/GaijinEntertainment/daScript
+* cd daScript
+```
 $ git diff CMakeLists.txt
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index fbeb39c..975b507 100644
@@ -29,14 +29,14 @@ index fbeb39c..975b507 100644
  option(DAS_SFML_DISABLED "Disable dasSFML (SFML multimedia library)" ON)
  option(DAS_PUGIXML_DISABLED "Disable dasPUGIXML (xml parsing library)" ON)
  option(DAS_SQLITE_DISABLED "Disable dasSQLITE (sqlite3 library)" ON)
-
-mkdir build
-cd build
-cmake -G "Unix Makefiles" ..
-make daScript
-# ignore the following, used in-place for now
-#sudo cp -r ../include/daScript /usr/local/include
-#sudo cp -R ../include/ska /usr/local/include/daScript/
-#sudo cp ./liblibDaScript.a /usr/local/lib/libDaScript.a
-popd
+```
+* mkdir build
+* cd build
+* cmake -G "Unix Makefiles" ..
+* make daScript
+* # ignore the following, used in-place for now, see src/CMakeLists.txt
+* #sudo cp -r ../include/daScript /usr/local/include
+* #sudo cp -R ../include/ska /usr/local/include/daScript/
+* #sudo cp ./liblibDaScript.a /usr/local/lib/libDaScript.a
+* popd
 
