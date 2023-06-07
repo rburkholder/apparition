@@ -67,7 +67,7 @@ int main( int argc, char* argv[] ) {
         std::filesystem::path path( "config/" + s );
         std::cout << path << ' ';
 
-        if ( ConfigYaml::Test( path ) ) {
+        if ( ConfigYaml::TestExtension( path ) ) {
           switch ( type ) {
             case FileNotify::EType::create_:
               std::cout << "create" << std::endl;
@@ -94,7 +94,7 @@ int main( int argc, char* argv[] ) {
         std::filesystem::path path( "script/" + s );
         std::cout << path << ' ';
 
-        if ( ScriptDas::Test( path ) ) {
+        if ( ScriptDas::TestExtension( path ) ) {
           switch ( type ) {
             case FileNotify::EType::create_:
               std::cout << "create" << std::endl;
@@ -133,7 +133,7 @@ int main( int argc, char* argv[] ) {
     static const std::filesystem::path pathConfig( "config" );
     for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathConfig } ) {
       if ( dir_entry.is_regular_file() ) {
-        if ( ConfigYaml::Test( dir_entry.path() ) ) {
+        if ( ConfigYaml::TestExtension( dir_entry.path() ) ) {
           std::cout << "load " << dir_entry << '\n';
           yaml.Load( dir_entry.path() );
         }

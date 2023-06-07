@@ -27,7 +27,7 @@ public:
   ScriptDas();
   ~ScriptDas();
 
-  static bool Test( const std::filesystem::path& );
+  static bool TestExtension( const std::filesystem::path& );
 
   void Load( const std::filesystem::path& );
   void Modify( const std::filesystem::path& );

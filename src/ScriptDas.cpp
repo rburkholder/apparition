@@ -47,7 +47,7 @@ ScriptDas::~ScriptDas() {
   das::Module::Shutdown();
 }
 
-bool ScriptDas::Test( const std::filesystem::path& path ) {
+bool ScriptDas::TestExtension( const std::filesystem::path& path ) {
   bool bResult( false );
   if ( path.has_extension() ) {
     if ( c_pathScriptExt == path.extension() ) {

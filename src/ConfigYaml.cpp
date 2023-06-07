@@ -39,7 +39,7 @@ ConfigYaml::~ConfigYaml() {
 
 }
 
-bool ConfigYaml::Test( const std::filesystem::path& path ) {
+bool ConfigYaml::TestExtension( const std::filesystem::path& path ) {
   bool bResult( false );
   if ( path.has_extension() ) {
     if ( c_pathConfigExt == path.extension() ) {
