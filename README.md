@@ -9,11 +9,13 @@ Proposed tooling:
   * [boost](https://www.boost.org/) - use my [libs-build](https://github.com/rburkholder/libs-build) library to bulid and install
     * [asio](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio.html) - signals, network
     * [beast](https://www.boost.org/doc/libs/1_82_0/libs/beast/doc/html/index.html) - REST, WebSocket
-  * [daScript](https://dascript.org/) - automation scripting, real-time edit/reload/restart of individual scripts
+  * [daScript v0.4](https://dascript.org/) - automation scripting, real-time edit/reload/restart of individual scripts
+    * [installation notes](https://github.com/rburkholder/apparition/blob/master/docs/dascript.md)
     * [github](https://github.com/GaijinEntertainment/daScript)
     * [tutorial](https://github.com/GaijinEntertainment/daScript/blob/master/examples/tutorial/tutorial01.cpp)
     * [documentation](https://dascript.org/doc/index.html)
       * [index](https://dascript.org/doc/genindex.html)
+    * [Reference Manual v0.2 (pdf)](https://dascript.org/doc/dascript.pdf) - with topics on embedding into C++
   * [jwt-cpp](https://thalhammer.github.io/jwt-cpp/), [cpp-jwt](https://github.com/arun11299/cpp-jwt) - consideration for javascript websocket tokens
   * [wt](https://www.webtoolkit.eu/wt) - server side REST/UI
   * [yaml](https://github.com/jbeder/yaml-cpp) - YAML in/out for config files
@@ -36,4 +38,4 @@ Thoughts influencing the design & implementation of this solution:
 * MQTT broker to act as a backbone for messaging between sub-systems
 * some draw backs of other solutions:
   * Home Assistant has a rather rigidily enforced installation if you want the base plus the store.  Plus there are comments that breakage occurs frequently during release cylces.
-  * Domoticz is totally self contained and fast.  But it is missing certain signals such as the operational state of a thermstat.  The charts, base upon my limited experience, are not very informative.
+  * Domoticz is totally self contained and fast.  But it is missing certain signals such as the operational state of a thermstat.  The charts, based upon my limited experience, are not very informative.
