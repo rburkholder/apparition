@@ -35,10 +35,16 @@ namespace {
 
 ScriptDas::ScriptDas() {
 
+  // request all da-script built in modules
+  NEED_ALL_DEFAULT_MODULES;
+
+  // Initialize modules
+  das::Module::Initialize();
 }
 
 ScriptDas::~ScriptDas() {
-
+  // shut-down daScript, free all memory
+  das::Module::Shutdown();
 }
 
 bool ScriptDas::Test( const std::filesystem::path& path ) {
@@ -67,20 +73,15 @@ void ScriptDas::Delete( const std::filesystem::path& path ) {
 
 namespace {
 const char* tutorial_text = R""""(
+options indenting = 2
 [export]
 def test
-    print("this is nano tutorial\n")
+  print("this is a nano tutorial\n")
 )"""";
 }
 
 // https://github.com/GaijinEntertainment/daScript/blob/master/examples/tutorial/tutorial00.cpp
 void ScriptDas::Run() {
-
-    // request all da-script built in modules
-    NEED_ALL_DEFAULT_MODULES;
-
-    // Initialize modules
-    das::Module::Initialize();
 
     // make file access, introduce string as if it was a file
     auto fAccess = das::make_smart<das::FsFileAccess>();
@@ -117,6 +118,4 @@ void ScriptDas::Run() {
     // call context function
     ctx.evalWithCatch( function, nullptr );
 
-    // shut-down daScript, free all memory
-    das::Module::Shutdown();
 }
