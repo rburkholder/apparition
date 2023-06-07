@@ -20,10 +20,10 @@
  */
 
 #include <iostream>
-
 #include <stdexcept>
-#include <yaml-cpp/exceptions.h>
+
 #include <yaml-cpp/yaml.h>
+#include <yaml-cpp/exceptions.h>
 
 #include "ConfigYaml.hpp"
 
