@@ -16,7 +16,8 @@ set(
     AppApparition.hpp
     ConfigYaml.hpp
     FileNotify.hpp
-    ScriptDas.hpp
+#    ScriptDas.hpp
+    ScriptLua.hpp
   )
 
 set(
@@ -24,7 +25,8 @@ set(
     AppApparition.cpp
     ConfigYaml.cpp
     FileNotify.cpp
-    ScriptDas.cpp
+#    ScriptDas.cpp
+    ScriptLua.cpp
   )
 
 add_executable(
@@ -37,19 +39,19 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC BOOST_LOG_DYN_LINK )
 
 target_include_directories(
   ${PROJECT_NAME} PUBLIC
-    "../3rd_party/daScript/include"
+#    "../3rd_party/daScript/include"
   )
 
 target_link_directories(
   ${PROJECT_NAME} PUBLIC
     /usr/local/lib
-   ../3rd_party/daScript/build
+#   ../3rd_party/daScript/build
   )
 
 target_link_libraries(
   ${PROJECT_NAME}
       yaml-cpp
-      libDaScript
+#      libDaScript
       ${Boost_LIBRARIES}
 #      pthread
   )

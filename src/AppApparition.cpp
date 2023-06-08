@@ -31,7 +31,7 @@
 
 #include "FileNotify.hpp"
 #include "ConfigYaml.hpp"
-#include "ScriptDas.hpp"
+#include "ScriptLua.hpp"
 
 #include "AppApparition.hpp"
 
@@ -57,7 +57,7 @@ int main( int argc, char* argv[] ) {
   //signals.add( SIGABRT );
 
   ConfigYaml yaml;
-  ScriptDas script;
+  ScriptLua script;
 
   std::unique_ptr<FileNotify> pFileNotify;
 
@@ -94,7 +94,7 @@ int main( int argc, char* argv[] ) {
         std::filesystem::path path( "script/" + s );
         std::cout << path << ' ';
 
-        if ( ScriptDas::TestExtension( path ) ) {
+        if ( ScriptLua::TestExtension( path ) ) {
           switch ( type ) {
             case FileNotify::EType::create_:
               std::cout << "create" << std::endl;
@@ -144,7 +144,7 @@ int main( int argc, char* argv[] ) {
     static const std::filesystem::path pathScriptExt( ".das" );
     for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathScript } ) {
       if ( dir_entry.is_regular_file() ) {
-        if ( ScriptDas::TestExtension( dir_entry.path() ) ) {
+        if ( ScriptLua::TestExtension( dir_entry.path() ) ) {
           std::cout << dir_entry << '\n';
           script.Load( dir_entry.path() );
           script.Run( dir_entry.path().string() );

@@ -29,8 +29,6 @@ namespace {
   static const std::filesystem::path c_pathScriptExt( ".das" );
 }
 
-// this has something which interferes with the static const declaration above
-
 ScriptDas::ScriptDas() {
   // request all da-script built in modules
   NEED_ALL_DEFAULT_MODULES;
