@@ -141,7 +141,6 @@ int main( int argc, char* argv[] ) {
     }
 
     static const std::filesystem::path pathScript( "script" );
-    static const std::filesystem::path pathScriptExt( ".das" );
     for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathScript } ) {
       if ( dir_entry.is_regular_file() ) {
         if ( ScriptLua::TestExtension( dir_entry.path() ) ) {
