@@ -20,8 +20,8 @@
  */
 
 #include <memory>
-#include <iostream>
-#include <stdexcept>
+
+#include <boost/log/trivial.hpp>
 
 #include "ScriptDas.hpp"
 
@@ -30,16 +30,16 @@ namespace {
 }
 
 // this has something which interferes with the static const declaration above
-#include <daScript/daScript.h>
-
 
 ScriptDas::ScriptDas() {
-
   // request all da-script built in modules
   NEED_ALL_DEFAULT_MODULES;
 
   // Initialize modules
   das::Module::Initialize();
+
+  m_pModuleGroup = std::make_shared<das::ModuleGroup>();
+
 }
 
 ScriptDas::~ScriptDas() {
@@ -57,65 +57,128 @@ bool ScriptDas::TestExtension( const std::filesystem::path& path ) {
   return bResult;
 }
 
-void ScriptDas::Parse( const std::filesystem::path& path ) {
+ScriptDas::mapScript_t::iterator ScriptDas::Parse( const std::string& sPath ) {
+
+  das::TextPrinter tout;
+  das::FileAccessPtr pAccess = das::make_smart<das::FsFileAccess>();
+
+  mapScript_t::iterator iterScript( m_mapScript.end() );
+
+  // compile script
+  das::ProgramPtr pProgram = das::compileDaScript( sPath, pAccess, tout, *m_pModuleGroup );
+  if ( pProgram->failed() ) {
+    BOOST_LOG_TRIVIAL(error) << "ScriptDas::Parse failed to compile";
+    for ( auto & err : pProgram->errors ) {
+      BOOST_LOG_TRIVIAL(error) << reportError( err.at, err.what, err.extra, err.fixme, err.cerr );
+    }
+    return iterScript;
+  }
+
+  // create daScript context
+  pContext_t pContext = std::make_shared<das::Context>( pProgram->getContextStackSize() );
+  if ( !pProgram->simulate( *pContext, tout ) ) {
+    // if interpretation failed, report errors
+    BOOST_LOG_TRIVIAL(error) << "ScriptDas::Parse failed to simulate";
+    for ( auto& err: pProgram->errors ) {
+      BOOST_LOG_TRIVIAL(error) << reportError(err.at, err.what, err.extra, err.fixme, err.cerr );
+    }
+    return iterScript;
+  }
+
+  // find function 'run' in the context
+  auto fnRun = pContext->findFunction( "run" );
+  if ( !fnRun ) {
+    BOOST_LOG_TRIVIAL(error) << "ScriptDas::Parse function 'run' not found";
+    return iterScript;
+  }
+
+  // verify if 'run' is a function, with the correct signature
+  // note, this operation is slow, so don't do it every time for every call
+  if ( !verifyCall<void>( fnRun->debugInfo, *m_pModuleGroup ) ) {
+    BOOST_LOG_TRIVIAL(error) << "ScriptDas::Parse function 'run', call arguments do not match. expecting 'def run: void'";
+    return iterScript;
+  }
+
+  auto result = m_mapScript.emplace(
+    mapScript_t::value_type(
+      sPath,
+      std::move( Script( pContext, pProgram, pAccess ) )
+    ) );
+  assert( result.second );
+
+  iterScript = result.first;
+
+  return iterScript;
 }
 
 void ScriptDas::Load( const std::filesystem::path& path ) {
-  Parse( path );
+
+  const std::string sPath( path );
+  mapScript_t::iterator iterScript = m_mapScript.find( sPath );
+  if ( m_mapScript.end() != iterScript ) {
+    Modify( path );
+  }
+  else {
+    mapScript_t::iterator iterScript = Parse( sPath );
+    BOOST_LOG_TRIVIAL(info) << "ScriptDas::Load - loaded " << sPath;
+  }
 }
 
 void ScriptDas::Modify( const std::filesystem::path& path ) {
-  Parse( path );
+
+  const std::string sPath( path );
+  mapScript_t::iterator iterScript = m_mapScript.find( sPath );
+  if ( m_mapScript.end() == iterScript ) {
+    Load( path );
+  }
+  else {
+    // TODO: undo existing config first
+    Delete( path );
+    Load( path );
+  }
 }
 
 void ScriptDas::Delete( const std::filesystem::path& path ) {
+  const std::string sPath( path );
+  mapScript_t::iterator iterScript = m_mapScript.find( sPath );
+  if ( m_mapScript.end() == iterScript ) {
+    BOOST_LOG_TRIVIAL(warning) << "ScriptDas::Delete - no script to delete - " << sPath;
+  }
+  else {
+    m_mapScript.erase( iterScript );
+    BOOST_LOG_TRIVIAL(info) << "ScriptDas::Delete - deleted " << sPath;
+  }
 }
 
-namespace {
-const char* tutorial_text = R""""(
-options indenting = 2
-[export]
-def test
-  print("this is a nano tutorial\n")
-)"""";
-}
+// https://github.com/GaijinEntertainment/daScript/blob/master/examples/tutorial/tutorial01.cpp
+void ScriptDas::Run( const std::string& sPath ) {
 
-// https://github.com/GaijinEntertainment/daScript/blob/master/examples/tutorial/tutorial00.cpp
-void ScriptDas::Run() {
+  mapScript_t::iterator iterScript = m_mapScript.find( sPath );
+  if ( m_mapScript.end() == iterScript ) {
+    BOOST_LOG_TRIVIAL(error) << "ScriptDas::Run program " << sPath << " not found";
+  }
+  else {
 
-    // make file access, introduce string as if it was a file
-    auto fAccess = das::make_smart<das::FsFileAccess>();
-    auto fileInfo = std::make_unique<das::TextFileInfo>( tutorial_text, uint32_t( strlen( tutorial_text ) ), false );
-    fAccess->setFileInfo("dummy.das", das::move( fileInfo ) );
-
-    // compile script
     das::TextPrinter tout;
-    das::ModuleGroup dummyLibGroup;
-    auto program = das::compileDaScript( "dummy.das", fAccess, tout, dummyLibGroup );
-    if ( program->failed() ) {
-      //return -1;
-        tout << "failed to compile\n";
-        for ( auto & err : program->errors ) {
-            tout << reportError( err.at, err.what, err.extra, err.fixme, err.cerr );
-        }
-      assert( false );
-    }
+    Script& script( iterScript->second );
 
-    // create context
-    das::Context ctx( program->getContextStackSize() );
-    if ( !program->simulate( ctx, tout ) ) {
-      //return -2;
-      assert( false );
-    }
+    // create daScript context
+    //das::Context ctx( script.->getContextStackSize() );
+    //if ( !program->simulate( ctx, tout ) ) {
+    //  assert( false );
+    //}
 
-    // find function. its up to application to check, if function is not null
-    auto function = ctx.findFunction( "test" );
-    if ( !function ) {
-      //return -3;
-      assert( false );
+    // find function 'run' in the context
+    auto fnRun = script.pContext->findFunction( "run" );
+    if ( !fnRun ) {
+        BOOST_LOG_TRIVIAL(error) << "ScriptDas::Run function 'run' not found";
+        assert( false ); // errors should have been caught in Parse
     }
 
     // call context function
-    ctx.evalWithCatch( function, nullptr );
-
+    script.pContext->evalWithCatch( fnRun, nullptr );
+    if ( auto ex = script.pContext->getException() ) {       // if function cased panic, report it
+        BOOST_LOG_TRIVIAL(error) << "ScriptDas::Run exception: " << ex;
+    }
+  }
 }

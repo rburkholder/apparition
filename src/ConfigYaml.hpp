@@ -20,6 +20,9 @@
  */
 
 #include <filesystem>
+#include <unordered_map>
+
+#include <yaml-cpp/yaml.h>
 
 class ConfigYaml {
 public:
@@ -35,5 +38,9 @@ public:
 
 protected:
 private:
-  void Parse( const std::filesystem::path& );
+
+  using mapYaml_t = std::unordered_map<std::string, YAML::Node>;
+  mapYaml_t m_mapYaml;
+
+  YAML::Node Parse( const std::string& );
 };

@@ -20,6 +20,9 @@
  */
 
 #include <filesystem>
+#include <unordered_map>
+
+#include <daScript/daScript.h>
 
 class ScriptDas {
 public:
@@ -33,9 +36,43 @@ public:
   void Modify( const std::filesystem::path& );
   void Delete( const std::filesystem::path& );
 
-  void Run();
+  void Run( const std::string& );
 
 protected:
 private:
-  void Parse( const std::filesystem::path& );
+
+  using pContext_t = std::shared_ptr<das::Context>;
+  using pProgram_t = std::shared_ptr<das::Program>;
+  using pModuleGroup_t = std::shared_ptr<das::ModuleGroup>;
+
+  pModuleGroup_t m_pModuleGroup;
+
+  struct Script {
+
+    pContext_t pContext;
+    das::ProgramPtr pProgram;
+    das::FileAccessPtr pFileAccess;
+
+    Script() = default;
+    Script(
+      pContext_t& pContext_
+    , das::ProgramPtr& pProgram_
+    , das::FileAccessPtr& pFileAccess_
+    )
+    : pContext( std::move( pContext_ ) )
+    , pProgram( std::move( pProgram_ ) )
+    , pFileAccess( std::move( pFileAccess_ ) )
+    {}
+    Script( Script&& rhs )
+    : pContext( std::move( rhs.pContext ) )
+    , pProgram( std::move( rhs.pProgram ) )
+    , pFileAccess( std::move( rhs.pFileAccess ) )
+    {}
+    Script( const Script& ) = delete;
+  };
+
+  using mapScript_t = std::unordered_map<std::string, Script>;
+  mapScript_t m_mapScript;
+
+  mapScript_t::iterator Parse( const std::string& );
 };

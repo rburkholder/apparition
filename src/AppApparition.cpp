@@ -22,12 +22,12 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <stdexcept>
 #include <filesystem>
 
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/execution/context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
-#include <stdexcept>
 
 #include "FileNotify.hpp"
 #include "ConfigYaml.hpp"
@@ -144,15 +144,13 @@ int main( int argc, char* argv[] ) {
     static const std::filesystem::path pathScriptExt( ".das" );
     for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathScript } ) {
       if ( dir_entry.is_regular_file() ) {
-        if ( dir_entry.path().has_extension() ) {
-          if  ( pathScriptExt == dir_entry.path().extension() ) {
-            std::cout << dir_entry << '\n';
-          }
+        if ( ScriptDas::TestExtension( dir_entry.path() ) ) {
+          std::cout << dir_entry << '\n';
+          script.Load( dir_entry.path() );
+          script.Run( dir_entry.path().string() );
         }
       }
     }
-
-    script.Run();
 
     signals.async_wait(
       [&pFileNotify,&pWork](const boost::system::error_code& error_code, int signal_number){
