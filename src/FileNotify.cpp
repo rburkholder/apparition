@@ -38,6 +38,7 @@ namespace {
 }
 
 // https://www.linuxjournal.com/article/8478
+// https://www.man7.org/linux/man-pages/man7/inotify.7.html
 
 FileNotify::FileNotify(
   fNotify_t&& fConfig
