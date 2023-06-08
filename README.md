@@ -15,9 +15,9 @@ Proposed tooling:
     * [installation notes](docs/yaml-cpp.md)
     * [tutorial](https://github.com/jbeder/yaml-cpp/wiki/Tutorial)
     * [blog entry](https://www.fatalerrors.org/a/c-read-and-write-yaml-configuration-file.html)
-  * Candidate scripting embedded scripting language:
+  * Candidate embedded scripting language:
     * [Duktape](https://duktape.org/guide.html) - embeddable ECMAScript® engine with a focus on portability and compact footprint
-    * [LuaJIT](https://luajit.org/) - Just-In-Time Compiler for Lua
+    * [LuaJIT](https://luajit.org/) - Just-In-Time Compiler for Lua - currently in trials
 * [Bootstrap](https://getbootstrap.com/) - web page dynamics
 * [Node-RED](https://nodered.org/) - visual event editor, used in addition to the embedded scripting language
 * [Prometheus](https://prometheus.io/docs/introduction/overview/) - time series open-source systems monitoring and alerting toolkit
