@@ -64,8 +64,15 @@ ScriptDas::mapScript_t::iterator ScriptDas::Parse( const std::string& sPath ) {
 
   mapScript_t::iterator iterScript( m_mapScript.end() );
 
+  das::CodeOfPolicies policies;
+  //policies.aot = true;
+  //policies.completion = true;
+  //policies.intern_strings = true;
+  //policies.stack = 0;
+
   // compile script
-  das::ProgramPtr pProgram = das::compileDaScript( sPath, pAccess, tout, *m_pModuleGroup );
+  //das::ProgramPtr pProgram = das::compileDaScript( sPath, pAccess, tout, *m_pModuleGroup, false, policies );
+  das::ProgramPtr pProgram = das::parseDaScript( sPath, pAccess, tout, *m_pModuleGroup );
   if ( pProgram->failed() ) {
     BOOST_LOG_TRIVIAL(error) << "ScriptDas::Parse failed to compile";
     for ( auto & err : pProgram->errors ) {
