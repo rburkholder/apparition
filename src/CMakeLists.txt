@@ -16,7 +16,6 @@ set(
     AppApparition.hpp
     ConfigYaml.hpp
     FileNotify.hpp
-#    ScriptDas.hpp
     ScriptLua.hpp
   )
 
@@ -25,7 +24,6 @@ set(
     AppApparition.cpp
     ConfigYaml.cpp
     FileNotify.cpp
-#    ScriptDas.cpp
     ScriptLua.cpp
   )
 
@@ -50,9 +48,9 @@ target_link_directories(
 
 target_link_libraries(
   ${PROJECT_NAME}
-      yaml-cpp
-#      libDaScript
-      ${Boost_LIBRARIES}
-#      pthread
+    yaml-cpp
+    luajit-5.1
+    ${Boost_LIBRARIES}
+#    pthread
   )
 
