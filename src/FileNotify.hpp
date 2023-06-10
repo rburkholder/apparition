@@ -19,6 +19,8 @@
  * Created: 2023/06/05 18:46:39
  */
 
+#pragma once
+
 #include <string>
 #include <thread>
 #include <functional>

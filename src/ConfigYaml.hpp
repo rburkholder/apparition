@@ -19,6 +19,8 @@
  * Created: 2023/06/06 13:33:04
  */
 
+#pragma once
+
 #include <filesystem>
 #include <unordered_map>
 

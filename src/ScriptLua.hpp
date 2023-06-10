@@ -19,6 +19,8 @@
  * Created: 2023/06/08 09:27:18
  */
 
+#pragma once
+
 #include <cassert>
 #include <filesystem>
 #include <unordered_map>
