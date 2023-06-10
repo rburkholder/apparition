@@ -192,7 +192,16 @@ int main( int argc, char* argv[] ) {
         }
       } );
 
-    MQTT client( topic );
+    MQTT client(
+      topic
+    , []( const std::string& sTopic, const std::string& sMessage ) {
+        std::cout
+          << "mqtt--"
+          << sTopic << ": "
+          << sMessage
+          << std::endl;
+      }
+      );
 
     std::cout << "ctrl-c to end" << std::endl;
     m_context.run();

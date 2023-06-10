@@ -22,6 +22,7 @@
 #pragma once
 
 #include <memory>
+#include <functional>
 
 class MQTT_impl;
 class MqttTopicAccess;
@@ -29,7 +30,9 @@ class MqttTopicAccess;
 class MQTT {
 public:
 
-  MQTT( const MqttTopicAccess& );
+  using fMessage_t = std::function<void( const std::string& sTopic, const std::string& sMessage )>;
+
+  MQTT( const MqttTopicAccess&, fMessage_t&& );
   ~MQTT();
 
 protected:

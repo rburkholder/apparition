@@ -22,8 +22,8 @@
 #include "MQTT.hpp"
 #include "MQTT_impl.hpp"
 
-MQTT::MQTT( const MqttTopicAccess& topic ) {
-  m_pMQTT_impl = std::make_unique<MQTT_impl>( topic );
+MQTT::MQTT( const MqttTopicAccess& topic, fMessage_t&& fMessage ) {
+  m_pMQTT_impl = std::make_unique<MQTT_impl>( topic, std::move( fMessage ) );
 }
 
 MQTT::~MQTT() {

@@ -72,6 +72,7 @@ class callback :
 {
 
   const std::string m_sTopic;
+  MQTT_impl::fMessage_t m_fMessage;
 
 	// Counter for the number of connection retries
 	int nretry_;
@@ -136,21 +137,21 @@ class callback :
 
 	// Callback for when a message arrives.
 	void message_arrived( mqtt::const_message_ptr msg ) override {
-    std::cout
-      << "mqtt--"
-      << msg->get_topic() << ": "
-      << msg->to_string()
-      << std::endl;
+    m_fMessage( msg->get_topic(), msg->to_string() );
 	}
 
 	void delivery_complete(mqtt::delivery_token_ptr token) override {}
 
 public:
-	callback(mqtt::async_client& cli, mqtt::connect_options& connOpts, const std::string& sTopic )
-	: m_sTopic( sTopic ), nretry_( 0 ), cli_( cli ), connOpts_( connOpts ), subListener_( "Subscription" ) {}
+	callback( mqtt::async_client& cli, mqtt::connect_options& connOpts, const std::string& sTopic, MQTT_impl::fMessage_t&& fMessage )
+	: m_sTopic( sTopic ), nretry_( 0 ), cli_( cli ), connOpts_( connOpts ), subListener_( "Subscription" )
+  , m_fMessage( std::move( fMessage ) )
+  {
+    assert( m_fMessage );
+  }
 };
 
-MQTT_impl::MQTT_impl( const MqttTopicAccess& topic ) {
+MQTT_impl::MQTT_impl( const MqttTopicAccess& topic, fMessage_t&& fMessage ) {
 
   char szHostName[ HOST_NAME_MAX + 1 ];
   int result = gethostname( szHostName, HOST_NAME_MAX + 1 );
@@ -158,7 +159,7 @@ MQTT_impl::MQTT_impl( const MqttTopicAccess& topic ) {
     printf( "failure with gethostname\n" );
     assert( false );
   }
-  std::cout << "hostname: " << szHostName << std::endl;
+  std::cout << "mqtt hostname: " << szHostName << std::endl; // TODO: move outside to generic location
 
   const std::string sTarget = "tcp://" + topic.sAddress + ":" + topic.sPort;
 
@@ -170,7 +171,7 @@ MQTT_impl::MQTT_impl( const MqttTopicAccess& topic ) {
   m_connOptions.set_password( topic.sPassword );
 
   // Install the callback(s) before connecting.
-  m_pCallBack = std::make_unique<callback>( *m_pClient, m_connOptions, topic.sTopic );
+  m_pCallBack = std::make_unique<callback>( *m_pClient, m_connOptions, topic.sTopic, std::move( fMessage ) );
   m_pClient->set_callback( *m_pCallBack ); // NOTE: this is set here
 
 	// Start the connection.

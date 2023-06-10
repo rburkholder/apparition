@@ -25,7 +25,7 @@
 
 #include <mqtt/async_client.h>
 
-#include "Common.hpp"
+#include "MQTT.hpp"
 
 // ====
 
@@ -49,7 +49,9 @@ private:
 class MQTT_impl {
 public:
 
-  MQTT_impl( const MqttTopicAccess& );
+  using fMessage_t = MQTT::fMessage_t;
+
+  MQTT_impl( const MqttTopicAccess&, fMessage_t&& );
   ~MQTT_impl();
 
 protected:
