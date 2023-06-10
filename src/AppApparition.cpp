@@ -41,7 +41,6 @@
 int main( int argc, char* argv[] ) {
 
   std::cout << "apparition - (C)2023 One Unified Net Limited" << std::endl;
-  std::cout << "ctrl-c to end" << std::endl;
 
   assert( 4 <= argc );
 
@@ -49,7 +48,7 @@ int main( int argc, char* argv[] ) {
 
   topic.sTopic = "#";
   topic.sAddress = argv[ 1 ];
-  topic.sPort = "1833";
+  topic.sPort = "1883";
   topic.sUserName = argv[ 2 ];
   topic.sPassword = argv[ 3 ];
 
@@ -195,6 +194,7 @@ int main( int argc, char* argv[] ) {
 
     MQTT client( topic );
 
+    std::cout << "ctrl-c to end" << std::endl;
     m_context.run();
   }
 
