@@ -29,9 +29,9 @@
 #include <boost/asio/execution/context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 
-#include "FileNotify.hpp"
-#include "ConfigYaml.hpp"
 #include "ScriptLua.hpp"
+#include "ConfigYaml.hpp"
+#include "FileNotify.hpp"
 
 #include "AppApparition.hpp"
 
@@ -48,13 +48,13 @@ int main( int argc, char* argv[] ) {
     = std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type> >( boost::asio::make_work_guard( m_context) );
 
   // https://www.boost.org/doc/libs/1_79_0/doc/html/boost_asio/reference/signal_set.html
-  boost::asio::signal_set signals( m_context, SIGINT ); // SIGINT is called
+  boost::asio::signal_set signals( m_context, SIGINT ); // SIGINT is called '^C'
   //signals.add( SIGKILL ); // not allowed here
   signals.add( SIGHUP ); // use this as a config change?
   //signals.add( SIGINFO ); // control T - doesn't exist on linux
-  //signals.add( SIGTERM );
-  //signals.add( SIGQUIT );
-  //signals.add( SIGABRT );
+  signals.add( SIGTERM );
+  signals.add( SIGQUIT );
+  signals.add( SIGABRT );
 
   ConfigYaml yaml;
   ScriptLua script;
@@ -65,7 +65,7 @@ int main( int argc, char* argv[] ) {
     pFileNotify = std::make_unique<FileNotify>(
       [&yaml]( FileNotify::EType type, const std::string& s ){ // fConfig
         std::filesystem::path path( "config/" + s );
-        std::cout << path << ' ';
+        //std::cout << path << ' ';
 
         if ( ConfigYaml::TestExtension( path ) ) {
           switch ( type ) {
@@ -92,7 +92,7 @@ int main( int argc, char* argv[] ) {
       },
       [&script]( FileNotify::EType type, const std::string& s ){ // fScript
         std::filesystem::path path( "script/" + s );
-        std::cout << path << ' ';
+        //std::cout << path << ' ';
 
         if ( ScriptLua::TestExtension( path ) ) {
           switch ( type ) {
@@ -134,7 +134,7 @@ int main( int argc, char* argv[] ) {
     for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathConfig } ) {
       if ( dir_entry.is_regular_file() ) {
         if ( ConfigYaml::TestExtension( dir_entry.path() ) ) {
-          std::cout << "load " << dir_entry << '\n';
+          //std::cout << "load " << dir_entry << '\n';
           yaml.Load( dir_entry.path() );
         }
       }
@@ -144,7 +144,7 @@ int main( int argc, char* argv[] ) {
     for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathScript } ) {
       if ( dir_entry.is_regular_file() ) {
         if ( ScriptLua::TestExtension( dir_entry.path() ) ) {
-          std::cout << dir_entry << '\n';
+          //std::cout << dir_entry << '\n';
           script.Load( dir_entry.path() );
           script.Run( dir_entry.path().string() );
         }
@@ -161,6 +161,18 @@ int main( int argc, char* argv[] ) {
           << "): "
           << error_code.message()
           << std::endl;
+
+        if ( SIGTERM == signal_number ) {
+          std::cout << "sig term noop" << std::endl;
+        }
+
+        if ( SIGQUIT == signal_number ) {
+          std::cout << "sig quit noop" << std::endl;
+        }
+
+        if ( SIGABRT == signal_number ) {
+          std::cout << "sig ABRT noop" << std::endl;
+        }
 
         if ( SIGINT == signal_number) {
           pFileNotify.reset();
