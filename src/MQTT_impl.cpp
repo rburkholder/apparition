@@ -59,7 +59,6 @@ void action_listener::on_success( const mqtt::token& tok ) {
   std::cout << std::endl;
 }
 
-
 /**
  * Local callback & listener class for use with the client connection.
  * This is primarily intended to receive messages, but it will also monitor
@@ -72,7 +71,7 @@ class callback :
 	public virtual mqtt::iaction_listener
 {
 
-  const MqttTopicAccess& topic_;
+  const std::string m_sTopic;
 
 	// Counter for the number of connection retries
 	int nretry_;
@@ -115,12 +114,12 @@ class callback :
 	void connected( const std::string& cause ) override {
 		std::cout << "\nConnection success" << std::endl;
 		std::cout
-      << "Subscribing to topic '" << topic_.sTopic
+      << "Subscribing to topic '" << m_sTopic
 			//<< "\tfor client " << CLIENT_ID
 			<< " using QoS " << c_qos
       << std::endl;
 
-		cli_.subscribe( topic_.sTopic, c_qos, nullptr, subListener_ );
+		cli_.subscribe( m_sTopic, c_qos, nullptr, subListener_ );
 	}
 
 	// Callback for when the connection is lost.
@@ -147,8 +146,8 @@ class callback :
 	void delivery_complete(mqtt::delivery_token_ptr token) override {}
 
 public:
-	callback(mqtt::async_client& cli, mqtt::connect_options& connOpts, const MqttTopicAccess& topic )
-	: topic_( topic ), nretry_( 0 ), cli_( cli ), connOpts_( connOpts ), subListener_( "Subscription" ) {}
+	callback(mqtt::async_client& cli, mqtt::connect_options& connOpts, const std::string& sTopic )
+	: m_sTopic( sTopic ), nretry_( 0 ), cli_( cli ), connOpts_( connOpts ), subListener_( "Subscription" ) {}
 };
 
 MQTT_impl::MQTT_impl( const MqttTopicAccess& topic ) {
@@ -171,7 +170,7 @@ MQTT_impl::MQTT_impl( const MqttTopicAccess& topic ) {
   m_connOptions.set_password( topic.sPassword );
 
   // Install the callback(s) before connecting.
-  m_pCallBack = std::make_unique<callback>( *m_pClient, m_connOptions, topic );
+  m_pCallBack = std::make_unique<callback>( *m_pClient, m_connOptions, topic.sTopic );
   m_pClient->set_callback( *m_pCallBack ); // NOTE: this is set here
 
 	// Start the connection.
