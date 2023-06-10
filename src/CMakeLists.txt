@@ -11,11 +11,15 @@ set(BOOST_INCLUDEDIR "/usr/local/include/boost")
 
 find_package(Boost ${TF_BOOST_VERSION} REQUIRED COMPONENTS system date_time filesystem serialization regex log log_setup)
 
+#message("boost    lib: ${Boost_LIBRARIES}")
+
 set(
   file_hpp
     AppApparition.hpp
+    Common.hpp
     ConfigYaml.hpp
     FileNotify.hpp
+    MQTT.hpp
     ScriptLua.hpp
   )
 
@@ -24,6 +28,7 @@ set(
     AppApparition.cpp
     ConfigYaml.cpp
     FileNotify.cpp
+    MQTT.cpp
     ScriptLua.cpp
   )
 
@@ -46,11 +51,14 @@ target_link_directories(
 #   ../3rd_party/daScript/build
   )
 
+# https://stackoverflow.com/questions/70101198/paho-mqtt-library-names
 target_link_libraries(
   ${PROJECT_NAME}
     yaml-cpp
     luajit-5.1
     ${Boost_LIBRARIES}
+    paho-mqttpp3
+    paho-mqtt3a
 #    pthread
   )
 

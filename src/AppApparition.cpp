@@ -29,9 +29,12 @@
 #include <boost/asio/execution/context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 
-#include "ScriptLua.hpp"
+#include "MQTT.hpp"
+#include "Common.hpp"
 #include "ConfigYaml.hpp"
 #include "FileNotify.hpp"
+#include "ScriptLua.hpp"
+
 
 #include "AppApparition.hpp"
 
@@ -39,6 +42,16 @@ int main( int argc, char* argv[] ) {
 
   std::cout << "apparition - (C)2023 One Unified Net Limited" << std::endl;
   std::cout << "ctrl-c to end" << std::endl;
+
+  assert( 4 <= argc );
+
+  MqttTopicAccess topic;
+
+  topic.sTopic = "#";
+  topic.sAddress = argv[ 1 ];
+  topic.sPort = "1833";
+  topic.sUserName = argv[ 2 ];
+  topic.sPassword = argv[ 3 ];
 
   int response {};
   bool bError( false );
@@ -179,6 +192,8 @@ int main( int argc, char* argv[] ) {
           pWork->reset();
         }
       } );
+
+    MQTT client( topic );
 
     m_context.run();
   }
