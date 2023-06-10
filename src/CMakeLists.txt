@@ -20,6 +20,7 @@ set(
     ConfigYaml.hpp
     FileNotify.hpp
     MQTT.hpp
+    MQTT_impl.hpp
     ScriptLua.hpp
   )
 
@@ -29,6 +30,7 @@ set(
     ConfigYaml.cpp
     FileNotify.cpp
     MQTT.cpp
+    MQTT_impl.cpp
     ScriptLua.cpp
   )
 
