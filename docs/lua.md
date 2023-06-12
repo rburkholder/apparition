@@ -79,7 +79,6 @@ index 22f33f1..4d4a46e 100644
 * #make install
 * #result: Installing: /usr/lib/x86_64-linux-gnu/lua/5.1/cjson.so
 * #instead:
-* sudo mkdir -p /usr/local/lib/lua/luajit/
-* sudo cp cjson.so /usr/local/lib/lua/luajit/
 * popd
+* cp 3rd_party/lua-cjson/build/cjson.so var/lib/lua/
 
