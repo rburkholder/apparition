@@ -10,7 +10,7 @@ Proposed tooling:
     * [asio](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio.html) - signals, network
     * [beast](https://www.boost.org/doc/libs/1_82_0/libs/beast/doc/html/index.html) - REST, WebSocket
   * [jwt-cpp](https://thalhammer.github.io/jwt-cpp/), [cpp-jwt](https://github.com/arun11299/cpp-jwt) - consideration for javascript websocket tokens
-  * [paho mqtt](https://github.com/eclipse/paho.mqtt.c) - simplified via installation via Debian package repository
+  * [paho mqtt](https://github.com/eclipse/paho.mqtt.c) - simplified installation via Debian package repository
   * [wt](https://www.webtoolkit.eu/wt) - server side REST/UI
   * [yaml](https://github.com/jbeder/yaml-cpp) - YAML in/out for config files
     * [installation notes](docs/yaml-cpp.md)

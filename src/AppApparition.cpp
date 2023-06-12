@@ -44,32 +44,39 @@ int main( int argc, char* argv[] ) {
 
   assert( 4 <= argc );
 
-  MqttTopicAccess topic;
+  MqttSettings settings;
 
-  topic.sTopic = "#";
-  topic.sAddress = argv[ 1 ];
-  topic.sPort = "1883";
-  topic.sUserName = argv[ 2 ];
-  topic.sPassword = argv[ 3 ];
+  char szHostName[ HOST_NAME_MAX + 1 ];
+  int result = gethostname( szHostName, HOST_NAME_MAX + 1 );
+  if ( 0 != result ) {
+    printf( "failure with gethostname\n" );
+    exit( EXIT_FAILURE );
+  }
+  std::cout << "mqtt hostname: " << szHostName << std::endl; // TODO: move outside to generic location
 
-  int response {};
+  settings.sHostName = szHostName;
+  settings.sAddress = argv[ 1 ];
+  settings.sPort = "1883";
+  settings.sUserName = argv[ 2 ];
+  settings.sPassword = argv[ 3 ];
+
+  int response( EXIT_SUCCESS );
   bool bError( false );
 
-  boost::asio::io_context m_context;
-  std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type> > pWork
-    = std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type> >( boost::asio::make_work_guard( m_context) );
-
-  // https://www.boost.org/doc/libs/1_79_0/doc/html/boost_asio/reference/signal_set.html
-  boost::asio::signal_set signals( m_context, SIGINT ); // SIGINT is called '^C'
-  //signals.add( SIGKILL ); // not allowed here
-  signals.add( SIGHUP ); // use this as a config change?
-  //signals.add( SIGINFO ); // control T - doesn't exist on linux
-  signals.add( SIGTERM );
-  signals.add( SIGQUIT );
-  signals.add( SIGABRT );
+  MQTT client( settings );
 
   ConfigYaml yaml;
   ScriptLua script;
+
+  script.Set_MqttStartTopic(
+    [&client]( const std::string& topic, void* pLua, ScriptLua::fMqttIn_t&& fMqttIn ){
+      client.Subscribe( pLua, topic, std::move( fMqttIn ) );
+    } );
+
+  script.Set_MqttStopTopic(
+    [&client]( const std::string& topic, void* pLua ){
+      client.UnSubscribe( pLua );
+    } );
 
   std::unique_ptr<FileNotify> pFileNotify;
 
@@ -138,7 +145,7 @@ int main( int argc, char* argv[] ) {
   }
 
   if ( bError ) {
-    response = 1;
+    response = EXIT_FAILURE;
   }
   else {
 
@@ -158,10 +165,23 @@ int main( int argc, char* argv[] ) {
         if ( ScriptLua::TestExtension( dir_entry.path() ) ) {
           //std::cout << dir_entry << '\n';
           script.Load( dir_entry.path() );
-          script.Run( dir_entry.path().string() );
+          //script.Run( dir_entry.path().string() );
         }
       }
     }
+
+    boost::asio::io_context m_context;
+    std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type> > pWork
+      = std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type> >( boost::asio::make_work_guard( m_context) );
+
+    // https://www.boost.org/doc/libs/1_79_0/doc/html/boost_asio/reference/signal_set.html
+    boost::asio::signal_set signals( m_context, SIGINT ); // SIGINT is called '^C'
+    //signals.add( SIGKILL ); // not allowed here
+    signals.add( SIGHUP ); // use this as a config change?
+    //signals.add( SIGINFO ); // control T - doesn't exist on linux
+    signals.add( SIGTERM );
+    signals.add( SIGQUIT );
+    signals.add( SIGABRT );
 
     signals.async_wait(
       [&pFileNotify,&pWork](const boost::system::error_code& error_code, int signal_number){
@@ -191,17 +211,6 @@ int main( int argc, char* argv[] ) {
           pWork->reset();
         }
       } );
-
-    MQTT client(
-      topic
-    , []( const std::string& sTopic, const std::string& sMessage ) {
-        std::cout
-          << "mqtt--"
-          << sTopic << ": "
-          << sMessage
-          << std::endl;
-      }
-      );
 
     std::cout << "ctrl-c to end" << std::endl;
     m_context.run();

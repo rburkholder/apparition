@@ -1,6 +1,5 @@
-script: 
-  name: rtl433-1.das
-  mqtt:
-    connector: rabbit
-    topic: rtl433/1
+description: process rtl433/1 topics (ecowitt, water)
+type: mqtt_in
+topic: rtl433/1
+script: rtl433-1.lua
 

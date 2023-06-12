@@ -23,9 +23,9 @@
 
 #include <string>
 
-struct MqttTopicAccess {
+struct MqttSettings {
 
-  std::string sTopic;
+  std::string sHostName;
   std::string sAddress;
   std::string sPort;
   std::string sUserName;

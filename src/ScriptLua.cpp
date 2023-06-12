@@ -19,6 +19,8 @@
  * Created: 2023/06/08 09:27:18
  */
 
+#include <cassert>
+
 #include <boost/log/trivial.hpp>
 
 extern "C" {
@@ -32,10 +34,21 @@ namespace {
   static const std::filesystem::path c_pathScriptExt( ".lua" );
 }
 
-ScriptLua::ScriptLua() {
+ScriptLua::ScriptLua()
+: m_fMqttStartTopic( nullptr )
+, m_fMqttStopTopic( nullptr )
+{
 }
 
 ScriptLua::~ScriptLua() {
+}
+
+void ScriptLua::Set_MqttStartTopic( fMqttStartTopic_t&& f ) {
+  m_fMqttStartTopic = std::move( f );
+}
+
+void ScriptLua::Set_MqttStopTopic( fMqttStopTopic_t&& f ) {
+  m_fMqttStopTopic = std::move( f );
 }
 
 bool ScriptLua::TestExtension( const std::filesystem::path& path ) {
@@ -61,7 +74,15 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
   lua_State* pLua = luaL_newstate();
   assert( pLua );
 
-  luaL_openlibs( pLua ); /* Load Lua libraries */
+  luaL_openlibs( pLua ); /* Load Lua libraries */ // TODO: skip if reduced time/space footprint desirable
+
+  // TODO: put these functions into a named table: mqtt
+  //   thus: mqtt.start_topic, mqtt.stop_topic
+  lua_pushcfunction( pLua, lua_mqtt_start_topic );
+  lua_setglobal( pLua, "mqtt_start_topic" );
+
+  lua_pushcfunction( pLua, lua_mqtt_stop_topic );
+  lua_setglobal( pLua, "mqtt_stop_topic" );
 
   /* Load the file containing the script we are going to run */
   int status = luaL_loadfile( pLua, sPath.c_str() );
@@ -96,6 +117,7 @@ void ScriptLua::Load( const std::filesystem::path& path ) {
   else {
     mapScript_t::iterator iterScript = Parse( sPath );
     BOOST_LOG_TRIVIAL(info) << "ScriptLua::Load - loaded " << sPath;
+    Attach( iterScript );
   }
 }
 
@@ -120,12 +142,13 @@ void ScriptLua::Delete( const std::filesystem::path& path ) {
     BOOST_LOG_TRIVIAL(warning) << "ScriptLua::Delete - no script to delete - " << sPath;
   }
   else {
+    Detach( iterScript );
     m_mapScript.erase( iterScript );
     BOOST_LOG_TRIVIAL(info) << "ScriptLua::Delete - deleted " << sPath;
   }
 }
 
-void ScriptLua::Run( const std::string& sPath ) {
+void ScriptLua::Run_Test01( const std::string& sPath ) {
 
   mapScript_t::iterator iterScript = m_mapScript.find( sPath );
   if ( m_mapScript.end() == iterScript ) {
@@ -192,3 +215,104 @@ void ScriptLua::Run( const std::string& sPath ) {
     }
   }
 }
+
+void ScriptLua::Attach( mapScript_t::iterator iterScript ) {
+
+  BOOST_LOG_TRIVIAL(info) << "Attach";
+  Script& script( iterScript->second );
+  lua_State* pLua( script.pLua );
+  int result {};
+  int test {};
+
+  result = lua_pcall( pLua, 0, 0, 0 );
+  if ( LUA_OK != result ) {
+    BOOST_LOG_TRIVIAL(error)
+      << "ScriptLua::Run failed to run script 1: "
+      << lua_tostring( pLua, -1 )
+      ;
+    lua_pop( pLua, 1 );
+  }
+  else {
+    // no return value
+  }
+
+  lua_getglobal( pLua, "attach" ); // page 242 of 2016 Programming in Lua
+  test = lua_isnil( pLua, -1 ); // page 227
+  lua_pushlightuserdata( pLua , this );
+  test = lua_isuserdata( pLua, -1 );
+  test = lua_isnil( pLua, -2 );
+
+  result = lua_pcall( pLua, 1, 0, 0 );
+  if ( LUA_OK != result ) {
+    BOOST_LOG_TRIVIAL(error)
+      << "ScriptLua::Attach failed to run script 2: "
+      << lua_tostring( pLua, -1 )
+      ;
+    lua_pop( pLua, 1 );
+  }
+  else {
+    // no return value
+  }
+
+}
+
+void ScriptLua::Detach( mapScript_t::iterator iterScript ) {
+  BOOST_LOG_TRIVIAL(info) << "Detach";
+  Script& script( iterScript->second );
+  lua_State* pLua( script.pLua );
+
+  lua_getglobal( pLua, "detach" ); // page 242 of 2016 Programming in Lua
+  lua_pushlightuserdata( pLua , this );
+
+  int result = lua_pcall( pLua, 1, 0, 0 );
+  if ( LUA_OK != result ) {
+    BOOST_LOG_TRIVIAL(error)
+      << "ScriptLua::Detach failed to run script: "
+      << lua_tostring( pLua, -1 )
+      ;
+    lua_pop( pLua, 1 );
+  }
+  else {
+    // no return value
+  }
+}
+
+int ScriptLua::lua_mqtt_start_topic( lua_State* pLua ) { // called by lua to register a topic
+  int n = lua_gettop( pLua );    /* number of arguments */
+  void* object = lua_touserdata( pLua, 1 );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+  const char* topic = luaL_checkstring( pLua, 2 );
+  BOOST_LOG_TRIVIAL(info) << "lua_mqtt_start_topic: " << topic;
+  assert( self->m_fMqttStartTopic );
+  self->m_fMqttStartTopic(
+    topic, pLua,
+    [pLua]( const std::string& topic, const std::string& message ){
+      lua_getglobal( pLua, "mqtt_in" );
+      lua_pushlstring( pLua, topic.data(), topic.size() );
+      lua_pushlstring( pLua, message.data(), message.size() );
+      int result = lua_pcall( pLua, 2, 0, 0 );
+      if ( LUA_OK != result ) {
+        BOOST_LOG_TRIVIAL(error)
+          << "ScriptLua::mqtt_in failed to run script: "
+          << lua_tostring( pLua, -1 )
+          ;
+        lua_pop( pLua, 1 );
+      }
+      else {
+        // no return value
+      }
+    } );
+  return 0;
+}
+
+int ScriptLua::lua_mqtt_stop_topic( lua_State* pLua ) { // called by lua to register a topic
+  int n = lua_gettop( pLua );    /* number of arguments */
+  void* object = lua_touserdata( pLua, 1 );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+  const char* topic = luaL_checkstring( pLua, 2 );
+  BOOST_LOG_TRIVIAL(info) << "lua_mqtt_stop_topic: " << topic;
+  assert( self->m_fMqttStopTopic );
+  self->m_fMqttStopTopic( topic, pLua );
+  return 0;
+}
+

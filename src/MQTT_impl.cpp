@@ -28,6 +28,8 @@
 #include <cassert>
 #include <iostream>
 
+#include <boost/log/trivial.hpp>
+
 #include "Common.hpp"
 #include "MQTT_impl.hpp"
 
@@ -37,6 +39,18 @@ namespace {
   static const int c_n_retry_attempts( 5 );
   static const size_t c_sleep_seconds( 2500 );
 }
+
+// ====
+
+class action_listener: public virtual mqtt::iaction_listener{
+public:
+  action_listener( const std::string& name ) : m_name( name ) {}
+protected:
+private:
+	std::string m_name;
+  void on_failure( const mqtt::token& tok ) override;
+  void on_success( const mqtt::token& tok ) override;
+};
 
 // Callbacks for the success or failures of requested actions.
 // This could be used to initiate further action, but here we just log the
@@ -59,6 +73,8 @@ void action_listener::on_success( const mqtt::token& tok ) {
   std::cout << std::endl;
 }
 
+// ====
+
 /**
  * Local callback & listener class for use with the client connection.
  * This is primarily intended to receive messages, but it will also monitor
@@ -77,7 +93,7 @@ class callback :
 	// Counter for the number of connection retries
 	int nretry_;
 	// The MQTT client
-	mqtt::async_client& cli_;
+	mqtt::async_client& m_client;
 	// Options to use if we need to reconnect
 	mqtt::connect_options& connOpts_;
 	// An action listener to display the result of actions.
@@ -92,7 +108,7 @@ class callback :
 	void reconnect() {
 		std::this_thread::sleep_for(std::chrono::milliseconds( c_sleep_seconds ));
 		try {
-			cli_.connect( connOpts_, nullptr, *this );
+			m_client.connect( connOpts_, nullptr, *this );
 		}
 		catch ( const mqtt::exception& e ) {
 			std::cerr << "Error: " << e.what() << std::endl;
@@ -120,12 +136,12 @@ class callback :
 			<< " using QoS " << c_qos
       << std::endl;
 
-		cli_.subscribe( m_sTopic, c_qos, nullptr, subListener_ );
+		mqtt::token::ptr_t ptr = m_client.subscribe( m_sTopic, c_qos, nullptr, subListener_ );
 	}
 
 	// Callback for when the connection is lost.
 	// This will initiate the attempt to manually reconnect.
-	void connection_lost( const std::string& cause ) override {
+  void connection_lost( const std::string& cause ) override {
 		std::cout << "\nConnection lost" << std::endl;
 		if (!cause.empty())
 			std::cout << "\tcause: " << cause << std::endl;
@@ -136,50 +152,57 @@ class callback :
 	}
 
 	// Callback for when a message arrives.
-	void message_arrived( mqtt::const_message_ptr msg ) override {
+  // msg has no reference to userContext, so instead of looking up the owner by topic
+  //   this is designed for one set of topics per connection to the broker
+  void message_arrived( mqtt::const_message_ptr msg ) override {
     m_fMessage( msg->get_topic(), msg->to_string() );
 	}
 
-	void delivery_complete(mqtt::delivery_token_ptr token) override {}
+  void delivery_complete( mqtt::delivery_token_ptr token ) override {
+    std::cout
+      << "delcom: "
+      << token->get_message()->get_topic()
+      << ','
+      << token->get_message()->get_payload_str()
+      << std::endl;
+    //token->get_user_context();
+  }
 
 public:
-	callback( mqtt::async_client& cli, mqtt::connect_options& connOpts, const std::string& sTopic, MQTT_impl::fMessage_t&& fMessage )
-	: m_sTopic( sTopic ), nretry_( 0 ), cli_( cli ), connOpts_( connOpts ), subListener_( "Subscription" )
+	callback( mqtt::async_client& client, mqtt::connect_options& connOpts, const std::string& sTopic, MQTT_impl::fMessage_t&& fMessage )
+	: m_sTopic( sTopic ), nretry_( 0 ), m_client( client ), connOpts_( connOpts ), subListener_( "Subscription" )
   , m_fMessage( std::move( fMessage ) )
   {
     assert( m_fMessage );
   }
+
 };
 
-MQTT_impl::MQTT_impl( const MqttTopicAccess& topic, fMessage_t&& fMessage ) {
+// ====
 
-  char szHostName[ HOST_NAME_MAX + 1 ];
-  int result = gethostname( szHostName, HOST_NAME_MAX + 1 );
-  if ( 0 != result ) {
-    printf( "failure with gethostname\n" );
-    assert( false );
-  }
-  std::cout << "mqtt hostname: " << szHostName << std::endl; // TODO: move outside to generic location
+MQTT_impl::MQTT_impl( const MqttSettings& settings, const std::string& sTopic, fStatus_t&& fStatus, fMessage_t&& fMessage )
+: m_fStatus( std::move( fStatus ) )
+{
 
-  const std::string sTarget = "tcp://" + topic.sAddress + ":" + topic.sPort;
+  const std::string sTarget = "tcp://" + settings.sAddress + ":" + settings.sPort;
 
-  m_pClient = std::make_unique<mqtt::async_client>( sTarget, szHostName );
+  m_pClient = std::make_unique<mqtt::async_client>( sTarget, settings.sHostName );
   assert( m_pClient );
 
   m_connOptions.set_clean_session( true );
-  m_connOptions.set_user_name( topic.sUserName );
-  m_connOptions.set_password( topic.sPassword );
+  m_connOptions.set_user_name( settings.sUserName );
+  m_connOptions.set_password( settings.sPassword );
 
   // Install the callback(s) before connecting.
-  m_pCallBack = std::make_unique<callback>( *m_pClient, m_connOptions, topic.sTopic, std::move( fMessage ) );
-  m_pClient->set_callback( *m_pCallBack ); // NOTE: this is set here
+  m_pCallback = std::make_unique<callback>( *m_pClient, m_connOptions, sTopic, std::move( fMessage ) );
+  m_pClient->set_callback( *m_pCallback ); // NOTE: this is set here
 
 	// Start the connection.
 	// When completed, the callback will subscribe to topic.
 
 	try {
 		std::cout << "Connecting to the MQTT server " << sTarget << " ..." << std::endl;
-		m_pClient->connect( m_connOptions, nullptr, *m_pCallBack ); // NOTE: and here -- what about the reconnect logic?
+		m_pClient->connect( m_connOptions, nullptr, *m_pCallback ); // NOTE: and here -- what about the reconnect logic?
 	}
 	catch ( const mqtt::exception& e ) {
 		std::cerr << "\nERROR: Unable to connect to MQTT server: '"
@@ -192,16 +215,24 @@ MQTT_impl::MQTT_impl( const MqttTopicAccess& topic, fMessage_t&& fMessage ) {
 MQTT_impl::~MQTT_impl() {
 
 	// Disconnect
-	try {
+	try { // should there be an unsubscription first?  broker probably cleans up anyway
 		std::cout << "\nDisconnecting from the MQTT server..." << std::endl;
 		m_pClient->disconnect()->wait();
 		std::cout << "OK" << std::endl;
 	}
 	catch ( const mqtt::exception& e ) {
-		std::cerr << e << std::endl;
-		assert( false );
+    switch ( e.get_reason_code() ) {
+      case mqtt::SUCCESS:
+        std::cerr << "success " << e << std::endl;
+        break;
+      default:
+        std::cerr << e << std::endl;
+        assert( false );
+        break;
+    }
 	}
 
+  m_pCallback.reset();
   m_pClient.reset();
+  m_fStatus = nullptr;
 }
-

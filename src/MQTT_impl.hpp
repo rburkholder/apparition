@@ -34,35 +34,30 @@ class MqttTopicAccess;
 
 // ====
 
-class action_listener: public virtual mqtt::iaction_listener{
-public:
-  action_listener( const std::string& name ) : m_name( name ) {}
-protected:
-private:
-	std::string m_name;
-  void on_failure( const mqtt::token& tok ) override;
-  void on_success( const mqtt::token& tok ) override;
-};
-
-// ====
-
 class MQTT_impl {
 public:
 
+  using fStatus_t = std::function<void( MQTT::EStatus )>;
+
   using fMessage_t = MQTT::fMessage_t;
 
-  MQTT_impl( const MqttTopicAccess&, fMessage_t&& );
+  MQTT_impl( const MqttSettings&, const std::string& topic, fStatus_t&&, fMessage_t&& );
   ~MQTT_impl();
+
+  void Subscribe( const std::string& topic ) {} // over-writes existing topic
+  void Subscribe( const MQTT::vTopic_t& topics ) {} // over-write existing topic
 
 protected:
 private:
 
   mqtt::connect_options m_connOptions;
 
+  fStatus_t m_fStatus;
+
   using pMqttClient_t = std::unique_ptr<mqtt::async_client>;
   pMqttClient_t m_pClient;
 
-  using pCallBack_t = std::unique_ptr<callback>;
-  pCallBack_t m_pCallBack;
+  using pCallback_t = std::unique_ptr<callback>;
+  pCallback_t m_pCallback;
 
 };
