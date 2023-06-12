@@ -89,7 +89,7 @@
                like CSRF or BREACH), and also provides proper support for
                concurrent sessions in a single browser.
               -->
-            <tracking>URL</tracking>
+            <tracking>Auto</tracking>
 
             <!-- How reload should be handled.
 
@@ -207,7 +207,7 @@
            (e.g. for apache + fastcgi module), or on stderr (e.g. for
            the built-in httpd).
          -->
-        <log-file></log-file>
+        <log-file>log/web.log</log-file>
 
         <!-- Logger configuration
 
@@ -376,7 +376,7 @@
            that all (reverse) proxy servers also have explicit support
            for this protocol.
           -->
-        <web-sockets>false</web-sockets>
+        <web-sockets>true</web-sockets>
 
         <!-- Enables the detection of webgl-capabilites.
 
@@ -560,7 +560,7 @@
 
            (Not to be confused with the Twitter Bootstrap theme)
           -->
-        <progressive-bootstrap>false</progressive-bootstrap>
+        <progressive-bootstrap>true</progressive-bootstrap>
 
         <!-- Set session-ID cookie
 

@@ -35,6 +35,8 @@
 #include "FileNotify.hpp"
 #include "ScriptLua.hpp"
 
+#include "WebServer.hpp"
+#include "DashboardFactory.hpp"
 
 #include "AppApparition.hpp"
 
@@ -52,7 +54,18 @@ int main( int argc, char* argv[] ) {
     printf( "failure with gethostname\n" );
     exit( EXIT_FAILURE );
   }
-  std::cout << "mqtt hostname: " << szHostName << std::endl; // TODO: move outside to generic location
+
+  std::cout << "application " << argv[0] << " hostname: " << szHostName << std::endl; // TODO: move outside to generic location
+
+  const std::vector<std::string> vWebParameters = {
+    "--docroot=web;/favicon.ico,/resources,/style,/image"
+  , "--http-listen=0.0.0.0:8089"
+  , "--config=etc/wt_config.xml"
+  };
+
+  WebServer server( argv[0], vWebParameters );
+  DashboardFactory factory( server );
+  server.start();
 
   settings.sHostName = szHostName;
   settings.sAddress = argv[ 1 ];
@@ -214,6 +227,7 @@ int main( int argc, char* argv[] ) {
 
     std::cout << "ctrl-c to end" << std::endl;
     m_context.run();
+    server.stop();
   }
 
   return response;

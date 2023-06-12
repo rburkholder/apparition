@@ -18,20 +18,26 @@ set(
     AppApparition.hpp
     Common.hpp
     ConfigYaml.hpp
+    Dashboard.hpp
+    DashboardFactory.hpp
     FileNotify.hpp
     MQTT.hpp
     MQTT_impl.hpp
     ScriptLua.hpp
+    WebServer.hpp
   )
 
 set(
   file_cpp
     AppApparition.cpp
     ConfigYaml.cpp
+    Dashboard.cpp
+    DashboardFactory.cpp
     FileNotify.cpp
     MQTT.cpp
     MQTT_impl.cpp
     ScriptLua.cpp
+    WebServer.cpp
   )
 
 add_executable(
@@ -58,9 +64,11 @@ target_link_libraries(
   ${PROJECT_NAME}
     yaml-cpp
     luajit-5.1
-    ${Boost_LIBRARIES}
     paho-mqttpp3
     paho-mqtt3a
+    wt
+    wthttp
+    ${Boost_LIBRARIES}
 #    pthread
   )
 
