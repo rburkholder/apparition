@@ -47,11 +47,8 @@ detach = function ( object_ptr_ )
 end
 
 mqtt_in = function( topic_, message_ )
-  io.write( "mqtt_in ")
-  io.write( topic_ )
-  io.write( ": ")
-  io.write( message_)
-  io.write( '\n' )
+
+  io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
 
   value = json.decode( message_ )
 
