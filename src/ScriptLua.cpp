@@ -224,7 +224,7 @@ void ScriptLua::Attach( mapScript_t::iterator iterScript ) {
   int result {};
   int test {};
 
-  result = lua_pcall( pLua, 0, 0, 0 );
+  result = lua_pcall( pLua, 0, 0, 0 ); // get the script initialized
   if ( LUA_OK != result ) {
     BOOST_LOG_TRIVIAL(error)
       << "ScriptLua::Run failed to run script 1: "
@@ -233,26 +233,26 @@ void ScriptLua::Attach( mapScript_t::iterator iterScript ) {
     lua_pop( pLua, 1 );
   }
   else {
-    // no return value
+    // run the attachment function
+    lua_getglobal( pLua, "attach" ); // page 242 of 2016 Programming in Lua
+    //test = lua_isnil( pLua, -1 ); // page 227
+    lua_pushlightuserdata( pLua , this );
+    //test = lua_isuserdata( pLua, -1 );
+    //test = lua_isnil( pLua, -2 );
+
+    result = lua_pcall( pLua, 1, 0, 0 );
+    if ( LUA_OK != result ) {
+      BOOST_LOG_TRIVIAL(error)
+        << "ScriptLua::Attach failed to run script 2: "
+        << lua_tostring( pLua, -1 )
+        ;
+      lua_pop( pLua, 1 );
+    }
+    else {
+      // no return value
+    }
   }
 
-  lua_getglobal( pLua, "attach" ); // page 242 of 2016 Programming in Lua
-  test = lua_isnil( pLua, -1 ); // page 227
-  lua_pushlightuserdata( pLua , this );
-  test = lua_isuserdata( pLua, -1 );
-  test = lua_isnil( pLua, -2 );
-
-  result = lua_pcall( pLua, 1, 0, 0 );
-  if ( LUA_OK != result ) {
-    BOOST_LOG_TRIVIAL(error)
-      << "ScriptLua::Attach failed to run script 2: "
-      << lua_tostring( pLua, -1 )
-      ;
-    lua_pop( pLua, 1 );
-  }
-  else {
-    // no return value
-  }
 
 }
 
