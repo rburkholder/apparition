@@ -205,7 +205,7 @@ MQTT_impl::MQTT_impl( const MqttSettings& settings, const std::string& sTopic, f
 		m_pClient->connect( m_connOptions, nullptr, *m_pCallback ); // NOTE: and here -- what about the reconnect logic?
 	}
 	catch ( const mqtt::exception& e ) {
-		std::cerr << "\nERROR: Unable to connect to MQTT server: '"
+		std::cerr << "ERROR: Unable to connect to MQTT server: '"
 			<< sTarget << "'" << e << std::endl;
 		assert( false );
 	}
@@ -232,7 +232,7 @@ MQTT_impl::~MQTT_impl() {
     }
 	}
 
-  m_pCallback.reset();
   m_pClient.reset();
+  m_pCallback.reset();
   m_fStatus = nullptr;
 }
