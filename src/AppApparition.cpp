@@ -90,6 +90,22 @@ int main( int argc, char* argv[] ) {
     [&client]( const std::string& topic, void* pLua ){
       client.UnSubscribe( pLua );
     } );
+  script.Set_MqttDeviceData(
+    []( const std::string& name, const ScriptLua::vValue_t& vValue ){
+      // 1. send updates to database, along with 'last seen'
+      // 2. updates to web page
+      // 3. append to time series database for retention/charting
+      std::cout
+        << "device " << name;
+      for ( const ScriptLua::Value& value: vValue ) {
+        std::cout << "," << value.sName << ':';
+        std::visit([](auto&& arg){ std::cout << arg; }, value.value );
+        if ( 0 < value.sUnits.size() ) {
+          std::cout << " " << value.sUnits;
+        }
+      }
+      std::cout << std::endl;
+    } );
 
   std::unique_ptr<FileNotify> pFileNotify;
 

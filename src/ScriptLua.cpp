@@ -37,8 +37,8 @@ namespace {
 ScriptLua::ScriptLua()
 : m_fMqttStartTopic( nullptr )
 , m_fMqttStopTopic( nullptr )
-{
-}
+, m_fMqttDeviceData( nullptr )
+{}
 
 ScriptLua::~ScriptLua() {
 }
@@ -49,6 +49,10 @@ void ScriptLua::Set_MqttStartTopic( fMqttStartTopic_t&& f ) {
 
 void ScriptLua::Set_MqttStopTopic( fMqttStopTopic_t&& f ) {
   m_fMqttStopTopic = std::move( f );
+}
+
+void ScriptLua::Set_MqttDeviceData( fMqttDeviceData_t&& f ) {
+  m_fMqttDeviceData = std::move( f );
 }
 
 bool ScriptLua::TestExtension( const std::filesystem::path& path ) {
@@ -77,12 +81,16 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
   luaL_openlibs( pLua ); /* Load Lua libraries */ // TODO: skip if reduced time/space footprint desirable
 
   // TODO: put these functions into a named table: mqtt
+  //   2016 programming in lua page 251
   //   thus: mqtt.start_topic, mqtt.stop_topic
   lua_pushcfunction( pLua, lua_mqtt_start_topic );
   lua_setglobal( pLua, "mqtt_start_topic" );
 
   lua_pushcfunction( pLua, lua_mqtt_stop_topic );
   lua_setglobal( pLua, "mqtt_stop_topic" );
+
+  lua_pushcfunction( pLua, lua_mqtt_device_data );
+  lua_setglobal( pLua, "mqtt_device_data" );
 
   /* Load the file containing the script we are going to run */
   int status = luaL_loadfile( pLua, sPath.c_str() );
@@ -281,16 +289,20 @@ int ScriptLua::lua_mqtt_start_topic( lua_State* pLua ) { // called by lua to reg
   int n = lua_gettop( pLua );    /* number of arguments */
   void* object = lua_touserdata( pLua, 1 );
   ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
   const char* topic = luaL_checkstring( pLua, 2 );
   BOOST_LOG_TRIVIAL(info) << "lua_mqtt_start_topic: " << topic;
+
   assert( self->m_fMqttStartTopic );
   self->m_fMqttStartTopic(
     topic, pLua,
     [pLua]( const std::string& topic, const std::string& message ){
+
       lua_getglobal( pLua, "mqtt_in" );
       lua_pushlstring( pLua, topic.data(), topic.size() );
       lua_pushlstring( pLua, message.data(), message.size() );
       int result = lua_pcall( pLua, 2, 0, 0 );
+
       if ( LUA_OK != result ) {
         BOOST_LOG_TRIVIAL(error)
           << "ScriptLua::mqtt_in failed to run script: "
@@ -305,14 +317,108 @@ int ScriptLua::lua_mqtt_start_topic( lua_State* pLua ) { // called by lua to reg
   return 0;
 }
 
-int ScriptLua::lua_mqtt_stop_topic( lua_State* pLua ) { // called by lua to register a topic
+int ScriptLua::lua_mqtt_stop_topic( lua_State* pLua ) { // called by lua to de-register a topic
   int n = lua_gettop( pLua );    /* number of arguments */
   void* object = lua_touserdata( pLua, 1 );
   ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
   const char* topic = luaL_checkstring( pLua, 2 );
   BOOST_LOG_TRIVIAL(info) << "lua_mqtt_stop_topic: " << topic;
+
   assert( self->m_fMqttStopTopic );
   self->m_fMqttStopTopic( topic, pLua );
   return 0;
 }
 
+int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to present decoded device data
+
+  int nStackEntries = lua_gettop( pLua );    /* number of arguments */
+  assert( 4 == nStackEntries );
+
+  int typeLuaData;
+  int ixStack = 0; // stack index, pre-increment into entries
+
+  typeLuaData = lua_type( pLua, ++ixStack );
+  assert( LUA_TLIGHTUSERDATA == typeLuaData );
+  void* object = lua_touserdata( pLua, ixStack );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
+  const char* szDeviceName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // location of device name
+  assert( LUA_TSTRING == typeLuaData );
+  szDeviceName = lua_tostring( pLua, ixStack );
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // integer or number of entries in table of values
+  assert( LUA_TNUMBER == typeLuaData );
+  int nValues = lua_tointeger( pLua, ixStack );
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // test that we have a table
+  assert( LUA_TTABLE == typeLuaData ); // primary table of values, each entry a table for a value
+
+  vValue_t vValue;
+  vValue.reserve( nValues );
+
+  const char* szName;
+  const char* szValue;
+  const char* szUnits;
+
+  int ixStack_ValuesTable( ixStack );
+  int ixStack_ValueTable( ixStack_ValuesTable + 1 );
+  int ixStack_Value( ixStack_ValueTable + 1 );
+
+  int ixField = 1; // start from beginning of table
+  while ( 0 < nValues ) {
+
+    lua_pushinteger( pLua, ixField );  // index into values table
+    lua_gettable( pLua, ixStack_ValuesTable ); // pops index, table, pushes value table
+    typeLuaData = lua_type( pLua, ixStack_ValueTable );
+    assert( LUA_TTABLE == typeLuaData ); // sub table of 3 values
+
+    lua_pushinteger( pLua, 1 );  // obtain 'name'
+    lua_gettable( pLua, ixStack_ValueTable );
+    typeLuaData = lua_type( pLua, ixStack_Value );
+    assert( LUA_TSTRING == typeLuaData );
+    szName = lua_tostring( pLua, ixStack_Value );
+    lua_pop( pLua, 1 ); // pop 'name'
+
+    value_t value;
+    lua_pushinteger( pLua, 2 );  // obtain value
+    lua_gettable( pLua, ixStack_ValueTable );
+    typeLuaData = lua_type( pLua, ixStack_Value );
+    switch ( typeLuaData ) {
+      case LUA_TSTRING:
+        szValue = lua_tostring( pLua, ixStack_Value );
+        value = szValue;
+        break;
+      case LUA_TNUMBER:
+        value = lua_tonumber( pLua, ixStack_Value );
+        break;
+      case LUA_TBOOLEAN:
+        assert( false ); // will need to do something about this
+        break;
+      default:
+        assert( false );  // not sure if integers are provided
+        break;
+    }
+    lua_pop( pLua, 1 ); // pop 'value'
+
+    lua_pushinteger( pLua, 3 );  // obtain 'units'
+    lua_gettable( pLua, ixStack_ValueTable );
+    typeLuaData = lua_type( pLua, ixStack_Value );
+    assert( LUA_TSTRING == typeLuaData );
+    szUnits = lua_tostring( pLua, ixStack_Value );
+    lua_pop( pLua, 1 ); // pop 'units'
+
+    vValue.emplace_back( Value( std::string( szName ), value, std::string( szUnits ) ) );
+
+    lua_pop( pLua, 1 ); // pop the 3-value table
+
+    ixField++;
+    nValues--;
+  }
+
+  self->m_fMqttDeviceData( szDeviceName, vValue );
+
+  return 0;
+}

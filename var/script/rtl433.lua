@@ -25,38 +25,69 @@ detach = function ( object_ptr_ )
   object_ptr = 0
 end
 
+extract2 = function( json_, table_, column_, units_ )
+  -- name, value, units
+  local record = {
+    column_, json_[ column_ ], units_
+  }
+  table_[ #table_ + 1 ] = record
+end
+
+extract3 = function( json_, table_, column_, units_, name_ )
+  -- name, value, units
+  local record = {
+    name_, json_[ column_ ], units_
+  }
+  table_[ #table_ + 1 ] = record
+end
+
+ws90 = function( json_ )
+  local data = {}
+  --extract2( json_, data, "model",         "" )
+  extract3( json_, data, "battery_ok",    "?",    "battery_state" )
+  extract3( json_, data, "battery_mV",    "mV",   "battery_level" )
+  extract3( json_, data, "temperature_C", "degC", "temperature" )
+  extract2( json_, data, "humidity",      "%")
+  extract3( json_, data, "wind_dir_deg",  "deg",   "wind_dir" )
+  extract3( json_, data, "wind_avg_m_s",  "m/s",   "wind_avg")
+  extract3( json_, data, "wind_max_m_s",  "m/s",   "wind_max" )
+  extract2( json_, data, "uvi",           "")
+  extract3( json_, data, "light_lux",     "lux",   "light" )
+  extract3( json_, data, "rain_mm",       "mm",    "rain" )
+  extract3( json_, data, "supercap_V",    "V",     "supercap" )
+  extract2( json_, data, "rssi",          "?")
+  extract2( json_, data, "snr",           "?")
+  extract2( json_, data, "noise",         "db")
+  mqtt_device_data( object_ptr, "patio_weather", #data, data );
+end
+
+neptune = function( json_ )
+  extract2( json_, data, "consumption",   "l")
+  extract2( json_, data, "rssi",          "?")
+  extract2( json_, data, "snr",           "?")
+  extract2( json_, data, "noise",         "db")
+  mqtt_device_data( object_ptr, "village_water", #data, data );
+end
+
 mqtt_in = function( topic_, message_ )
 
   -- io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
 
-  value = json.decode( message_ )
+  -- local (faster gc) or global (space cached)?
+  jvalues = json.decode( message_ )
 
-  local found = false;
-  local model = value[ 'model' ]
+  local model = jvalues[ 'model' ]
   if model then
     if 'Fineoffset-WS90' == model then
-      local id = value[ 'id']
+      local id = jvalues[ 'id']
       if 14338 == id then
-        io.write( 'name=patio_weather' )
-        io.write( ',model=' .. model )
-        io.write( ',temperature=' .. value[ 'temperature_C' ] )
-        io.write( ',humidity=' .. value[ 'humidity' ] )
-        found = true
+        ws90( jvalues )
       end
     elseif 'Neptune-R900' == model then
-      local id = value[ 'id' ]
+      local id = jvalues[ 'id' ]
       if 1830357134 == id then
-        io.write( 'name=village_water' )
-        io.write( ',model=' .. model )
-        io.write( ',consumption='.. value[ 'consumption'] )
-        found = true
+        neptune( jvalues )
       end
-    end
-    if found then
-      io.write( ',snr='.. value[ 'snr' ] )
-      io.write( ',rssi=' .. value[ 'rssi' ] )
-      io.write( ',noise=' .. value[ 'noise' ] )
-      io.write( '\n' )
     end
   end
 end

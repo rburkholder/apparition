@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <vector>
+#include <variant>
 #include <filesystem>
 #include <functional>
 #include <unordered_map>
@@ -37,6 +39,35 @@ public:
   using fMqttStartTopic_t = std::function<void(const std::string&, void*, fMqttIn_t&&)>;
   using fMqttStopTopic_t = std::function<void(const std::string&, void*)>;
 
+  using value_t = std::variant<int64_t, double, std::string>;
+
+  struct Value {
+    std::string sName;
+    value_t value;
+    std::string sUnits;
+    enum class ECategory {
+      temperature
+    , humidity
+    , radio
+    , wind
+    , light
+    , rain
+    , power
+    , battery
+    , firmware
+    , unknown
+    } eCategory;
+    Value(): eCategory( ECategory::unknown ) {} // not sure how to identify in lua, maybe pass a string and use spirit to decode
+    Value( const std::string& sName_, const value_t value_, const std::string& sUnits_ )
+    : sName( std::move( sName_ ) ), value( std::move( value_ ) ), sUnits( std::move( sUnits_ ) ), eCategory( ECategory::unknown ) {}
+    Value( Value&& rhs )
+    : sName( std::move( rhs.sName ) ), value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) ), eCategory( rhs.eCategory ) {}
+  };
+
+  using vValue_t = std::vector<Value>;
+
+  using fMqttDeviceData_t = std::function<void(const std::string&, const vValue_t&)>;
+
   struct LuaMqtt {
     std::string sFunctionName;
     std::string sTopic;
@@ -52,8 +83,9 @@ public:
   void Modify( const std::filesystem::path& );
   void Delete( const std::filesystem::path& );
 
-  void Set_MqttStartTopic( fMqttStartTopic_t&& ); // need to associate with iterator
-  void Set_MqttStopTopic( fMqttStopTopic_t&& );   // need to associate with interator
+  void Set_MqttStartTopic( fMqttStartTopic_t&& );
+  void Set_MqttStopTopic( fMqttStopTopic_t&& );
+  void Set_MqttDeviceData( fMqttDeviceData_t&& );
 
 protected:
 private:
@@ -76,6 +108,7 @@ private:
 
   fMqttStartTopic_t m_fMqttStartTopic;
   fMqttStopTopic_t m_fMqttStopTopic;
+  fMqttDeviceData_t m_fMqttDeviceData;
 
   mapScript_t::iterator Parse( const std::string& );
 
@@ -84,6 +117,7 @@ private:
 
   static int lua_mqtt_start_topic( lua_State* );
   static int lua_mqtt_stop_topic( lua_State* );
+  static int lua_mqtt_device_data( lua_State* );
 
   void Run_Test01( const std::string& name );
 
