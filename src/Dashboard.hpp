@@ -22,9 +22,11 @@
 #pragma once
 
 #include <Wt/WApplication.h>
-#include <Wt/WEnvironment.h>
 
-#include "WebServer.hpp"
+class WebServer;
+namespace Wt {
+  class WEnvironment;
+}
 
 class Dashboard: public Wt::WApplication {
 public:

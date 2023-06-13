@@ -21,7 +21,10 @@
 
 #include <boost/log/trivial.hpp>
 
+#include <Wt/WEnvironment.h>
+
 #include "Dashboard.hpp"
+#include "WebServer.hpp"
 
 Dashboard::Dashboard( const Wt::WEnvironment& env )
 : Wt::WApplication( env )
