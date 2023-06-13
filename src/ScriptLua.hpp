@@ -66,7 +66,8 @@ public:
 
   using vValue_t = std::vector<Value>;
 
-  using fMqttDeviceData_t = std::function<void(const std::string&, const vValue_t&)>;
+  using fMqttDeviceData_t
+    = std::function<void(const std::string& location, const std::string& name, const vValue_t&)>;
 
   struct LuaMqtt {
     std::string sFunctionName;

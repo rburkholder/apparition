@@ -44,7 +44,7 @@ end
 ws90 = function( json_ )
   local data = {}
   --extract2( json_, data, "model",         "" )
-  extract3( json_, data, "battery_ok",    "?",    "battery_state" )
+  extract3( json_, data, "battery_ok",    "",     "battery_state" )
   extract3( json_, data, "battery_mV",    "mV",   "battery_level" )
   extract3( json_, data, "temperature_C", "degC", "temperature" )
   extract2( json_, data, "humidity",      "%")
@@ -58,15 +58,16 @@ ws90 = function( json_ )
   extract2( json_, data, "rssi",          "?")
   extract2( json_, data, "snr",           "?")
   extract2( json_, data, "noise",         "db")
-  mqtt_device_data( object_ptr, "patio_weather", #data, data );
+  mqtt_device_data( object_ptr, "patio", "ws90", #data, data );
 end
 
 neptune = function( json_ )
-  extract2( json_, data, "consumption",   "l")
+  local data = {}
+  extract2( json_, data, "consumption",   "l") -- TODO: need to validate precision at other end
   extract2( json_, data, "rssi",          "?")
   extract2( json_, data, "snr",           "?")
   extract2( json_, data, "noise",         "db")
-  mqtt_device_data( object_ptr, "village_water", #data, data );
+  mqtt_device_data( object_ptr, "house", "water", #data, data );
 end
 
 mqtt_in = function( topic_, message_ )

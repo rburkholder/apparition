@@ -333,7 +333,7 @@ int ScriptLua::lua_mqtt_stop_topic( lua_State* pLua ) { // called by lua to de-r
 int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to present decoded device data
 
   int nStackEntries = lua_gettop( pLua );    /* number of arguments */
-  assert( 4 == nStackEntries );
+  assert( 5 == nStackEntries );
 
   int typeLuaData;
   int ixStack = 0; // stack index, pre-increment into entries
@@ -342,6 +342,12 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
   assert( LUA_TLIGHTUSERDATA == typeLuaData );
   void* object = lua_touserdata( pLua, ixStack );
   ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
+  const char* szLocation;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // location of device name
+  assert( LUA_TSTRING == typeLuaData );
+  szLocation = lua_tostring( pLua, ixStack );
 
   const char* szDeviceName;
 
@@ -418,7 +424,7 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
     nValues--;
   }
 
-  self->m_fMqttDeviceData( szDeviceName, vValue );
+  self->m_fMqttDeviceData( szLocation, szDeviceName, vValue );
 
   return 0;
 }
