@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "WebServer.hpp"
+class WebServer;
 
 class DashboardFactory {
 public:

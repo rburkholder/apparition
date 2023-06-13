@@ -22,6 +22,7 @@
 #include <memory>
 
 #include "Dashboard.hpp"
+#include "WebServer.hpp"
 #include "DashboardFactory.hpp"
 
 namespace {
