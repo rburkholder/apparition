@@ -28,8 +28,8 @@
 namespace {
 
 static std::unique_ptr<Wt::WApplication> ConstructDashboard( const Wt::WEnvironment& env ) {
-  std::unique_ptr<Dashboard> app;
-  app = std::make_unique<Dashboard>( env );
+  using pDashboard_t = std::unique_ptr<Dashboard>;
+  pDashboard_t app = std::make_unique<Dashboard>( env );
   return app;
 }
 

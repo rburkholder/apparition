@@ -21,7 +21,9 @@
 
 #include <boost/log/trivial.hpp>
 
+#include <Wt/WText.h>
 #include <Wt/WEnvironment.h>
+#include <Wt/WContainerWidget.h>
 
 #include "Dashboard.hpp"
 #include "WebServer.hpp"
@@ -64,4 +66,47 @@ void Dashboard::TemplatePage( Wt::WContainerWidget* ) {
   static const std::string sTitle( "Apparition Dashboard" );
   setTitle( sTitle );
 
+  m_pBoxBody = root()->addWidget( std::make_unique<Wt::WContainerWidget>() );
+  //m_pBoxBody->setInline( true );
+
+}
+
+void Dashboard::UpdateDeviceSensor( const std::string& device, const std::string& sensor, const std::string& value ) {
+
+  mapDevice_t::iterator iterDevice = m_mapDevice.find( device );
+  if ( m_mapDevice.end() == iterDevice ) {
+    Wt::WContainerWidget* pBoxDevice = m_pBoxBody->addWidget( std::make_unique<Wt::WContainerWidget>() );
+    Wt::WText* pBoxText = pBoxDevice->addWidget( std::make_unique<Wt::WText>( device ) );
+    auto result = m_mapDevice.emplace( mapDevice_t::value_type( device, pBoxDevice ) );
+    assert( result.second );
+    iterDevice = result.first;
+  }
+
+  mapSensor_t& mapSensor( iterDevice->second.m_mapSensor );
+
+  mapSensor_t::iterator iterSensor = mapSensor.find( sensor );
+  if ( mapSensor.end() == iterSensor ) {
+    Wt::WContainerWidget* pBoxSensor
+      = iterDevice->second.m_pBoxDevice->addWidget( std::make_unique<Wt::WContainerWidget>() );
+    Wt::WContainerWidget* pBoxSensorName
+      = pBoxSensor->addWidget( std::make_unique<Wt::WContainerWidget>() );
+    Wt::WContainerWidget* pBoxSensorValue
+      = pBoxSensor->addWidget( std::make_unique<Wt::WContainerWidget>() );
+
+    Wt::WText* pTextSensorName = pBoxSensorName->addWidget( std::make_unique<Wt::WText>( sensor ) );
+    //pTextSensorName->setTextAlignment( Wt::AlignmentFlag::Right );
+
+    Wt::WText* pTextSensorValue = pBoxSensorValue->addWidget( std::make_unique<Wt::WText>( value ) );
+    //pTextSensorValue->setTextAlignment( Wt::AlignmentFlag::Right );
+
+    auto result = mapSensor.emplace( mapSensor_t::value_type( sensor, pTextSensorValue ) );
+    assert( result.second );
+    iterSensor = result.first;
+
+  }
+  else {
+    iterSensor->second->setText( value );
+  }
+
+  triggerUpdate();
 }

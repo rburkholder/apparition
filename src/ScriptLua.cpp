@@ -424,7 +424,7 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
     nValues--;
   }
 
-  self->m_fMqttDeviceData( szLocation, szDeviceName, vValue );
+  self->m_fMqttDeviceData( szLocation, szDeviceName, std::move( vValue ) );
 
   return 0;
 }

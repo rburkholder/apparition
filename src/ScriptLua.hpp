@@ -60,6 +60,8 @@ public:
     Value(): eCategory( ECategory::unknown ) {} // not sure how to identify in lua, maybe pass a string and use spirit to decode
     Value( const std::string& sName_, const value_t value_, const std::string& sUnits_ )
     : sName( std::move( sName_ ) ), value( std::move( value_ ) ), sUnits( std::move( sUnits_ ) ), eCategory( ECategory::unknown ) {}
+    Value( const Value& rhs )
+    : sName( std::move( rhs.sName ) ), value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) ), eCategory( rhs.eCategory ) {}
     Value( Value&& rhs )
     : sName( std::move( rhs.sName ) ), value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) ), eCategory( rhs.eCategory ) {}
   };
@@ -67,7 +69,7 @@ public:
   using vValue_t = std::vector<Value>;
 
   using fMqttDeviceData_t
-    = std::function<void(const std::string& location, const std::string& name, const vValue_t&)>;
+    = std::function<void(const std::string& location, const std::string& name, const vValue_t&&)>;
 
   struct LuaMqtt {
     std::string sFunctionName;

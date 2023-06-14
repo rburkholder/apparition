@@ -25,6 +25,8 @@
 #include <stdexcept>
 #include <filesystem>
 
+#include <fmt/format.h>
+
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/execution/context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
@@ -36,6 +38,7 @@
 #include "ScriptLua.hpp"
 
 #include "WebServer.hpp"
+#include "Dashboard.hpp"
 #include "DashboardFactory.hpp"
 
 #include "AppApparition.hpp"
@@ -91,10 +94,11 @@ int main( int argc, char* argv[] ) {
       client.UnSubscribe( pLua );
     } );
   script.Set_MqttDeviceData(
-    []( const std::string& location, const std::string& name, const ScriptLua::vValue_t& vValue ){
+    [&server]( const std::string& location, const std::string& name, const ScriptLua::vValue_t&& vValue ){
       // 1. send updates to database, along with 'last seen'
       // 2. updates to web page
       // 3. append to time series database for retention/charting
+      // TODO: hand this off to another thread
       std::cout
         << location << '\\' << name;
       for ( const ScriptLua::Value& value: vValue ) {
@@ -105,6 +109,20 @@ int main( int argc, char* argv[] ) {
         }
       }
       std::cout << std::endl;
+      server.postAll(
+        [vValue_ = std::move( vValue ), location_=std::move( location), device_=std::move( name )](){
+          Wt::WApplication* app = Wt::WApplication::instance();
+          Dashboard* pDashboard = dynamic_cast<Dashboard*>( app );
+          const std::string sDevice( location_ + '\\' + device_ );
+          std::string formatted;
+          for ( auto& value: vValue_ ) {
+            std::visit(
+              [&formatted]( auto&& arg ){ formatted = fmt::format( "{}", arg); }
+            , value.value );
+            pDashboard->UpdateDeviceSensor( sDevice, value.sName, formatted + ' ' + value.sUnits );
+          }
+          ;
+        } );
     } );
 
   std::unique_ptr<FileNotify> pFileNotify;

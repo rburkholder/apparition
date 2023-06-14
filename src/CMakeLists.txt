@@ -66,6 +66,7 @@ target_link_libraries(
     luajit-5.1
     paho-mqttpp3
     paho-mqtt3a
+    fmt
     wt
     wthttp
     ${Boost_LIBRARIES}
