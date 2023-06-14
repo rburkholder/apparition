@@ -44,26 +44,26 @@ end
 ws90 = function( json_ )
   local data = {}
   --extract2( json_, data, "model",         "" )
-  extract3( json_, data, "battery_ok",    "",     "battery_state" )
-  extract3( json_, data, "battery_mV",    "mV",   "battery_level" )
   extract3( json_, data, "temperature_C", "degC", "temperature" )
   extract2( json_, data, "humidity",      "%")
-  extract3( json_, data, "wind_dir_deg",  "deg",   "wind_dir" )
+  extract3( json_, data, "light_lux",     "lux",   "light" )
+  extract2( json_, data, "uvi",           "")
   extract3( json_, data, "wind_avg_m_s",  "m/s",   "wind_avg")
   extract3( json_, data, "wind_max_m_s",  "m/s",   "wind_max" )
-  extract2( json_, data, "uvi",           "")
-  extract3( json_, data, "light_lux",     "lux",   "light" )
+  extract3( json_, data, "wind_dir_deg",  "deg",   "wind_dir" )
   extract3( json_, data, "rain_mm",       "mm",    "rain" )
   extract3( json_, data, "supercap_V",    "V",     "supercap" )
-  extract2( json_, data, "rssi",          "?")
-  extract2( json_, data, "snr",           "?")
-  extract2( json_, data, "noise",         "db")
+  extract3( json_, data, "battery_mV",    "mV",   "battery_level" )
+  extract3( json_, data, "battery_ok",    "",     "battery_state" )
+  extract2( json_, data, "rssi",          "dBm")
+  extract2( json_, data, "snr",           "")
+  extract2( json_, data, "noise",         "dBm")
   mqtt_device_data( object_ptr, "patio", "ws90", #data, data );
 end
 
 neptune = function( json_ )
   local data = {}
-  extract2( json_, data, "consumption",   "l") -- TODO: need to validate precision at other end
+  extract2( json_, data, "consumption",   "litre") -- TODO: need to validate precision at other end
   extract2( json_, data, "rssi",          "?")
   extract2( json_, data, "snr",           "?")
   extract2( json_, data, "noise",         "db")
