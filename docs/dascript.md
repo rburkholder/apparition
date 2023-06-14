@@ -1,5 +1,7 @@
 # daScript installation
 
+* NOTE: this is not used in Apparition
+
 * pushd 3rd_party/
 * sudo apt install flex bison
 * git clone --depth=1 https://github.com/GaijinEntertainment/daScript
