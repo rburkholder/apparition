@@ -50,6 +50,8 @@ public:
 protected:
 private:
 
+  static size_t m_nConnection;
+
   mqtt::connect_options m_connOptions;
 
   fStatus_t m_fStatus;

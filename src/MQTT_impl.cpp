@@ -29,6 +29,7 @@
 #include <iostream>
 
 #include <boost/log/trivial.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "Common.hpp"
 #include "MQTT_impl.hpp"
@@ -180,13 +181,17 @@ public:
 
 // ====
 
+size_t MQTT_impl::m_nConnection = 0;
+
 MQTT_impl::MQTT_impl( const MqttSettings& settings, const std::string& sTopic, fStatus_t&& fStatus, fMessage_t&& fMessage )
 : m_fStatus( std::move( fStatus ) )
 {
 
   const std::string sTarget = "tcp://" + settings.sAddress + ":" + settings.sPort;
 
-  m_pClient = std::make_unique<mqtt::async_client>( sTarget, settings.sHostName );
+  m_nConnection++;
+
+  m_pClient = std::make_unique<mqtt::async_client>( sTarget, settings.sHostName + '-' + boost::lexical_cast<std::string>( m_nConnection ) );
   assert( m_pClient );
 
   m_connOptions.set_clean_session( true );
