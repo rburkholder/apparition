@@ -50,6 +50,7 @@ private:
   WebServer* m_pServer; // object managed by wt
 
   Wt::WContainerWidget* m_pBoxBody;
+  Wt::WContainerWidget* m_pBoxRow1; // need to generalize on this in the config file
 
   using mapSensor_t = std::unordered_map<std::string,Wt::WText*>;
 
