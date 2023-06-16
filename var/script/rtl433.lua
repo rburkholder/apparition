@@ -64,9 +64,9 @@ end
 neptune = function( json_ )
   local data = {}
   extract2( json_, data, "consumption",   "litre") -- TODO: need to validate precision at other end
-  extract2( json_, data, "rssi",          "?")
-  extract2( json_, data, "snr",           "?")
-  extract2( json_, data, "noise",         "db")
+  extract2( json_, data, "rssi",          "dBm")
+  extract2( json_, data, "snr",           "")
+  extract2( json_, data, "noise",         "dBm")
   mqtt_device_data( object_ptr, "house", "water", #data, data );
 end
 
