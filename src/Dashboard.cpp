@@ -57,6 +57,7 @@ Dashboard::~Dashboard() {
 }
 
 void Dashboard::initialize() {
+  enableUpdates( true );
   TemplatePage( root() );
 }
 
