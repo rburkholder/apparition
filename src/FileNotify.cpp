@@ -64,7 +64,7 @@ FileNotify::FileNotify(
   m_wdScript = inotify_add_watch(
     m_fdINotify,
     "script",
-    IN_MODIFY | IN_CREATE | IN_DELETE
+    IN_MODIFY | IN_CREATE | IN_DELETE | IN_MOVE
     );
 
   if ( 0 > m_wdScript ) {
@@ -140,6 +140,15 @@ FileNotify::FileNotify(
                     }
                     if ( 0 < ( IN_MODIFY & event->mask ) ) {
                       type = EType::modify_;
+                    }
+                    if ( 0 < ( IN_DELETE_SELF & event->mask ) ) {
+                      type = EType::delete_;
+                    }
+                    if ( 0 < ( IN_MOVED_FROM & event->mask ) ) {
+                      type = EType::move_from_;
+                    }
+                    if ( 0 < ( IN_MOVED_TO & event->mask ) ) {
+                      type = EType::move_to_;
                     }
                     assert( EType::unknown_ != type );
 

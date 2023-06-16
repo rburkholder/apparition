@@ -174,6 +174,14 @@ int main( int argc, char* argv[] ) {
               std::cout << "delete" << std::endl;
               script.Delete( path );
               break;
+            case FileNotify::EType::move_from_:
+              std::cout << "move_from_" << std::endl;
+              script.Delete( path );
+              break;
+            case FileNotify::EType::move_to_:
+              std::cout << "move_to_" << std::endl;
+              script.Load( path );
+              break;
             default:
               assert( false );
               break;

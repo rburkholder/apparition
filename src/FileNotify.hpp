@@ -28,7 +28,7 @@
 class FileNotify {
 public:
 
-  enum class EType { unknown_, delete_, create_, modify_ };
+  enum class EType { unknown_, delete_, create_, modify_, move_from_, move_to_ };
   using fNotify_t = std::function<void( EType, const std::string& )>;
 
   FileNotify(
