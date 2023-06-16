@@ -8,7 +8,7 @@
 
 description = 'beagle translation for bme680'
 
-local topic = 'beagle/+/bme680'
+local topic = 'bb/+/bme680'
 local object_ptr = 0
 
 package.path='' -- can not have ?.so in script path
@@ -56,18 +56,18 @@ mqtt_in = function( topic_, message_ )
   -- io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
 
   local ix = 1
-  local location = ''
+  local device_id = ''
   for word in string.gmatch( topic_, '[_%a%d]+' ) do
     -- io.write( 'beagle ' .. ix .. ' ' .. word .. '\n' )
     if 1 == ix then
-      if 'beagle' == word then
+      if 'bb' == word then
         ix = ix + 1
       else
         break
       end
     else
       if 2 == ix then
-        location = word
+        device_id = word
         ix = ix + 1
       else
         if 3 == ix then
@@ -85,6 +85,7 @@ mqtt_in = function( topic_, message_ )
 
     -- local (faster gc) or global (space cached)?
     jvalues = json.decode( message_ )
+    local location = jvalues[ "l" ]
     bme680( jvalues, location )
 
   end

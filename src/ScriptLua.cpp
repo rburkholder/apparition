@@ -286,6 +286,7 @@ void ScriptLua::Detach( mapScript_t::iterator iterScript ) {
 }
 
 int ScriptLua::lua_mqtt_start_topic( lua_State* pLua ) { // called by lua to register a topic
+
   int n = lua_gettop( pLua );    /* number of arguments */
   void* object = lua_touserdata( pLua, 1 );
   ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
@@ -345,13 +346,13 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
 
   const char* szLocation;
 
-  typeLuaData = lua_type( pLua, ++ixStack ); // location of device name
+  typeLuaData = lua_type( pLua, ++ixStack ); // location of device
   assert( LUA_TSTRING == typeLuaData );
   szLocation = lua_tostring( pLua, ixStack );
 
   const char* szDeviceName;
 
-  typeLuaData = lua_type( pLua, ++ixStack ); // location of device name
+  typeLuaData = lua_type( pLua, ++ixStack ); // device name
   assert( LUA_TSTRING == typeLuaData );
   szDeviceName = lua_tostring( pLua, ixStack );
 
