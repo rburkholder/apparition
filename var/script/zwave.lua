@@ -47,40 +47,64 @@ zwave_value = function( json_, zwave_ix_dev_, zwave_ix_var_, sensor_ )
   local device = json_[ 'nodeName' ]
   local location = json_[ 'nodeLocation' ]
 
-  local value = json_[ 'value' ]
-  local units = ''
+  if ( nil == device ) or ( nil == location ) then
+    io.write( '*** no device or location: ' .. sensor_ .. ', ' .. zwave_ix_dev_ .. ', ' .. zwave_ix_var_ )
+  else
+    local units = ''
+    local value = json_[ 'value' ]
+    if nil == value then
+      -- value = 'n/a'
+      value = false -- test if this can be 'visited' easier
+    end
 
-  local emit = true
-
-  if ( '14' == zwave_ix_dev_ ) then
     if ( '37' == zwave_ix_var_ ) and ( 'duration' == sensor_ ) then
       -- might be able to generalize this to 37 for the variable type across devices
         -- will need to listen to discovery & confirm
       value = value[ 'value' ]
       units = value[ 'unit' ]
-    else
-      if ( '91' == zwave_ix_var_ ) and ( 'scene' == sensor_ ) then
-        if nil == value then
-          emit = false -- missing 'value' key
-        end
-      end
     end
-  end
 
-  if true == emit then
     record = {
       sensor_, value, units -- empty units for now
     }
-
     data[ #data + 1 ] = record
 
     mqtt_device_data( object_ptr, location, device, #data, data );
   end
+
+end
+
+-- zooz 5 button scene controller
+zwave_91 = function( json_, zwave_ix_dev, sensor )
+  io.write( '*** to be processed: scene controller dev ' .. zwave_ix_dev .. '\n' )
+  -- scene00x:
+  -- 0:     key pressed
+  -- 1:     key released
+  -- 2:     key held down
+  -- false: end of state change
+end
+
+zwave_last_active = function( json_, zwave_ix_dev )
+  -- send a 'last seen'
+  -- {"time":1686982088722,"value":1686982088722}
+  io.write( '*** to be processed: last active dev ' .. zwave_ix_dev .. '\n' )
+end
+
+zwave_status = function( json_, zwave_ix_dev )
+  -- lookup node id
+  -- {"time":1687025699989,"value":true,"status":"Awake","nodeId":11}
+  io.write( '*** to be processed: status dev ' .. zwave_ix_dev .. '\n' )
+end
+
+zwave_heart_beat = function( json_, zwave_ix_dev )
+  -- lookup node id
+  -- {"time":1686879218844}
+  io.write( '*** to be processed: heart beat dev ' .. zwave_ix_dev .. '\n' )
 end
 
 mqtt_in = function( topic_, message_ )
 
-  io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
+  io.write( "mqtt_in ".. topic_ .. ": ".. message_ .. '\n' )
   -- fileLog:write( topic_ .. ": ".. message_.. '\n' )
 
   local error = true
@@ -89,7 +113,7 @@ mqtt_in = function( topic_, message_ )
   local zwave_ix_var = ''
   local sensor = ''
   for word in string.gmatch( topic_, '[_%a%d]+' ) do
-    if 1 == ix then -- should be 'bb02', aka prefix
+    if 1 == ix then
       if 'domoticz' == word then
         ix = ix + 1
       else
@@ -109,9 +133,15 @@ mqtt_in = function( topic_, message_ )
         else
           if 4 == ix then
             if 'lastActive' == word then
-              -- TODO: record 'last seen' time
+              jvalues = json.decode( message_ )
+              zwave_last_active( jvalues, zwave_ix_dev )
               error = false
               break
+            elseif 'status' == word then
+              jvalues = json.decide( message_ )
+              zwave_status( jvalues, zwave_ix_dev )
+              error = false
+              break;
             else
               zwave_ix_var = word
               ix = ix + 1
@@ -125,14 +155,11 @@ mqtt_in = function( topic_, message_ )
               end
             else
               if 6 == ix then
-                if 'System' == word then -- record last seen, has time entry only
-                  -- ../System/Heartbeat: {"time":1686879218844}
-                  --   need to check for additional sub-cateogires
-                  error = false
-                  break;
-                else
-                  sensor = word
-                  ix = ix + 1
+                sensor = word
+                ix = ix + 1
+              else
+                if 7 == ix then
+                  sensor = sensor .. word
                 end
               end
             end
@@ -142,16 +169,30 @@ mqtt_in = function( topic_, message_ )
     end
   end
 
-  if 7 == ix then
-    -- process words
-    -- will ultimately require the discovery information to decode & describe the stream
+  -- will ultimately require the discovery information to decode & describe the stream
+
+  if '91' == zwave_ix_var then
     jvalues = json.decode( message_ )
+    --zwave_91( jvalues, zwave_ix_var, sensor )
     zwave_value( jvalues, zwave_ix_dev, zwave_ix_var, sensor )
   else
-    if error then
-      io.write( 'discovery not complete: ' .. topic_ .. ': ' .. message_ )
-    end
+    if 7 == ix then
+      -- process words
+      jvalues = json.decode( message_ )
+      zwave_value( jvalues, zwave_ix_dev, zwave_ix_var, sensor )
+    else
+      if error then
+        io.write( '*** discovery not complete: ' .. topic_ .. ': ' .. message_ .. '\n' )
+      end
 
+    end
   end
 
 end
+
+-- state machine:exit points:
+--  lastActive
+--  status
+--  scene management
+
+-- need lookup between nodeName, nodeId
