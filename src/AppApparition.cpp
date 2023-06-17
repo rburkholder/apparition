@@ -113,7 +113,7 @@ int main( int argc, char* argv[] ) {
         [vValue_ = std::move( vValue ), location_=std::move( location), device_=std::move( name )](){
           Wt::WApplication* app = Wt::WApplication::instance();
           Dashboard* pDashboard = dynamic_cast<Dashboard*>( app );
-          const std::string sDevice( location_ + '\\' + device_ );
+          const std::string sDevice( location_ + ' ' + device_ );
           std::string formatted;
           for ( auto& value: vValue_ ) {
             std::visit(
