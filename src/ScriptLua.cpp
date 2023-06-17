@@ -402,7 +402,7 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
         value = lua_tonumber( pLua, ixStack_Value );
         break;
       case LUA_TBOOLEAN:
-        assert( false ); // will need to do something about this
+        value = lua_toboolean( pLua, ixStack_Value );
         break;
       default:
         assert( false );  // not sure if integers are provided

@@ -39,7 +39,7 @@ public:
   using fMqttStartTopic_t = std::function<void(const std::string&, void*, fMqttIn_t&&)>;
   using fMqttStopTopic_t = std::function<void(const std::string&, void*)>;
 
-  using value_t = std::variant<int64_t, double, std::string>;
+  using value_t = std::variant<bool, int64_t, double, std::string>;
 
   struct Value {
     std::string sName;
