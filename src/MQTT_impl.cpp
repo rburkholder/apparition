@@ -60,17 +60,17 @@ private:
 void action_listener::on_failure( const mqtt::token& tok ) {
   std::cout << m_name << " failure";
   if ( 0 != tok.get_message_id() )
-    std::cout << " for token: [" << tok.get_message_id() << "]" << std::endl;
+    std::cout << " for token: [" << tok.get_message_id() << "]";
   std::cout << std::endl;
 }
 
 void action_listener::on_success( const mqtt::token& tok ) {
   std::cout << m_name << " success";
   if ( 0 != tok.get_message_id() )
-    std::cout << " for token: [" << tok.get_message_id() << "]" << std::endl;
+    std::cout << ", for token: [" << tok.get_message_id() << "]";
   auto top = tok.get_topics();
   if ( top && !top->empty() )
-    std::cout << "\ttoken topic: '" << ( *top )[ 0 ] << "', ..." << std::endl;
+    std::cout << ", token topic: '" << ( *top )[ 0 ];
   std::cout << std::endl;
 }
 
@@ -130,8 +130,8 @@ class callback :
 
 	// (Re)connection success
 	void connected( const std::string& cause ) override {
-		std::cout << "\nConnection success" << std::endl;
 		std::cout
+		  << "Connection success, "
       << "Subscribing to topic '" << m_sTopic
 			//<< "\tfor client " << CLIENT_ID
 			<< " using QoS " << c_qos
@@ -143,11 +143,9 @@ class callback :
 	// Callback for when the connection is lost.
 	// This will initiate the attempt to manually reconnect.
   void connection_lost( const std::string& cause ) override {
-		std::cout << "\nConnection lost" << std::endl;
-		if (!cause.empty())
-			std::cout << "\tcause: " << cause << std::endl;
-
-		std::cout << "Reconnecting..." << std::endl;
+		std::cout << "Connection lost";
+		if  (!cause.empty() ) std::cout << ", cause: " << cause;
+		std::cout << ", reconnecting..." << std::endl;
 		nretry_ = 0;
 		reconnect();
 	}
@@ -171,7 +169,7 @@ class callback :
 
 public:
 	callback( mqtt::async_client& client, mqtt::connect_options& connOpts, const std::string& sTopic, MQTT_impl::fMessage_t&& fMessage )
-	: m_sTopic( sTopic ), nretry_( 0 ), m_client( client ), connOpts_( connOpts ), subListener_( "Subscription" )
+	: m_sTopic( sTopic ), nretry_( 0 ), m_client( client ), connOpts_( connOpts ), subListener_( "  Subscription" )
   , m_fMessage( std::move( fMessage ) )
   {
     assert( m_fMessage );
@@ -221,7 +219,7 @@ MQTT_impl::~MQTT_impl() {
 
 	// Disconnect
 	try { // should there be an unsubscription first?  broker probably cleans up anyway
-		std::cout << "\nDisconnecting from the MQTT server..." << std::endl;
+		std::cout << "Disconnecting from the MQTT server..." << std::endl;
 		m_pClient->disconnect()->wait();
 		std::cout << "OK" << std::endl;
 	}
