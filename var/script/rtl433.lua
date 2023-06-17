@@ -5,7 +5,7 @@
 -- local m = require("strict")
 -- m.lua( true )
 
-description = 'rtl433/1 translation for ws90 and water meter'
+description = 'rtl433/1 translation for ws90 and neptune water meter'
 
 local topic = 'rtl433/1'
 local object_ptr = 0
