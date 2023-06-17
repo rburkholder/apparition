@@ -41,18 +41,41 @@ extract3 = function( json_, table_, column_, units_, name_ )
   table_[ #table_ + 1 ] = record
 end
 
-zwave_value = function( json_, sensor_ )
+zwave_value = function( json_, zwave_ix_dev_, zwave_ix_var_, sensor_ )
   local data = {}
-
-  local record = {
-    sensor_, json_[ 'value' ], '' -- empty units for now
-  }
-  data[ #data + 1 ] = record
 
   local device = json_[ 'nodeName' ]
   local location = json_[ 'nodeLocation' ]
 
-  mqtt_device_data( object_ptr, location, device, #data, data );
+  local value = json_[ 'value' ]
+  local units = ''
+
+  local emit = true
+
+  if ( '14' == zwave_ix_dev_ ) then
+    if ( '37' == zwave_ix_var_ ) and ( 'duration' == sensor_ ) then
+      -- might be able to generalize this to 37 for the variable type across devices
+        -- will need to listen to discovery & confirm
+      value = value[ 'value' ]
+      units = value[ 'unit' ]
+    else
+      if ( '91' == zwave_ix_var_ ) and ( 'scene' == sensor_ ) then
+        if nil == value then
+          emit = false -- missing 'value' key
+        end
+      end
+    end
+  end
+
+  if true == emit then
+    record = {
+      sensor_, value, units -- empty units for now
+    }
+
+    data[ #data + 1 ] = record
+
+    mqtt_device_data( object_ptr, location, device, #data, data );
+  end
 end
 
 mqtt_in = function( topic_, message_ )
@@ -98,17 +121,19 @@ mqtt_in = function( topic_, message_ )
               if '0' == word then
                 ix = ix + 1
               else
-                break;
+                break; -- provides an error, may need a highlight or an assert for a fix
               end
             else
               if 6 == ix then
                 if 'System' == word then -- record last seen, has time entry only
-                  -- System/Heartbeat: {"time":1686879218844}
+                  -- ../System/Heartbeat: {"time":1686879218844}
+                  --   need to check for additional sub-cateogires
+                  error = false
+                  break;
                 else
                   sensor = word
                   ix = ix + 1
                 end
-                error = false
               end
             end
           end
@@ -119,8 +144,9 @@ mqtt_in = function( topic_, message_ )
 
   if 7 == ix then
     -- process words
+    -- will ultimately require the discovery information to decode & describe the stream
     jvalues = json.decode( message_ )
-    zwave_value( jvalues, sensor )
+    zwave_value( jvalues, zwave_ix_dev, zwave_ix_var, sensor )
   else
     if error then
       io.write( 'discovery not complete: ' .. topic_ .. ': ' .. message_ )
