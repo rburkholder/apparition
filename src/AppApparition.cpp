@@ -31,6 +31,8 @@
 #include <boost/asio/execution/context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 
+#include <prometheus/registry.h>
+
 #include "MQTT.hpp"
 #include "Common.hpp"
 #include "ConfigYaml.hpp"
@@ -59,6 +61,8 @@ int main( int argc, char* argv[] ) {
   }
 
   std::cout << "application " << argv[0] << " hostname: " << szHostName << std::endl; // TODO: move outside to generic location
+
+  auto registryPrometheus = std::make_shared<prometheus::Registry>();
 
   const std::vector<std::string> vWebParameters = {
     "--docroot=web;/favicon.ico,/resources,/style,/image"

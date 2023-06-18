@@ -67,6 +67,7 @@ target_link_libraries(
     paho-mqttpp3
     paho-mqtt3a
     fmt
+    prometheus-cpp-core
     wt
     wthttp
     ${Boost_LIBRARIES}
