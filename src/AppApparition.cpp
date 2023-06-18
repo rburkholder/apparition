@@ -70,9 +70,9 @@ int main( int argc, char* argv[] ) {
   , "--config=etc/wt_config.xml"
   };
 
-  WebServer server( argv[0], vWebParameters );
-  DashboardFactory factory( server );
-  server.start();
+  WebServer web_server( argv[0], vWebParameters );
+  DashboardFactory factory( web_server );
+  web_server.start();
 
   settings.sHostName = szHostName;
   settings.sAddress = argv[ 1 ];
@@ -83,22 +83,22 @@ int main( int argc, char* argv[] ) {
   int response( EXIT_SUCCESS );
   bool bError( false );
 
-  MQTT client( settings );
+  MQTT mqtt( settings );
 
   ConfigYaml yaml;
-  ScriptLua script;
+  ScriptLua lua;
 
-  script.Set_MqttStartTopic(
-    [&client]( const std::string& topic, void* pLua, ScriptLua::fMqttIn_t&& fMqttIn ){
-      client.Subscribe( pLua, topic, std::move( fMqttIn ) );
+  lua.Set_MqttStartTopic(
+    [&mqtt]( const std::string& topic, void* pLua, ScriptLua::fMqttIn_t&& fMqttIn ){
+      mqtt.Subscribe( pLua, topic, std::move( fMqttIn ) );
     } );
 
-  script.Set_MqttStopTopic(
-    [&client]( const std::string& topic, void* pLua ){
-      client.UnSubscribe( pLua );
+  lua.Set_MqttStopTopic(
+    [&mqtt]( const std::string& topic, void* pLua ){
+      mqtt.UnSubscribe( pLua );
     } );
-  script.Set_MqttDeviceData(
-    [&server]( const std::string& location, const std::string& name, const ScriptLua::vValue_t&& vValue ){
+  lua.Set_MqttDeviceData(
+    [&web_server]( const std::string& location, const std::string& name, const ScriptLua::vValue_t&& vValue ){
       // 1. send updates to database, along with 'last seen'
       // 2. updates to web page
       // 3. append to time series database for retention/charting
@@ -113,7 +113,7 @@ int main( int argc, char* argv[] ) {
         }
       }
       std::cout << std::endl;
-      server.postAll(
+      web_server.postAll(
         [vValue_ = std::move( vValue ), location_=std::move( location), device_=std::move( name )](){
           Wt::WApplication* app = Wt::WApplication::instance();
           Dashboard* pDashboard = dynamic_cast<Dashboard*>( app );
@@ -160,7 +160,7 @@ int main( int argc, char* argv[] ) {
           std::cout << "noop" << std::endl;;
         }
       },
-      [&script]( FileNotify::EType type, const std::string& s ){ // fScript
+      [&lua]( FileNotify::EType type, const std::string& s ){ // fScript
         std::filesystem::path path( "script/" + s );
         //std::cout << path << ' ';
 
@@ -168,23 +168,23 @@ int main( int argc, char* argv[] ) {
           switch ( type ) {
             case FileNotify::EType::create_:
               std::cout << "create" << std::endl;
-              script.Load( path );
+              lua.Load( path );
               break;
             case FileNotify::EType::modify_:
               std::cout << "modify" << std::endl;
-              script.Modify( path );
+              lua.Modify( path );
               break;
             case FileNotify::EType::delete_:
               std::cout << "delete" << std::endl;
-              script.Delete( path );
+              lua.Delete( path );
               break;
             case FileNotify::EType::move_from_:
               std::cout << "move_from_" << std::endl;
-              script.Delete( path );
+              lua.Delete( path );
               break;
             case FileNotify::EType::move_to_:
               std::cout << "move_to_" << std::endl;
-              script.Load( path );
+              lua.Load( path );
               break;
             default:
               assert( false );
@@ -223,7 +223,7 @@ int main( int argc, char* argv[] ) {
       if ( dir_entry.is_regular_file() ) {
         if ( ScriptLua::TestExtension( dir_entry.path() ) ) {
           //std::cout << dir_entry << '\n';
-          script.Load( dir_entry.path() );
+          lua.Load( dir_entry.path() );
           //script.Run( dir_entry.path().string() );
         }
       }
@@ -279,7 +279,7 @@ int main( int argc, char* argv[] ) {
 
     std::cout << "ctrl-c to end" << std::endl;
     m_context.run();
-    server.stop();
+    web_server.stop();
   }
 
   return response;
