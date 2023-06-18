@@ -242,11 +242,11 @@ int main( int argc, char* argv[] ) {
     signals.add( SIGQUIT );
     signals.add( SIGABRT );
 
-    // todo: need to restart the wait if a signal like sighup is received
-    signals.async_wait(
-      [&pFileNotify,&pWork](const boost::system::error_code& error_code, int signal_number){
+    using fSignals_t = std::function<void(const boost::system::error_code&, int)>;
+    fSignals_t fSignals =
+      [&pFileNotify,&pWork,&signals,&fSignals](const boost::system::error_code& error_code, int signal_number){
         std::cout
-          << "\nsignal"
+          << "signal"
           << "(" << error_code.category().name()
           << "," << error_code.value()
           << "," << signal_number
@@ -254,32 +254,49 @@ int main( int argc, char* argv[] ) {
           << error_code.message()
           << std::endl;
 
-        if ( SIGHUP == signal_number ) {
-          std::cout << "sig hup noop" << std::endl;
-          // reload stuff and restart the wait
+        bool bContinue( true );
+
+        switch ( signal_number ) {
+          case SIGHUP:
+            std::cout << "sig hup noop" << std::endl;
+            break;
+          case SIGTERM:
+            std::cout << "sig term" << std::endl;
+            bContinue = false;
+            break;
+          case SIGQUIT:
+            std::cout << "sig quit" << std::endl;
+            bContinue = false;
+            break;
+          case SIGABRT:
+            std::cout << "sig abort" << std::endl;
+            bContinue = false;
+            break;
+          case SIGINT:
+            std::cout << "sig int" << std::endl;
+            bContinue = false;
+            break;
+          default:
+            break;
         }
 
-        if ( SIGTERM == signal_number ) {
-          std::cout << "sig term noop" << std::endl;
+        if ( bContinue ) {
+          signals.async_wait( fSignals );
         }
-
-        if ( SIGQUIT == signal_number ) {
-          std::cout << "sig quit noop" << std::endl;
-        }
-
-        if ( SIGABRT == signal_number ) {
-          std::cout << "sig abort noop" << std::endl;
-        }
-
-        if ( SIGINT == signal_number) {
-          pFileNotify.reset();
+        else {
           pWork->reset();
+          bContinue = false;
         }
-      } );
+      };
+
+    signals.async_wait( fSignals );
 
     std::cout << "ctrl-c to end" << std::endl;
+
     m_context.run();
+    pFileNotify.reset();
     web_server.stop();
+
   }
 
   return response;
