@@ -238,6 +238,7 @@ int main( int argc, char* argv[] ) {
     signals.add( SIGQUIT );
     signals.add( SIGABRT );
 
+    // todo: need to restart the wait if a signal like sighup is received
     signals.async_wait(
       [&pFileNotify,&pWork](const boost::system::error_code& error_code, int signal_number){
         std::cout
@@ -249,6 +250,11 @@ int main( int argc, char* argv[] ) {
           << error_code.message()
           << std::endl;
 
+        if ( SIGHUP == signal_number ) {
+          std::cout << "sig hup noop" << std::endl;
+          // reload stuff and restart the wait
+        }
+
         if ( SIGTERM == signal_number ) {
           std::cout << "sig term noop" << std::endl;
         }
@@ -258,7 +264,7 @@ int main( int argc, char* argv[] ) {
         }
 
         if ( SIGABRT == signal_number ) {
-          std::cout << "sig ABRT noop" << std::endl;
+          std::cout << "sig abort noop" << std::endl;
         }
 
         if ( SIGINT == signal_number) {
