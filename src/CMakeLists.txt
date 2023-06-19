@@ -51,13 +51,11 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC BOOST_LOG_DYN_LINK )
 
 target_include_directories(
   ${PROJECT_NAME} PUBLIC
-#    "../3rd_party/daScript/include"
   )
 
 target_link_directories(
   ${PROJECT_NAME} PUBLIC
     /usr/local/lib
-#   ../3rd_party/daScript/build
   )
 
 # https://stackoverflow.com/questions/70101198/paho-mqtt-library-names

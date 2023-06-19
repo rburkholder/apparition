@@ -1,6 +1,6 @@
 # Installation - LuaJIT
 
-* pushd 3rd_party/
+* pushd 3rdparty/
 * git clone --depth=1 https://github.com/LuaJIT/LuaJIT.git
 * cd LuaJIT
 * make a change to the srcMakefile:
@@ -31,7 +31,7 @@ index 30d64be..8c943f2 100644
 
 # Installation - lua-cjson - https://github.com/mpx/lua-cjson/
 
-* pushd 3rd_party
+* pushd 3rdparty
 * git clone --depth=1 https://github.com/mpx/lua-cjson.git
 * cd lua-cjson
 * delete a bunch of lines in lua_cjson.c
@@ -74,11 +74,11 @@ index 22f33f1..4d4a46e 100644
 * mkdir build
 * cd build
 * export LUA_DIR=/usr/local/include/luajit-2.1/
-* cmake -D LUA_INCLUDE_DIR=/usr/local/include/luajit-2.1/  ..
+* cmake -D LUA_INCLUDE_DIR=/usr/local/include/luajit-2.1/ -D LUA_LIBRARY=/usr/local/lib/libluajit-5.1 ..
 * make 
 * #make install
 * #result: Installing: /usr/lib/x86_64-linux-gnu/lua/5.1/cjson.so
 * #instead:
 * popd
-* cp 3rd_party/lua-cjson/build/cjson.so var/lib/lua/
+* cp 3rdparty/lua-cjson/build/cjson.so var/lib/lua/
 

@@ -2,7 +2,7 @@
 
 * NOTE: this is not used in Apparition
 
-* pushd 3rd_party/
+* pushd 3rdparty/
 * sudo apt install flex bison
 * git clone --depth=1 https://github.com/GaijinEntertainment/daScript
 * cd daScript

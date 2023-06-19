@@ -33,5 +33,5 @@
 
 # directories
 build
-3rd_party
+3rdparty
 .cache

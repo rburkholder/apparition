@@ -1,6 +1,6 @@
 # prometheus-cpp exporter development kit installation
 
-* pushd 3rd_party/
+* pushd 3rdparty/
 * git clone --depth=1 https://github.com/jupp0r/prometheus-cpp.git
 * cd prometheus-cpp/
 * git submodule init

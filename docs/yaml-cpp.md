@@ -1,6 +1,6 @@
 # yaml-cpp build
 
-* pushd 3rd_party
+* pushd 3rdparty
 * git clone --depth=1 https://github.com/jbeder/yaml-cpp.git
 * cd yaml-cpp
 * mkdir build
