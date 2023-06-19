@@ -135,32 +135,64 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
       m_pMQTT->UnSubscribe( pLua );
     } );
   m_lua.Set_MqttDeviceData(
-    [this]( const std::string& location, const std::string& name, const ScriptLua::vValue_t&& vValue ){
+    [this]( const std::string& sLocation, const std::string& sDevice, const ScriptLua::vValue_t&& vValue_ ){
       // 1. send updates to database, along with 'last seen'
       // 2. updates to web page
       // 3. append to time series database for retention/charting
       // TODO: hand this off to another thread
+
+      mapLocation_t::iterator iterMapLocation = m_mapLocation.find( sLocation );
+      if ( m_mapLocation.end() == iterMapLocation ) {
+        auto result = m_mapLocation.emplace( mapLocation_t::value_type( sLocation, Location() ) );
+        assert( result.second );
+        iterMapLocation = result.first;
+      }
+
+      Location& location( iterMapLocation->second );
+
+      mapDevice_t::iterator iterMapDevice = location.mapDevice.find( sDevice );
+      if ( location.mapDevice.end() == iterMapDevice ) {
+        auto result = location.mapDevice.emplace( mapDevice_t::value_type( sDevice, Device() ) );
+        assert( result.second );
+        iterMapDevice = result.first;
+      }
+
+      Device& device( iterMapDevice->second );
+
+      for ( const ScriptLua::vValue_t::value_type& vt: vValue_ ) {
+        mapSensor_t::iterator iterMapSensor = device.mapSensor.find( vt.sName );
+        if ( device.mapSensor.end() == iterMapSensor ) {
+          auto result = device.mapSensor.emplace( mapSensor_t::value_type( vt.sName, Sensor( vt.value, vt.sUnits ) ) );
+          assert( result.second );
+          iterMapSensor = result.first;
+        }
+        else {
+          iterMapSensor->second.value = vt.value;
+        }
+      }
+
       std::cout
-        << location << '\\' << name;
-      for ( const ScriptLua::Value& value: vValue ) {
+        << sLocation << '\\' << sDevice;
+      for ( const ScriptLua::Value& value: vValue_ ) {
         std::cout << "," << value.sName << ':';
         std::visit([](auto&& arg){ std::cout << arg; }, value.value );
         if ( 0 < value.sUnits.size() ) {
           std::cout << " " << value.sUnits;
         }
       }
+
       std::cout << std::endl;
       m_pWebServer->postAll(
-        [vValue_ = std::move( vValue ), location_=std::move( location), device_=std::move( name )](){
+        [vValue_ = std::move( vValue_ ), sLocation_=std::move( sLocation), sDevice_=std::move( sDevice )](){
           Wt::WApplication* app = Wt::WApplication::instance();
           Dashboard* pDashboard = dynamic_cast<Dashboard*>( app );
-          const std::string sDevice( location_ + ' ' + device_ );
+          const std::string sLocationDevice( sLocation_ + ' ' + sDevice_ );
           std::string formatted;
           for ( auto& value: vValue_ ) {
             std::visit(
               [&formatted]( auto&& arg ){ formatted = fmt::format( "{}", arg); }
             , value.value );
-            pDashboard->UpdateDeviceSensor( sDevice, value.sName, formatted + ' ' + value.sUnits );
+            pDashboard->UpdateDeviceSensor( sLocationDevice, value.sName, formatted + ' ' + value.sUnits );
           }
           ;
         } );
