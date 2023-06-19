@@ -4,6 +4,25 @@ _an immaterial appearance that seems real, and is generally sudden or startling 
 
 The philosophy with Apparition is to compose an automation/monitoring/alert tool from a series of mature packages, all integrated under one roof.  The tool should work in the background and only manifest itself when needed.
 
+Order of install:
+* install packages:
+  * [C++ library: mqtt-paho](docs/mqtt-paho.md) - mqtt client
+* build libs-build libraries - use [libs-build](https://github.com/rburkholder/libs-build)
+  * [C++ library: boost](docs/boost.md) - asio, datetime, fusion, spirit
+  * [C++ library: wt](docs/wt.md) - web page rendering, database access, depends upon boost
+* build 3rdparty tools:
+  * [C++ library: fmt](docs/fmt.md) - fast format library
+  * [C++ library: luajit](docs/lua.md) - compiled lua scripts
+  * [C++ library: lua-cjson](docs/lua.md) - json encoder/decoder
+  * [C++ library: prometheus-cpp](docs/prometheus-cpp.md) - exporter development kit
+  * [C++ library: yaml](docs/yaml-cpp.md) - yaml config processing
+* install applications (in container or locally):
+  * [prometheus](docs/prometheus.md) - timeseries collection
+  * [grafana](docs/grafana.md) - dashboards
+  * [rabbitmq](docs/rabbitmq) - mqtt broker
+* build apparition:
+  * [notes](docs/apparition.md)
+
 Proposed tooling:
 * C++ as primary backend
   * [boost](https://www.boost.org/) - use my [libs-build](https://github.com/rburkholder/libs-build) library to bulid and install
@@ -36,3 +55,4 @@ Thoughts influencing the design & implementation of this solution:
 * some draw backs of other solutions:
   * Home Assistant has a rather rigidily enforced installation if you want the base plus the store.  Plus there are comments that breakage occurs frequently during release cylces.
   * Domoticz is totally self contained and fast.  But it is missing certain signals such as the operational state of a thermstat.  The charts, based upon my limited experience, are not very informative.
+
