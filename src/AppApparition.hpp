@@ -21,15 +21,36 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 
+#include "ConfigYaml.hpp"
+#include "ScriptLua.hpp"
+
+namespace prometheus {
+  class Registry;
+}
+
+class MQTT;
+class FileNotify;
 class MqttSettings;
+class WebServer;
+class DashboardFactory;
 
 class AppApparition {
 public:
-  AppApparition();
+  AppApparition( const MqttSettings& settings );
   ~AppApparition();
-  int Run( const MqttSettings& settings );
 protected:
 private:
+
+  ConfigYaml m_yaml;
+  ScriptLua m_lua;
+
+  std::unique_ptr<MQTT> m_pMQTT;
+  std::unique_ptr<FileNotify> m_pFileNotify;
+  std::unique_ptr<prometheus::Registry> m_pPrometheusRegistry;
+  std::unique_ptr<WebServer> m_pWebServer;
+  std::unique_ptr<DashboardFactory> m_pDashboardFactory;
+
 };
