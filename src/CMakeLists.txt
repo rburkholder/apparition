@@ -34,6 +34,7 @@ set(
     Dashboard.cpp
     DashboardFactory.cpp
     FileNotify.cpp
+    main.cpp
     MQTT.cpp
     MQTT_impl.cpp
     ScriptLua.cpp

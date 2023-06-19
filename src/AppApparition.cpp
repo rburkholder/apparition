@@ -45,22 +45,10 @@
 
 #include "AppApparition.hpp"
 
-int main( int argc, char* argv[] ) {
+AppApparition::AppApparition() {}
+AppApparition::~AppApparition() {}
 
-  std::cout << "apparition - (C)2023 One Unified Net Limited" << std::endl;
-
-  assert( 4 <= argc );
-
-  MqttSettings settings;
-
-  char szHostName[ HOST_NAME_MAX + 1 ];
-  int result = gethostname( szHostName, HOST_NAME_MAX + 1 );
-  if ( 0 != result ) {
-    printf( "failure with gethostname\n" );
-    exit( EXIT_FAILURE );
-  }
-
-  std::cout << "application " << argv[0] << " hostname: " << szHostName << std::endl; // TODO: move outside to generic location
+int AppApparition::Run( const MqttSettings& settings ) {
 
   auto registryPrometheus = std::make_shared<prometheus::Registry>();
 
@@ -70,15 +58,9 @@ int main( int argc, char* argv[] ) {
   , "--config=etc/wt_config.xml"
   };
 
-  WebServer web_server( argv[0], vWebParameters );
+  WebServer web_server( settings.sPath, vWebParameters );
   DashboardFactory factory( web_server );
   web_server.start();
-
-  settings.sHostName = szHostName;
-  settings.sAddress = argv[ 1 ];
-  settings.sPort = "1883";
-  settings.sUserName = argv[ 2 ];
-  settings.sPassword = argv[ 3 ];
 
   int response( EXIT_SUCCESS );
   bool bError( false );
@@ -300,4 +282,5 @@ int main( int argc, char* argv[] ) {
   }
 
   return response;
+
 }

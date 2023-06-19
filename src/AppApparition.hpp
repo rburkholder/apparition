@@ -20,3 +20,16 @@
  */
 
 #pragma once
+
+#include <string>
+
+class MqttSettings;
+
+class AppApparition {
+public:
+  AppApparition();
+  ~AppApparition();
+  int Run( const MqttSettings& settings );
+protected:
+private:
+};
