@@ -124,4 +124,6 @@ int main( int argc, char* argv[] ) {
 
   m_context.run();
 
+  return EXIT_SUCCESS;
+
 }
