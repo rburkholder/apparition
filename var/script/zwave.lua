@@ -140,7 +140,7 @@ mqtt_in = function( topic_, message_ )
               error = false
               break
             elseif 'status' == word then
-              jvalues = json.decide( message_ )
+              jvalues = json.decode( message_ )
               zwave_status( jvalues, zwave_ix_dev )
               error = false
               break;
