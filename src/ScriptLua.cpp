@@ -35,12 +35,20 @@ namespace {
 }
 
 ScriptLua::ScriptLua()
-: m_fMqttStartTopic( nullptr )
+: m_fMqttConnect( nullptr )
+, m_fMqttStartTopic( nullptr )
 , m_fMqttStopTopic( nullptr )
 , m_fMqttDeviceData( nullptr )
+, m_fMqttPublish( nullptr )
+, m_fMqttDisconnect( nullptr )
+, m_fEventRegister( nullptr )
 {}
 
 ScriptLua::~ScriptLua() {
+}
+
+void ScriptLua::Set_MqttConnect( fMqttConnect_t&& f ) {
+  m_fMqttConnect = std::move( f );
 }
 
 void ScriptLua::Set_MqttStartTopic( fMqttStartTopic_t&& f ) {
@@ -53,6 +61,18 @@ void ScriptLua::Set_MqttStopTopic( fMqttStopTopic_t&& f ) {
 
 void ScriptLua::Set_MqttDeviceData( fMqttDeviceData_t&& f ) {
   m_fMqttDeviceData = std::move( f );
+}
+
+void ScriptLua::Set_MqttPublish( fMqttPublish_t&& f ) {
+  m_fMqttPublish = std::move( f );
+}
+
+void ScriptLua::Set_MqttDisconnect( fMqttDisconnect_t&& f ) {
+  m_fMqttDisconnect = std::move( f );
+}
+
+void ScriptLua::Set_EventRegister( fEventRegister_t&& f ) {
+  m_fEventRegister = std::move( f );
 }
 
 bool ScriptLua::TestExtension( const std::filesystem::path& path ) {
@@ -83,6 +103,10 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
   // TODO: put these functions into a named table: mqtt
   //   2016 programming in lua page 251
   //   thus: mqtt.start_topic, mqtt.stop_topic
+
+  lua_pushcfunction( pLua, lua_mqtt_connect );
+  lua_setglobal( pLua, "mqtt_connect" );
+
   lua_pushcfunction( pLua, lua_mqtt_start_topic );
   lua_setglobal( pLua, "mqtt_start_topic" );
 
@@ -92,7 +116,16 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
   lua_pushcfunction( pLua, lua_mqtt_device_data );
   lua_setglobal( pLua, "mqtt_device_data" );
 
-  /* Load the file containing the script we are going to run */
+  lua_pushcfunction( pLua, lua_mqtt_publish );
+  lua_setglobal( pLua, "mqtt_publish" );
+
+  lua_pushcfunction( pLua, lua_mqtt_disconnect );
+  lua_setglobal( pLua, "mqtt_disconnect" );
+
+  lua_pushcfunction( pLua, lua_event_register );
+  lua_setglobal( pLua, "event_register" );
+
+  /* Load the file containing the script to be run */
   int status = luaL_loadfile( pLua, sPath.c_str() );
   if ( status ) {
     /* If something went wrong, error message is at the top of the stack */
@@ -232,7 +265,8 @@ void ScriptLua::Attach( mapScript_t::iterator iterScript ) {
   int result {};
   int test {};
 
-  result = lua_pcall( pLua, 0, 0, 0 ); // get the script initialized
+  // first pass: register endpoints, initialize variables
+  result = lua_pcall( pLua, 0, 0, 0 );
   if ( LUA_OK != result ) {
     BOOST_LOG_TRIVIAL(error)
       << "ScriptLua::Run failed to run script 1: "
@@ -241,7 +275,7 @@ void ScriptLua::Attach( mapScript_t::iterator iterScript ) {
     lua_pop( pLua, 1 );
   }
   else {
-    // run the attachment function
+    // second pass: call the attachment function
     lua_getglobal( pLua, "attach" ); // page 242 of 2016 Programming in Lua
     //test = lua_isnil( pLua, -1 ); // page 227
     lua_pushlightuserdata( pLua , this );
@@ -285,6 +319,26 @@ void ScriptLua::Detach( mapScript_t::iterator iterScript ) {
   }
 }
 
+int ScriptLua::lua_mqtt_connect( lua_State* pLua ) { // called by lua to connect to mqtt broker
+
+  int n = lua_gettop( pLua );    /* number of arguments */
+  assert( 1 == n ); // LUA_TUSERDATA(this)
+
+  void* object = lua_touserdata( pLua, 1 );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
+  self->m_fMqttConnect( pLua );
+
+  return 0;
+}
+
+int ScriptLua::lua_mqtt_disconnect( lua_State* pLua ) { // called by lua to disconnect from mqtt broker
+  int n = lua_gettop( pLua );    /* number of arguments */
+  void* object = lua_touserdata( pLua, 1 );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+  return 0;
+}
+
 int ScriptLua::lua_mqtt_start_topic( lua_State* pLua ) { // called by lua to register a topic
 
   int n = lua_gettop( pLua );    /* number of arguments */
@@ -296,8 +350,8 @@ int ScriptLua::lua_mqtt_start_topic( lua_State* pLua ) { // called by lua to reg
 
   assert( self->m_fMqttStartTopic );
   self->m_fMqttStartTopic(
-    topic, pLua,
-    [pLua]( const std::string& topic, const std::string& message ){
+    pLua, topic,
+    [pLua]( const std::string_view& topic, const std::string_view& message ){
 
       lua_getglobal( pLua, "mqtt_in" );
       lua_pushlstring( pLua, topic.data(), topic.size() );
@@ -327,11 +381,19 @@ int ScriptLua::lua_mqtt_stop_topic( lua_State* pLua ) { // called by lua to de-r
   BOOST_LOG_TRIVIAL(info) << "lua_mqtt_stop_topic: " << topic;
 
   assert( self->m_fMqttStopTopic );
-  self->m_fMqttStopTopic( topic, pLua );
+  self->m_fMqttStopTopic( pLua, topic );
   return 0;
 }
 
 int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to present decoded device data
+
+  /*
+    stack 1: userdata - this
+    stack 2: string - location
+    stack 3: string - device
+    stack 4: number - size of table of values
+    stack 5: table - table of values( name(string), value(number), units(string))
+  */
 
   int nStackEntries = lua_gettop( pLua );    /* number of arguments */
   assert( 5 == nStackEntries );
@@ -425,7 +487,55 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
     nValues--;
   }
 
+  // may require mutex on this
   self->m_fMqttDeviceData( szLocation, szDeviceName, std::move( vValue ) );
+
+  return 0;
+}
+
+int ScriptLua::lua_mqtt_publish( lua_State* pLua ) {
+  return 0;
+}
+
+int ScriptLua::lua_event_register( lua_State* pLua ) {
+
+  /*
+    stack 1: userdata - this
+    stack 2: string - location
+    stack 3: string - device
+    stack 4: string - sensor
+  */
+
+  int nStackEntries = lua_gettop( pLua );    /* number of arguments */
+  assert( 4 == nStackEntries );
+
+  int typeLuaData;
+  int ixStack = 0; // stack index, pre-increment into entries
+
+  typeLuaData = lua_type( pLua, ++ixStack );
+  assert( LUA_TLIGHTUSERDATA == typeLuaData );
+  void* object = lua_touserdata( pLua, ixStack );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
+  const char* szLocation;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // location of device
+  assert( LUA_TSTRING == typeLuaData );
+  szLocation = lua_tostring( pLua, ixStack );
+
+  const char* szDeviceName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // device name
+  assert( LUA_TSTRING == typeLuaData );
+  szDeviceName = lua_tostring( pLua, ixStack );
+
+  const char* szSensorName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // sensor name
+  assert( LUA_TSTRING == typeLuaData );
+  szSensorName = lua_tostring( pLua, ixStack );
+
+  self->m_fEventRegister( szLocation, szDeviceName, szSensorName );
 
   return 0;
 }

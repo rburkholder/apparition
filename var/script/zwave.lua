@@ -17,11 +17,13 @@ local json = cjson.new()
 attach = function ( object_ptr_ )
   -- use os.getenv for username, password info
   object_ptr = object_ptr_
+  mqtt_connect( object_ptr )
   mqtt_start_topic( object_ptr, topic );
 end
 
 detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic )
+  mqtt_disconnect( object_ptr )
   object_ptr = 0
 end
 
@@ -81,7 +83,7 @@ zwave_91 = function( json_, zwave_ix_dev, sensor )
   -- 0:     key pressed
   -- 1:     key released
   -- 2:     key held down
-  -- false: end of state change
+  -- false: end of state change (undefined)
 end
 
 zwave_last_active = function( json_, zwave_ix_dev )

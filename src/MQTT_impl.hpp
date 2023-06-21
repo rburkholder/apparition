@@ -22,44 +22,43 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 
-#include <mqtt/async_client.h>
+#include <MQTTClient.h>
 
 #include "MQTT.hpp"
-
-// ====
-
-class callback;
-class MqttTopicAccess;
-
-// ====
 
 class MQTT_impl {
 public:
 
-  using fStatus_t = std::function<void( MQTT::EStatus )>;
+  using fSuccess_t = MQTT::fSuccess_t;
+  using fFailure_t = MQTT::fFailure_t;
 
   using fMessage_t = MQTT::fMessage_t;
 
-  MQTT_impl( const MqttSettings&, const std::string& topic, fStatus_t&&, fMessage_t&& );
+  //MQTT_impl( const MqttSettings&, fSuccess_t&&, fFailure_t&& );
+  MQTT_impl( const MqttSettings& );
   ~MQTT_impl();
 
-  void Subscribe( const std::string& topic ) {} // over-writes existing topic
-  void Subscribe( const MQTT::vTopic_t& topics ) {} // over-write existing topic
+  void Subscribe( const std::string_view& topic, fMessage_t&& );
+  void UnSubscribe( const std::string_view& topic );
+  void Publish( const std::string_view& svTopic, const std::string_view& svMessage );
 
 protected:
 private:
 
   static size_t m_nConnection;
 
-  mqtt::connect_options m_connOptions;
+  MQTTClient m_MQTTClient;
+  MQTTClient_deliveryToken m_tokenDelivery;
 
-  fStatus_t m_fStatus;
+  fMessage_t m_fMessage;
 
-  using pMqttClient_t = std::unique_ptr<mqtt::async_client>;
-  pMqttClient_t m_pClient;
+  static void ConnectionLost( void* context, char* cause );
+  static  int MessageArrived( void *context, char* topicName, int topicLen, MQTTClient_message* message );
+  static void DeliveryComplete( void* context, MQTTClient_deliveryToken dt );
 
-  using pCallback_t = std::unique_ptr<callback>;
-  pCallback_t m_pCallback;
+  //static void Published( void* context, int dt, int packet_type, MQTTProperties* properties, enum MQTTReasonCodes reasonCode ); // v5
+  //static void Disconnected( void* context,  MQTTProperties* properties, enum MQTTReasonCodes reasonCode ); // v5
 
 };

@@ -33,30 +33,30 @@ class MQTT_impl;
 class MQTT {
 public:
 
-  enum class EStatus { Reconnecting, Failed, Success, Lost, Complete, Disconnecting, Disconnected };
-
-  using fMessage_t = std::function<void( const std::string& sTopic, const std::string& sMessage )>;
+  using fMessage_t = std::function<void( const std::string_view& svTopic, const std::string_view& svMessage )>;
 
   MQTT( const MqttSettings& );
   ~MQTT();
 
-  using vTopic_t = std::vector<std::string>;
+  using fSuccess_t = std::function<void()>;
+  using fFailure_t = std::function<void()>;
 
-  // cancels any existing topics for the context, replaces with new list
-  void Subscribe( void* userContext, const std::string& sTopic, fMessage_t&& );
-  void Subscribe( void* userContext, const vTopic_t& vTopic, fMessage_t&& ) {}
-  void UnSubscribe( void* userContext );
+  void Connect(    void* context, fSuccess_t&&, fFailure_t&& );
+  void Disconnect( void* context, fSuccess_t&&, fFailure_t&& );
+
+  // send and forget, errors are simply logged
+  void Subscribe( void* context, const std::string_view& svTopic, fMessage_t&& );
+  void UnSubscribe( void* context, const std::string_view& svTopic );
+  void Publish( void* context, const std::string_view& svTopic, const std::string_view& svMessage );
 
 protected:
 private:
 
-  MqttSettings m_settings;
+  const MqttSettings& m_settings;
 
   using pMQTT_impl_t = std::unique_ptr<MQTT_impl>;
 
   using mapConnection_t = std::unordered_map<void*,pMQTT_impl_t>;
   mapConnection_t m_mapConnection;
-
-  void Status( EStatus );
 
 };

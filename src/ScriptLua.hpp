@@ -34,11 +34,6 @@ extern "C" {
 class ScriptLua {
 public:
 
-  using fMqttIn_t = std::function<void(const std::string& topic, const std::string& message)>;
-
-  using fMqttStartTopic_t = std::function<void(const std::string&, void*, fMqttIn_t&&)>;
-  using fMqttStopTopic_t = std::function<void(const std::string&, void*)>;
-
   using value_t = std::variant<bool, int64_t, double, std::string>;
 
   struct Value {
@@ -68,14 +63,15 @@ public:
 
   using vValue_t = std::vector<Value>;
 
-  using fMqttDeviceData_t
-    = std::function<void(const std::string& location, const std::string& name, const vValue_t&&)>;
+  using fMqttIn_t = std::function<void(const std::string_view& topic, const std::string_view& message)>;
 
-  struct LuaMqtt {
-    std::string sFunctionName;
-    std::string sTopic;
-    std::string sMessage;
-  };
+  using fMqttConnect_t = std::function<void(void*)>;
+  using fMqttStartTopic_t = std::function<void(void*, const std::string_view&, fMqttIn_t&&)>;
+  using fMqttDeviceData_t
+    = std::function<void(const std::string_view& location, const std::string_view& name, const vValue_t&&)>;
+  using fMqttStopTopic_t = std::function<void(void*, const std::string_view&)>;
+  using fMqttPublish_t = std::function<void(void*, const std::string_view& topic, const std::string_view& msg )>;
+  using fMqttDisconnect_t = std::function<void(void*)>;
 
   ScriptLua();
   ~ScriptLua();
@@ -86,9 +82,17 @@ public:
   void Modify( const std::filesystem::path& );
   void Delete( const std::filesystem::path& );
 
+  void Set_MqttConnect( fMqttConnect_t&& );
   void Set_MqttStartTopic( fMqttStartTopic_t&& );
   void Set_MqttStopTopic( fMqttStopTopic_t&& );
   void Set_MqttDeviceData( fMqttDeviceData_t&& );
+  void Set_MqttPublish( fMqttPublish_t&& );
+  void Set_MqttDisconnect( fMqttDisconnect_t&& );
+
+  using fEventRegister_t
+    = std::function<void(const std::string_view& location, const std::string_view& device, const std::string_view& sensor)>;
+
+  void Set_EventRegister( fEventRegister_t&& );
 
 protected:
 private:
@@ -109,18 +113,28 @@ private:
   using mapScript_t = std::unordered_map<std::string, Script>;
   mapScript_t m_mapScript;
 
+  fMqttConnect_t m_fMqttConnect;
   fMqttStartTopic_t m_fMqttStartTopic;
   fMqttStopTopic_t m_fMqttStopTopic;
   fMqttDeviceData_t m_fMqttDeviceData;
+  fMqttPublish_t m_fMqttPublish;
+  fMqttDisconnect_t m_fMqttDisconnect;
+
+  fEventRegister_t m_fEventRegister;
 
   mapScript_t::iterator Parse( const std::string& );
 
   void Attach( mapScript_t::iterator );
   void Detach( mapScript_t::iterator );
 
+  static int lua_mqtt_connect( lua_State* );
   static int lua_mqtt_start_topic( lua_State* );
   static int lua_mqtt_stop_topic( lua_State* );
   static int lua_mqtt_device_data( lua_State* );
+  static int lua_mqtt_publish( lua_State* );
+  static int lua_mqtt_disconnect( lua_State* );
+
+  static int lua_event_register( lua_State* );
 
   void Run_Test01( const std::string& name );
 

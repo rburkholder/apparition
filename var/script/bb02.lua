@@ -20,12 +20,13 @@ attach = function ( object_ptr_ )
   -- use os.getenv for username, password info
   object_ptr = object_ptr_
   -- fileLog = io.open( "log/zwave_bbo2.cap", "w" )
-  mqtt_start_topic( object_ptr, topic );
+  mqtt_connect( object_ptr )
+  mqtt_start_topic( object_ptr, topic )
 end
 
 detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic )
-  -- fileLog:close()
+  mqtt_disconnect( object_ptr )
   object_ptr = 0
 end
 

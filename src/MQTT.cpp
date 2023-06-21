@@ -26,60 +26,55 @@
 
 MQTT::MQTT( const MqttSettings& settings )
 : m_settings( settings )
-{
-}
+{}
 
 MQTT::~MQTT() {
   m_mapConnection.clear();
 }
 
-void MQTT::Subscribe( void* userContext, const std::string& topic, fMessage_t&& fMessage ) {
+void MQTT::Connect( void* context, fSuccess_t&& fSuccess, fFailure_t&& fFailure ) {
 
-  mapConnection_t::iterator iterConnection = m_mapConnection.find( userContext );
+  mapConnection_t::iterator iterConnection = m_mapConnection.find( context );
   if ( m_mapConnection.end() == iterConnection ) {
-    namespace ph = std::placeholders;
     pMQTT_impl_t pMQTT_impl
-      = std::make_unique<MQTT_impl>(
-          m_settings,
-          topic,
-          std::bind( &MQTT::Status, this, ph::_1 ),
-          std::move( fMessage )
-    );
-    auto result = m_mapConnection.emplace( mapConnection_t::value_type( userContext, std::move( pMQTT_impl ) ) );
+      = std::make_unique<MQTT_impl>( m_settings );
+    auto result = m_mapConnection.emplace( mapConnection_t::value_type( context, std::move( pMQTT_impl ) ) );
     assert( result.second );
     iterConnection = result.first;
   }
   else {
-    iterConnection->second->Subscribe( topic );
+    fFailure(); // already exists
   }
-
 }
 
-void MQTT::UnSubscribe( void* userContext ) {
-  mapConnection_t::iterator iterConnection = m_mapConnection.find( userContext );
+void MQTT::Disconnect( void* context, fSuccess_t&& fSuccess, fFailure_t&& fFailure ) {
+  mapConnection_t::iterator iterConnection = m_mapConnection.find( context );
   if ( m_mapConnection.end() == iterConnection ) {
-    std::cout << "MQTT::UnSubscribe: cann not find context" << std::endl;
+    fFailure(); // nothing there
   }
   else {
-    m_mapConnection.erase( iterConnection ); // TODO: will probably require locks
+    iterConnection->second.reset();
+    m_mapConnection.erase( iterConnection );
   }
 }
 
-void MQTT::Status( EStatus status ) {
-  switch ( status ) {
-    case EStatus::Reconnecting:
-      break;
-    case EStatus::Failed:
-      break;
-    case EStatus::Success:
-      break;
-    case EStatus::Lost:
-      break;
-    case EStatus::Complete:
-      break;
-    case EStatus::Disconnecting:
-      break;
-    case EStatus::Disconnected:
-      break;
-  }
+void MQTT::Subscribe( void* context, const std::string_view& topic, fMessage_t&& fMessage ) {
+  mapConnection_t::iterator iterConnection = m_mapConnection.find( context );
+  assert( m_mapConnection.end() != iterConnection );
+  assert( iterConnection->second );
+  iterConnection->second->Subscribe( topic, std::move( fMessage ) );
+}
+
+void MQTT::UnSubscribe( void* context, const std::string_view& topic ) {
+  mapConnection_t::iterator iterConnection = m_mapConnection.find( context );
+  assert( m_mapConnection.end() != iterConnection );
+  assert( iterConnection->second );
+  iterConnection->second->UnSubscribe( topic );
+}
+
+void MQTT::Publish( void* context, const std::string_view& topic, const std::string_view& message ) {
+  mapConnection_t::iterator iterConnection = m_mapConnection.find( context );
+  assert( m_mapConnection.end() != iterConnection );
+  assert( iterConnection->second );
+  iterConnection->second->Publish( topic, message );
 }

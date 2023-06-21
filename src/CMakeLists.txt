@@ -63,8 +63,7 @@ target_link_libraries(
   ${PROJECT_NAME}
     yaml-cpp
     luajit-5.1
-    paho-mqttpp3
-    paho-mqtt3a
+    paho-mqtt3c
     fmt
     prometheus-cpp-core
     wt

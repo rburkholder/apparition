@@ -19,11 +19,13 @@ local json = cjson.new()
 attach = function ( object_ptr_ )
   -- use os.getenv for username, password info
   object_ptr = object_ptr_
+  mqtt_connect( object_ptr )
   mqtt_start_topic( object_ptr, topic );
 end
 
 detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic )
+  mqtt_disconnect( object_ptr )
   object_ptr = 0
 end
 

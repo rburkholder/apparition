@@ -60,12 +60,15 @@ private:
     ScriptLua::value_t value;
     std::string sUnits;
     boost::posix_time::ptime dtLastSeen;
+    // map of event scripts,
+    //   will need output mqtt topics
+    bool bHidden; // used for internal signalling between scripts
 
     Sensor( ScriptLua::value_t value_, const std::string sUnits_ )
-    : value( value_ ), sUnits( sUnits_ ) {}
+    : bHidden( false ), value( value_ ), sUnits( sUnits_ ) {}
     Sensor( const Sensor& ) = delete;
     Sensor( Sensor&& rhs )
-    : value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) )
+    : bHidden( rhs.bHidden ), value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) )
     , dtLastSeen( rhs.dtLastSeen )
     {}
   };

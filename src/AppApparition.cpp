@@ -125,21 +125,28 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
 
   m_pMQTT = std::make_unique<MQTT>( settings );
 
+  m_lua.Set_MqttConnect(
+    [this]( void* context ){
+      m_pMQTT->Connect( context,
+      [](){ // fSuccess_t
+      },
+      [](){ // fFailure_t
+        std::cout << "mqtt connection: failure" << std::endl;
+      } );
+    } );
   m_lua.Set_MqttStartTopic(
-    [this]( const std::string& topic, void* pLua, ScriptLua::fMqttIn_t&& fMqttIn ){
+    [this]( void* pLua, const std::string_view& topic, ScriptLua::fMqttIn_t&& fMqttIn ){
       m_pMQTT->Subscribe( pLua, topic, std::move( fMqttIn ) );
     } );
-
-  m_lua.Set_MqttStopTopic(
-    [this]( const std::string& topic, void* pLua ){
-      m_pMQTT->UnSubscribe( pLua );
-    } );
   m_lua.Set_MqttDeviceData(
-    [this]( const std::string& sLocation, const std::string& sDevice, const ScriptLua::vValue_t&& vValue_ ){
+    [this]( const std::string_view& svLocation, const std::string_view& svDevice, const ScriptLua::vValue_t&& vValue_ ){
       // 1. send updates to database, along with 'last seen'
       // 2. updates to web page
       // 3. append to time series database for retention/charting
       // TODO: hand this off to another thread
+
+      const std::string sLocation( svLocation );
+      const std::string sDevice( svDevice );
 
       mapLocation_t::iterator iterMapLocation = m_mapLocation.find( sLocation );
       if ( m_mapLocation.end() == iterMapLocation ) {
@@ -196,8 +203,31 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
           }
           ;
         } );
+    });
+  m_lua.Set_MqttStopTopic(
+    [this]( void* pLua, const std::string_view& topic ){
+      m_pMQTT->UnSubscribe( pLua, topic );
+    } );
+  m_lua.Set_MqttPublish(
+    [this]( void* context, const std::string_view& topic, const std::string_view& msg ){
+      m_pMQTT->Publish( context, std::move( topic ), std::move( msg ) );
+  });
+  m_lua.Set_MqttDisconnect(
+    [this]( void* context ){
+      m_pMQTT->Disconnect(
+        context,
+        [](){ // fSuccess_t
+
+        },
+        [](){ // fFailure_t
+          std::cout << "mqtt disconnection: failure" << std::endl;
+        } );
+    } );
+  m_lua.Set_EventRegister(
+    [this](const std::string_view& sLocation, const std::string_view& sDevice, const std::string_view& sSensor){
     } );
 
+  // TODO: start loading after mqtt connection completion
   static const std::filesystem::path pathConfig( "config" );
   for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathConfig } ) {
     if ( dir_entry.is_regular_file() ) {
@@ -208,6 +238,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
     }
   }
 
+  // TODO: start loading after mqtt connection completion
   static const std::filesystem::path pathScript( "script" );
   for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathScript } ) {
     if ( dir_entry.is_regular_file() ) {
