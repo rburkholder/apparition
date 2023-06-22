@@ -36,7 +36,11 @@ int main( int argc, char* argv[] ) {
 
   std::cout << "apparition - (C)2023 One Unified Net Limited" << std::endl;
 
-  assert( 4 <= argc );
+  if ( 4 != argc ) {
+    std::cerr << "error: wrong number of parameters" << std::endl;
+    std::cerr << "  apparition <mqtt address> <mqtt username> <mqtt password>" << std::endl;
+    return EXIT_FAILURE;
+  }
 
   MqttSettings settings;
 
