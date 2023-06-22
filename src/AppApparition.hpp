@@ -56,21 +56,32 @@ private:
   std::unique_ptr<DashboardFactory> m_pDashboardFactory;
   std::unique_ptr<prometheus::Registry> m_pPrometheusRegistry;
 
+  using mapEventSensorChanged_t = std::unordered_map<void*,ScriptLua::fEvent_SensorChanged_t>;
+
   struct Sensor {
     ScriptLua::value_t value;
     std::string sUnits;
     boost::posix_time::ptime dtLastSeen;
-    // map of event scripts,
-    //   will need output mqtt topics
+    mapEventSensorChanged_t mapEventSensorChanged;
     bool bHidden; // used for internal signalling between scripts
 
     Sensor( ScriptLua::value_t value_, const std::string sUnits_ )
-    : bHidden( false ), value( value_ ), sUnits( sUnits_ ) {}
+    : bHidden( false ), value( value_ ), sUnits( sUnits_ ), dtLastSeen(/*not a datetime*/) {}
     Sensor( const Sensor& ) = delete;
     Sensor( Sensor&& rhs )
     : bHidden( rhs.bHidden ), value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) )
-    , dtLastSeen( rhs.dtLastSeen )
+    , dtLastSeen( rhs.dtLastSeen ), mapEventSensorChanged( std::move( rhs.mapEventSensorChanged ))
     {}
+  };
+
+  struct runtime_error_location: public virtual std::runtime_error {
+    runtime_error_location( const std::string& error ): std::runtime_error( error ) {}
+  };
+  struct runtime_error_device: public virtual std::runtime_error {
+    runtime_error_device( const std::string& error ): std::runtime_error( error ) {}
+  };
+  struct runtime_error_sensor: public virtual std::runtime_error {
+    runtime_error_sensor( const std::string& error ): std::runtime_error( error ) {}
   };
 
   using mapSensor_t = std::unordered_map<std::string,Sensor>;
@@ -87,5 +98,17 @@ private:
 
   using mapLocation_t = std::unordered_map<std::string,Location>;
   mapLocation_t m_mapLocation;
+
+  struct SensorPath {
+    bool bInserted;
+    Location& location;
+    Device& device;
+    Sensor& sensor;
+    SensorPath( bool bInserted_, Location& location_, Device& device_, Sensor& sensor_ )
+    : bInserted( bInserted_ ), location( location_ ), device( device_ ), sensor( sensor_ ) {}
+  };
+
+  SensorPath LookupSensor_Insert( const std::string& location, const std::string& device, const std::string& sensor );
+  SensorPath LookupSensor_Exists( const std::string& location, const std::string& device, const std::string& sensor );
 
 };

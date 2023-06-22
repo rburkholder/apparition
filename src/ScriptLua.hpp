@@ -89,10 +89,21 @@ public:
   void Set_MqttPublish( fMqttPublish_t&& );
   void Set_MqttDisconnect( fMqttDisconnect_t&& );
 
-  using fEventRegister_t
-    = std::function<void(const std::string_view& location, const std::string_view& device, const std::string_view& sensor)>;
+  using fEvent_SensorChanged_t = std::function<
+    void(const std::string& location, const std::string& device,const std::string& sensor,
+         const value_t& prior, const value_t& current
+    )>;
+  using fEventRegisterAdd_t = std::function<
+    void(const std::string_view& location, const std::string_view& device, const std::string_view& sensor,
+         void* key, fEvent_SensorChanged_t&&
+    )>;
+  using fEventRegisterDel_t = std::function<
+    void(const std::string_view& location, const std::string_view& device, const std::string_view& sensor,
+         void* key
+    )>;
 
-  void Set_EventRegister( fEventRegister_t&& );
+  void Set_EventRegisterAdd( fEventRegisterAdd_t&& );
+  void Set_EventRegisterDel( fEventRegisterDel_t&& );
 
 protected:
 private:
@@ -120,7 +131,8 @@ private:
   fMqttPublish_t m_fMqttPublish;
   fMqttDisconnect_t m_fMqttDisconnect;
 
-  fEventRegister_t m_fEventRegister;
+  fEventRegisterAdd_t m_fEventRegisterAdd;
+  fEventRegisterDel_t m_fEventRegisterDel;
 
   mapScript_t::iterator Parse( const std::string& );
 
@@ -134,7 +146,8 @@ private:
   static int lua_mqtt_publish( lua_State* );
   static int lua_mqtt_disconnect( lua_State* );
 
-  static int lua_event_register( lua_State* );
+  static int lua_event_register_add( lua_State* );
+  static int lua_event_register_del( lua_State* );
 
   void Run_Test01( const std::string& name );
 
