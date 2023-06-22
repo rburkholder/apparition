@@ -1,5 +1,5 @@
--- file:   beagle.lua
--- author: raymond@burkholder.net
+-- file:    beagle.lua
+-- author:  raymond@burkholder.net
 -- creawted 2023/06/14 12:40:44
 
 -- decodes https://github.com/rburkholder/bme680
@@ -12,7 +12,7 @@ local topic = 'bb/+/bme680'
 local object_ptr = 0
 
 package.path='' -- can not have ?.so in script path
-package.cpath='lib/lua/?.so' -- dedicate to custom direcotry for now
+package.cpath='lib/lua/?.so' -- dedicate to custom directory for now
 local cjson = require( 'cjson' )
 local json = cjson.new()
 
