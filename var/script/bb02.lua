@@ -1,16 +1,16 @@
--- file:   bb02.lua
--- author: raymond@burkholder.net
+-- file:    bb02.lua
+-- author:  raymond@burkholder.net
 -- creawted 2023/06/14 16:24:04
 
 -- local m = require("strict")
 
-description = 'watches zwave discovery channel from bb02'
+description = 'watches zwave discovery channel supplied by bb02 - to be implemented'
 
 local topic = 'bb02/#'
 local object_ptr = 0
 
 package.path='' -- can not have ?.so in script path
-package.cpath='lib/lua/?.so' -- dedicate to custom direcotry for now
+package.cpath='lib/lua/?.so' -- dedicate to custom directory for now
 local cjson = require( 'cjson' )
 local json = cjson.new()
 
