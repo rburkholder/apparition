@@ -8,6 +8,7 @@
   * installation instructions for linux
   * when installing with packages on Debian, needs Debian bookworm, as it has v18 node.js, buster only has version v12
  
-  
+* for the user in which the zigbee application runs, the following groups need to be updated with the user name:
+  * add zigbee to tty, uucp, dialout groups 
 
 
