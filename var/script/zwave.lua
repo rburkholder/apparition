@@ -90,9 +90,9 @@ zwave_37 = function( json_, zwave_ix_dev_, zwave_ix_var_, sensor_ )
 
     if 'duration' == sensor_ then
       -- might be able to generalize this to 37 for the variable type across devices
-        -- will need to listen to discovery & confirm
-      value = value[ 'value' ]
-      units = value[ 'unit' ]
+      -- will need to listen to discovery & confirm
+      units = value[ 'unit' ] -- perform in this order
+      value = value[ 'value' ] -- perform in this order
     elseif 'targetValue' == sensor_ then
       -- TODO: use event registration instead
       if 'boolean' == type(value) then
