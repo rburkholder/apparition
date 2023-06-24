@@ -168,17 +168,19 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
         }
       }
 
-      std::cout
-        << sLocation << '\\' << sDevice;
-      for ( const ScriptLua::Value& value: vValue_ ) {
-        std::cout << "," << value.sName << ':';
-        std::visit([](auto&& arg){ std::cout << arg; }, value.value );
-        if ( 0 < value.sUnits.size() ) {
-          std::cout << " " << value.sUnits;
+      if ( false ) {
+        std::cout
+          << sLocation << '\\' << sDevice;
+        for ( const ScriptLua::Value& value: vValue_ ) {
+          std::cout << "," << value.sName << ':';
+          std::visit([](auto&& arg){ std::cout << arg; }, value.value );
+          if ( 0 < value.sUnits.size() ) {
+            std::cout << " " << value.sUnits;
+          }
         }
+        std::cout << std::endl;
       }
 
-      std::cout << std::endl;
       m_pWebServer->postAll(
         [sLocation_=std::move( sLocation), sDevice_=std::move( sDevice ),vValue_ = std::move( vValue_ )](){
           Wt::WApplication* app = Wt::WApplication::instance();
