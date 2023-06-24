@@ -97,19 +97,7 @@ zwave_37 = function( json_, zwave_ix_dev_, zwave_ix_var_, sensor_ )
       -- TODO: use event registration instead
       if 'boolean' == type(value) then
         if value then
-          io.write( 'turn on light\n' )
-          local topic1 = 'zigbee/1/den/light01/set'
-          local topic2 = 'zigbee/1/den/light02/set'
-          local message = '{"state":"ON"}'
-          mqtt_publish( object_ptr, topic1, message )
-          mqtt_publish( object_ptr, topic2, message )
         else
-          io.write( 'turn off light\n')
-          local topic1 = 'zigbee/1/den/light01/set'
-          local topic2 = 'zigbee/1/den/light02/set'
-          local message = '{"state":"OFF"}'
-          mqtt_publish( object_ptr, topic1, message )
-          mqtt_publish( object_ptr, topic2, message )
         end
       else
         io.write( 'targetValue is not boolean: ' .. value .. '\n' )
