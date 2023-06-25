@@ -120,10 +120,10 @@ end
 zwave_91 = function( json_, zwave_ix_dev_, zwave_ix_var_, sensor_ )
   io.write( '*** to be processed: scene controller dev ' .. zwave_ix_dev_ .. '\n' )
   -- scene00x:
-  -- 0:     key pressed
+  -- 0:     key quick press
   -- 1:     key released
   -- 2:     key held down
-  -- false: end of state change (undefined)
+  -- false: end of state change (undefined) - use -1 as marker?
   local data = {}
 
   local device = json_[ 'nodeName' ]
