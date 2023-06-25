@@ -108,6 +108,10 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
   // TODO: put these functions into a named table: mqtt
   //   2016 programming in lua page 251
   //   thus: mqtt.start_topic, mqtt.stop_topic
+  // TODO: need a discovery channel for info which shouldn't be emitted as gui updates
+  // TODO: send locations as a series of tags:  outside, inside, bedroom, top floor, ...
+  //   keep current location hierarchy, but migrate once tags are in place
+  // TODO: send category tags for sensors: thermostat, humidity, rssi, ...
 
   lua_pushcfunction( pLua, lua_mqtt_connect );
   lua_setglobal( pLua, "mqtt_connect" );
