@@ -233,7 +233,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
         iterEvent = result.first;
         if ( !path.bInserted ) { // TODO: maybe flag this as optional? or can be filtered by the requestor
           if ( boost::posix_time::not_a_date_time != path.sensor.dtLastSeen ) {
-            iterEvent->second( sLocation, sDevice, sSensor, path.sensor.value, path.sensor.value );
+            //iterEvent->second( sLocation, sDevice, sSensor, path.sensor.value, path.sensor.value );
             // NOTE: will need to check for recursion
           }
         }
