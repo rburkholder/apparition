@@ -6,7 +6,7 @@
 
 description = 'watches zwave in topic domoticz/in '
 
-local topic = 'domoticz/in/#'
+local topic = 'zwave/1/#'
 local object_ptr = 0
 
 package.path='' -- can not have ?.so in script path
@@ -181,14 +181,14 @@ mqtt_in = function( topic_, message_ )
   local sensor = ''
   for word in string.gmatch( topic_, '[_%a%d]+' ) do
     if 1 == ix then
-      if 'domoticz' == word then
+      if 'zwave' == word then
         ix = ix + 1
       else
         break;
       end
     else
       if 2 == ix then
-        if 'in' == word then
+        if '1' == word then
           ix = ix + 1
         else
           break
