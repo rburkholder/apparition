@@ -191,8 +191,10 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
       static const boost::gregorian::date_duration one_week( 7 );
       static const boost::gregorian::date_duration one_year( 364 );
 
-      const static std::locale localeDateTime(std::wcout.getloc(),
-                            new boost::posix_time::time_facet( "%Y/%m/%d %H:%M:%S" ) );
+      const static std::locale localeDateTime(
+        std::wcout.getloc(),
+        new boost::posix_time::time_facet( "%Y/%m/%d" "&nbsp;" "%H:%M:%S" )
+        );
 
       std::stringstream sNow;
       sNow.imbue( localeDateTime );
