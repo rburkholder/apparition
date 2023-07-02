@@ -24,6 +24,9 @@
 #include <stdexcept>
 #include <filesystem>
 
+#include <boost/date_time//posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/posix_time_io.hpp>
+
 #include <fmt/format.h>
 
 #include <prometheus/registry.h>
@@ -151,6 +154,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
 
       const std::string sLocation( svLocation );
       const std::string sDevice( svDevice );
+      const auto now( boost::posix_time::microsec_clock::local_time() );
 
       for ( const ScriptLua::vValue_t::value_type& vt: vValue_ ) {
         SensorPath path( LookupSensor_Insert( sLocation, sDevice, vt.sName ) );
@@ -160,7 +164,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
         }
         ScriptLua::value_t priorValue( path.sensor.value );
         sensor.value = vt.value;
-        sensor.dtLastSeen = boost::posix_time::microsec_clock::local_time();
+        sensor.dtLastSeen = now;
 
         // TODO post to m_context to close out this mqtt event faster
         for ( mapEventSensorChanged_t::value_type& event: sensor.mapEventSensorChanged ) {
@@ -181,8 +185,21 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
         std::cout << std::endl;
       }
 
+      static const boost::posix_time::time_duration one_minute( 0, 1, 0 );
+      static const boost::posix_time::time_duration one_hour( 1, 0, 0 );
+      static const boost::posix_time::time_duration one_day( 24, 0, 0 );
+      static const boost::gregorian::date_duration one_week( 7 );
+      static const boost::gregorian::date_duration one_year( 364 );
+
+      const static std::locale localeDateTime(std::wcout.getloc(),
+                            new boost::posix_time::time_facet( "%Y/%m/%d %H:%M:%S" ) );
+
+      std::stringstream sNow;
+      sNow.imbue( localeDateTime );
+      sNow << "Last Seen: " << now;
+
       m_pWebServer->postAll(
-        [sLocation_=std::move( sLocation), sDevice_=std::move( sDevice ),vValue_ = std::move( vValue_ )](){
+        [sNow_=std::move(sNow.str()), sLocation_=std::move( sLocation), sDevice_=std::move( sDevice ),vValue_ = std::move( vValue_ )](){
           Wt::WApplication* app = Wt::WApplication::instance();
           Dashboard* pDashboard = dynamic_cast<Dashboard*>( app );
           const std::string sLocationDevice( sLocation_ + ' ' + sDevice_ );
@@ -191,7 +208,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
             std::visit(
               [&formatted]( auto&& arg ){ formatted = fmt::format( "{}", arg); }
             , value.value );
-            pDashboard->UpdateDeviceSensor( sLocationDevice, value.sName, formatted + ' ' + value.sUnits );
+            pDashboard->UpdateDeviceSensor( sNow_, sLocationDevice, value.sName, formatted + "&nbsp;" + value.sUnits );
           }
           ;
         } );

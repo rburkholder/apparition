@@ -66,6 +66,8 @@ void Dashboard::finalize() {
 
 void Dashboard::TemplatePage( Wt::WContainerWidget* ) {
 
+  useStyleSheet("style/apparition.css");
+
   // == Title
   static const std::string sTitle( "Apparition Dashboard" );
   setTitle( sTitle );
@@ -77,28 +79,35 @@ void Dashboard::TemplatePage( Wt::WContainerWidget* ) {
   // 12 template columsn available per row
 
   m_pBoxBody = root()->addWidget( std::make_unique<Wt::WContainerWidget>() );
-  m_pBoxBody->addStyleClass( "container-sm" );  // taken out: text-center px-4
+  // https://getbootstrap.com/docs/5.3/layout/containers/#responsive-containers
+  m_pBoxBody->addStyleClass( "container-fluid px-3" );
   //m_pBoxBody->setInline( true );
 
+  // https://getbootstrap.com/docs/5.3/layout/gutters/#horizontal-gutters
   m_pBoxRow1 = m_pBoxBody->addWidget( std::make_unique<Wt::WContainerWidget>() );
-  m_pBoxRow1->addStyleClass( "row col-12" );
+  m_pBoxRow1->addStyleClass( "row g-1 col-12" );
 
 }
 
-void Dashboard::UpdateDeviceSensor( const std::string& device, const std::string& sensor, const std::string& value ) {
+void Dashboard::UpdateDeviceSensor(
+  const std::string& sNow
+, const std::string& device
+, const std::string& sensor
+, const std::string& value
+) {
 
   mapDevice_t::iterator iterDevice = m_mapDevice.find( device );
   if ( m_mapDevice.end() == iterDevice ) {
 
     Wt::WContainerWidget* pBoxDevice = m_pBoxRow1->addWidget( std::make_unique<Wt::WContainerWidget>() );
-    pBoxDevice->addStyleClass( "col-sm-2 col-xs-12 text-body-tertiary" );
+    pBoxDevice->addStyleClass( "col-sm-2 col-xs-12 text-center" );
 
     Wt::WTemplate* pDeviceNameTemplate = pBoxDevice->addWidget( std::make_unique<Wt::WTemplate>() );
     Wt::WText* pDeviceNameText
       = pBoxDevice->addWidget(
           std::make_unique<Wt::WText>( device ) );
           //std::make_unique<Wt::WText>( "<h4>" + device + "</h4>" ) );
-    pDeviceNameText->addStyleClass( "fs5 text-center fw-bold" );
+    pDeviceNameText->addStyleClass( "app-font-size-90 fw-bold" );
 
     auto result = m_mapDevice.emplace( mapDevice_t::value_type( device, pBoxDevice ) );
     assert( result.second );
@@ -112,40 +121,36 @@ void Dashboard::UpdateDeviceSensor( const std::string& device, const std::string
 
     Wt::WContainerWidget* pBoxSensor
       = iterDevice->second.m_pBoxDevice->addWidget( std::make_unique<Wt::WContainerWidget>() );
-    pBoxSensor->addStyleClass( "card text-bg-secondary mb-3 p-1" );
-    pBoxSensor->setContentAlignment( Wt::AlignmentFlag::Justify );
-
-    //Wt::WContainerWidget* pBoxSensorName
-    //  = pBoxSensor->addWidget( std::make_unique<Wt::WContainerWidget>() );
-    //pBoxSensorName->addStyleClass( "card-title" );
-
-    //Wt::WContainerWidget* pBoxSensorValue
-    //  = pBoxSensor->addWidget( std::make_unique<Wt::WContainerWidget>() );
-    //pBoxSensorValue->addStyleClass( "card-text");
+    pBoxSensor->addStyleClass( "card text-bg-secondary m-1 p-1" );
+    //pBoxSensor->setContentAlignment( Wt::AlignmentFlag::Justify );
 
     Wt::WContainerWidget* pBoxSensorValue
       = pBoxSensor->addWidget( std::make_unique<Wt::WContainerWidget>() );
-    pBoxSensorValue->addStyleClass( "card-text");
+    pBoxSensorValue->addStyleClass( "card-text text-center");
 
-    // add last seen in small type
+    Wt::WText* pTextSensorName = pBoxSensorValue->addWidget( std::make_unique<Wt::WText>( sensor + ": " ) );
+    pTextSensorName->addStyleClass( "app-font-size-80" );
 
-    Wt::WText* pTextSensorName = pBoxSensorValue->addWidget( std::make_unique<Wt::WText>( sensor ) );
-    pTextSensorName->addStyleClass( "fs6 fw-bolder" );
-    //pTextSensorName->setTextAlignment( Wt::AlignmentFlag::Right );
-
-    Wt::WBreak* pBreak = pBoxSensorValue->addWidget( std::make_unique<Wt::WBreak>() );
+    //Wt::WBreak* pBreak1 = pBoxSensorValue->addWidget( std::make_unique<Wt::WBreak>() );
 
     Wt::WText* pTextSensorValue = pBoxSensorValue->addWidget( std::make_unique<Wt::WText>( value ) );
-    pTextSensorValue->addStyleClass( "fs6" );
-    //pTextSensorValue->setTextAlignment( Wt::AlignmentFlag::Right );
+    pTextSensorValue->addStyleClass( "app-font-size-80 fw-bolder" );
 
-    auto result = mapSensor.emplace( mapSensor_t::value_type( sensor, pTextSensorValue ) );
+    Wt::WBreak* pBreak2 = pBoxSensorValue->addWidget( std::make_unique<Wt::WBreak>() );
+
+    Wt::WText* pTextLastSeen = pBoxSensorValue->addWidget( std::make_unique<Wt::WText>( sNow ) );
+    pTextLastSeen->addStyleClass( "app-font-size-60 fst-italic" );
+
+    DynamicFields fields( pTextSensorValue, pTextLastSeen );
+
+    auto result = mapSensor.emplace( mapSensor_t::value_type( sensor, std::move( fields ) ) );
     assert( result.second );
     iterSensor = result.first;
 
   }
   else {
-    iterSensor->second->setText( value );
+    iterSensor->second.pValue->setText( value );
+    iterSensor->second.pLastSeen->setText( sNow );
   }
 
   triggerUpdate();

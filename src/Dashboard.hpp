@@ -38,6 +38,7 @@ public:
   virtual ~Dashboard();
 
   void UpdateDeviceSensor(
+    const std::string& now,
     const std::string& device,
     const std::string& sensor,
     const std::string& value );
@@ -52,7 +53,17 @@ private:
   Wt::WContainerWidget* m_pBoxBody;
   Wt::WContainerWidget* m_pBoxRow1; // need to generalize on this in the config file
 
-  using mapSensor_t = std::unordered_map<std::string,Wt::WText*>;
+  struct DynamicFields {
+    Wt::WText* pValue;
+    Wt::WText* pLastSeen;
+    DynamicFields( Wt::WText* pValue_, Wt::WText* pLastSeen_ )
+    : pValue( pValue_ ), pLastSeen( pLastSeen_ ) {}
+    DynamicFields(): pValue( nullptr ), pLastSeen( nullptr ) {}
+    DynamicFields( DynamicFields&& rhs )
+    : pValue( rhs.pValue ), pLastSeen( rhs.pLastSeen ) {}
+  };
+
+  using mapSensor_t = std::unordered_map<std::string,DynamicFields>;
 
   struct Device {
     Wt::WContainerWidget* m_pBoxDevice;
