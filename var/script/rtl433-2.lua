@@ -45,7 +45,7 @@ end
 
 local dsc_info = {}
 dsc_info[ 2592561 ] = { 'back entry', 'door' }
-dsc_info[ 2501272 ] = { 'garage entry', 'door' }
+dsc_info[ 2501272 ] = { 'utility entry', 'door' }
 dsc_info[ 2148418 ] = { 'patio', 'door' }
 dsc_info[ 2666062 ] = { 'front entry', 'door' }
 dsc_info[ 3860837 ] = { 'family room', 'pir' } -- seems to only trigger, not reset
@@ -71,7 +71,7 @@ dsc = function( json_ )
     extract2( json_, data, "rssi",       "dBm")
     extract2( json_, data, "snr",        "")
     extract2( json_, data, "noise",      "dBm")
-    mqtt_device_data( object_ptr, "top floor?", "dsc", #data, data );
+    mqtt_device_data( object_ptr, "top floor", "smoke", #data, data );
   end
 end
 
