@@ -74,7 +74,7 @@ event_sensor_changed = function( location_, device_, sensor_, value_ )
       mqtt_publish( object_ptr, topic1, message )
       mqtt_publish( object_ptr, topic2, message )
     end
-  elseif 'scene001' == sensor_ then
+  elseif 'scene001' == sensor_ then -- eating area light
     if 0 == value_ then
       io.write( 'turn on eating area light\n')
       local topic1 = 'zigbee/1/eating_area/light01/set'
@@ -86,7 +86,7 @@ event_sensor_changed = function( location_, device_, sensor_, value_ )
       local message = '{"state":"OFF"}'
       mqtt_publish( object_ptr, topic1, message )
     end
-  elseif 'scene002' == sensor_ then
+  elseif 'scene002' == sensor_ then -- back hallway light
     if 0 == value_ then
       io.write( 'turn on back hallway light\n')
       local topic1 = 'zigbee/1/back_hallway/light01/set'
@@ -98,24 +98,26 @@ event_sensor_changed = function( location_, device_, sensor_, value_ )
       local message = '{"state":"OFF"}'
       mqtt_publish( object_ptr, topic1, message )
     end
-  elseif 'scene003' == sensor_ then
+  elseif 'scene003' == sensor_ then -- all lights on
     io.write( 'turn on all lights\n' )
     local topic1 = 'zigbee/1/den/light01/set'
     local topic2 = 'zigbee/1/den/light02/set'
     local topic3 = 'zigbee/1/eating_area/light01/set'
     local topic4 = 'zigbee/1/back_hallway/light01/set'
     local message = '{"state":"ON"}'
+    -- TODO: update targetvalue on scene01 to maintain consistency
     mqtt_publish( object_ptr, topic1, message )
     mqtt_publish( object_ptr, topic2, message )
     mqtt_publish( object_ptr, topic3, message )
     mqtt_publish( object_ptr, topic4, message )
-  elseif 'scene004' == sensor_ then
+  elseif 'scene004' == sensor_ then -- all lights off
     io.write( 'turn off all lights\n' )
     local topic1 = 'zigbee/1/den/light01/set'
     local topic2 = 'zigbee/1/den/light02/set'
     local topic3 = 'zigbee/1/eating_area/light01/set'
     local topic4 = 'zigbee/1/back_hallway/light01/set'
     local message = '{"state":"OFF"}'
+    -- TODO: update targetvalue on scene01 to maintain consistency
     mqtt_publish( object_ptr, topic1, message )
     mqtt_publish( object_ptr, topic2, message )
     mqtt_publish( object_ptr, topic3, message )
