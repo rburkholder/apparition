@@ -470,12 +470,12 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
       case LUA_TBOOLEAN: // comes prior to everything, as others will convert this
         value = (bool)lua_toboolean( pLua, ixStack_Value );
         break;
+      case LUA_TNUMBER:
+        value = lua_tonumber( pLua, ixStack_Value );
+        break;
       case LUA_TSTRING:
         szValue = lua_tostring( pLua, ixStack_Value );
         value = szValue;
-        break;
-      case LUA_TNUMBER:
-        value = lua_tonumber( pLua, ixStack_Value );
         break;
       default:
         assert( false );  // not sure if integers are provided
