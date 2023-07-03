@@ -24,6 +24,8 @@
 #include <stdexcept>
 #include <filesystem>
 
+#include <boost/log/trivial.hpp>
+
 #include <boost/date_time//posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 
@@ -281,6 +283,177 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
       }
     } );
 
+  m_lua.Set_DeviceRegisterAdd(
+    [this](const std::string_view& unique_name, const std::string_view& display_name)->bool{
+      assert( 0 < unique_name.size() );
+      const std::string sUniqueName( unique_name );
+
+      std::string sDisplayName;
+      if ( 0 == display_name.size() ) {
+        sDisplayName = sUniqueName;
+      }
+      else {
+        sDisplayName = std::move( std::string( display_name ) );
+      }
+
+      bool bStatus( true );
+
+      mapDevice_t::iterator iterDevice = m_mapDevice.find( sUniqueName );
+      if ( m_mapDevice.end() == iterDevice ) {
+        auto result = m_mapDevice.emplace( mapDevice_t::value_type( sUniqueName, Device( sDisplayName ) ) );
+        assert( result.second );
+      }
+      else {
+        BOOST_LOG_TRIVIAL(warning) << "Device Registration add" << sUniqueName << " already exists, addition skipped";
+        bStatus = false;
+      }
+
+      return bStatus;
+    } );
+
+  m_lua.Set_DeviceRegisterDel(
+    [this](const std::string_view& unique_name )->bool{
+      assert( 0 < unique_name.size() );
+      const std::string sUniqueName( unique_name );
+
+      bool bStatus( true );
+
+      mapDevice_t::iterator iterDevice = m_mapDevice.find( sUniqueName );
+      if ( m_mapDevice.end() == iterDevice ) {
+        BOOST_LOG_TRIVIAL(warning) << "Device Registration del" << sUniqueName << " does not exist, deletion skipped";
+        bStatus = false;
+      }
+      else {
+        m_mapDevice.erase( iterDevice );
+      }
+
+      return bStatus;
+    } );
+
+  m_lua.Set_SensorRegisterAdd(
+    [this]( const std::string_view& device_name
+          , const std::string_view& unique_name
+          , const std::string_view& display_name
+          , const std::string_view& units)->bool{
+      bool bStatus( true );
+      assert( 0 < device_name.size() );
+      assert( 0 < unique_name.size() );
+
+      const std::string sDeviceName( device_name );
+      const std::string sSensorName( unique_name );
+      const std::string sUnits( units );
+
+      std::string sDisplayName;
+      if ( 0 == display_name.size() ) {
+        sDisplayName = sSensorName;
+      }
+      else {
+        sDisplayName = std::move( std::string( display_name ) );
+      }
+
+      mapDevice_t::iterator iterDevice = m_mapDevice.find( sDeviceName );
+      if ( m_mapDevice.end() == iterDevice ) {
+        bStatus = false;
+        BOOST_LOG_TRIVIAL(warning)
+          << "Sensor Registration add, device " << sDeviceName << ":" << sSensorName
+          << " not found, addition skipped";
+      }
+      else {
+        Device& device( iterDevice->second );
+        mapSensor_t::iterator iterSensor = device.mapSensor.find( sSensorName );
+        if ( device.mapSensor.end() != iterSensor ) {
+          bStatus = false;
+          BOOST_LOG_TRIVIAL(warning)
+            << "Sensor Registration add" << sDeviceName << ":" << sSensorName
+            << " already exists, addition skipped";
+        }
+        else {
+          auto result = device.mapSensor.emplace( sSensorName, Sensor( sDisplayName, sUnits ) );
+          assert( result.second );
+        }
+      }
+
+      return bStatus;
+    } );
+
+  m_lua.Set_SensorRegisterDel(
+    [this]( const std::string_view& device_name
+          , const std::string_view& unique_name
+    )->bool{
+
+      bool bStatus( true );
+      assert( 0 < device_name.size() );
+      assert( 0 < unique_name.size() );
+
+      const std::string sDeviceName( device_name );
+      const std::string sSensorName( unique_name );
+
+      mapDevice_t::iterator iterDevice = m_mapDevice.find( sDeviceName );
+      if ( m_mapDevice.end() == iterDevice ) {
+        bStatus = false;
+        BOOST_LOG_TRIVIAL(warning)
+          << "Sensor Registration del, device " << sDeviceName << ":" << sSensorName
+          << " not found, deletion skipped";
+      }
+      else {
+        Device& device( iterDevice->second );
+        mapSensor_t::iterator iterSensor = device.mapSensor.find( sSensorName );
+        if ( device.mapSensor.end() == iterSensor ) {
+          bStatus = false;
+          BOOST_LOG_TRIVIAL(warning)
+            << "Sensor Registration del sensor " << sDeviceName << ":" << sSensorName
+            << " not found, deletion skipped";
+        }
+        else {
+          device.mapSensor.erase( iterSensor );
+        }
+      }
+
+      return bStatus;
+    } );
+
+  m_lua.Set_DeviceLocationAdd(
+    [this]( const std::string_view& device_name, const std::string_view& location_tag ){
+      assert( 0 < device_name.size() );
+      assert( 0 < location_tag.size() );
+      const std::string sDeviceName( device_name );
+      const std::string sLocationTag( location_tag );
+
+      mapDevice_t::iterator iterDevice = m_mapDevice.find( sDeviceName );
+      if ( m_mapDevice.end() == iterDevice ) {
+        BOOST_LOG_TRIVIAL(warning)
+          << "Device Location Add - " << sDeviceName << " - not found";
+      }
+      else {
+        Device& device( iterDevice->second );
+        setLocationTag_t::iterator iterLocationTag = device.setLocationTag.find( sLocationTag );
+        if ( device.setLocationTag.end() == iterLocationTag ) {
+          device.setLocationTag.emplace( sLocationTag );
+        }
+      }
+    } );
+
+  m_lua.Set_DeviceLocationDel(
+    [this]( const std::string_view& device_name, const std::string_view& location_tag ){
+      assert( 0 < device_name.size() );
+      assert( 0 < location_tag.size() );
+      const std::string sDeviceName( device_name );
+      const std::string sLocationTag( location_tag );
+
+      mapDevice_t::iterator iterDevice = m_mapDevice.find( sDeviceName );
+      if ( m_mapDevice.end() == iterDevice ) {
+        BOOST_LOG_TRIVIAL(warning)
+          << "Device Location Del - " << sDeviceName << " - not found";
+      }
+      else {
+        Device& device( iterDevice->second );
+        setLocationTag_t::iterator iterLocationTag = device.setLocationTag.find( sLocationTag );
+        if ( device.setLocationTag.end() != iterLocationTag ) {
+          device.setLocationTag.erase( iterLocationTag );
+        }
+      }
+    } );
+
   // TODO: start loading after mqtt connection completion
   static const std::filesystem::path pathConfig( "config" );
   for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathConfig } ) {
@@ -341,7 +514,8 @@ AppApparition::SensorPath AppApparition::LookupSensor_Insert(
 }
 
 AppApparition::SensorPath AppApparition::LookupSensor_Exists(
-  const std::string& sLocation, const std::string& sDevice, const std::string& sSensor ) {
+  const std::string& sLocation, const std::string& sDevice, const std::string& sSensor
+) {
 
   mapLocation_t::iterator iterMapLocation = m_mapLocation.find( sLocation );
   if ( m_mapLocation.end() == iterMapLocation ) {
@@ -363,6 +537,26 @@ AppApparition::SensorPath AppApparition::LookupSensor_Exists(
   }
 
   return SensorPath( false, location, device, iterMapSensor->second );
+
+}
+
+AppApparition::SensorPath AppApparition::LookupSensor_Exists(
+  const std::string& sDevice, const std::string& sSensor
+) {
+
+  mapDevice_t::iterator iterMapDevice = m_mapDevice.find( sDevice );
+  if ( m_mapDevice.end() == iterMapDevice ) {
+    throw runtime_error_device( "device " + sDevice + " not found" );
+  }
+
+  Device& device( iterMapDevice->second );
+
+  mapSensor_t::iterator iterMapSensor = device.mapSensor.find( sSensor );
+  if ( device.mapSensor.end() == iterMapSensor ) {
+    throw runtime_error_sensor( "sensor " + sDevice + '\\' + sSensor + " not found" );
+  }
+
+  return SensorPath( false, m_dummy, device, iterMapSensor->second );
 
 }
 

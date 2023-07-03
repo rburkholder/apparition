@@ -80,6 +80,30 @@ void ScriptLua::Set_EventRegisterDel( fEventRegisterDel_t&& f ) {
   m_fEventRegisterDel = std::move( f );
 }
 
+void ScriptLua::Set_DeviceRegisterAdd( fDeviceRegisterAdd_t&& f ) {
+  m_fDeviceRegisterAdd = std::move( f );
+}
+
+void ScriptLua::Set_DeviceRegisterDel( fDeviceRegisterDel_t&& f ) {
+  m_fDeviceRegisterDel = std::move( f );
+}
+
+void ScriptLua::Set_SensorRegisterAdd( fSensorRegisterAdd_t&& f ) {
+  m_fSensorRegisterAdd = std::move( f );
+}
+
+void ScriptLua::Set_SensorRegisterDel( fSensorRegisterDel_t&& f ) {
+  m_fSensorRegisterDel = std::move( f );
+}
+
+void ScriptLua::Set_DeviceLocationAdd( fDeviceLocationTagAdd_t&& f ) {
+  m_fDeviceLocationTagAdd = std::move( f );
+}
+
+void ScriptLua::Set_DeviceLocationDel( fDeviceLocationTagDel_t&& f ) {
+  m_fDeviceLocationTagDel = std::move( f );
+}
+
 bool ScriptLua::TestExtension( const std::filesystem::path& path ) {
   bool bResult( false );
   if ( path.has_extension() ) {
@@ -136,6 +160,24 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
 
   lua_pushcfunction( pLua, lua_event_register_del );
   lua_setglobal( pLua, "event_register_del" );
+
+  lua_pushcfunction( pLua, lua_device_register_add );
+  lua_setglobal( pLua, "device_register_add" );
+
+  lua_pushcfunction( pLua, lua_device_register_del );
+  lua_setglobal( pLua, "device_register_del" );
+
+  lua_pushcfunction( pLua, lua_sensor_register_add );
+  lua_setglobal( pLua, "sensor_register_add" );
+
+  lua_pushcfunction( pLua, lua_sensor_register_del );
+  lua_setglobal( pLua, "sensor_register_del" );
+
+  lua_pushcfunction( pLua, lua_device_location_tag_add );
+  lua_setglobal( pLua, "device_location_tag_add" );
+
+  lua_pushcfunction( pLua, lua_device_location_tag_del );
+  lua_setglobal( pLua, "device_location_tag_del" );
 
   /* Load the file containing the script to be run */
   int status = luaL_loadfile( pLua, sPath.c_str() );
@@ -657,6 +699,212 @@ int ScriptLua::lua_event_register_del( lua_State* pLua ) {
   szSensorName = lua_tostring( pLua, ixStack );
 
   self->m_fEventRegisterDel( szLocation, szDeviceName, szSensorName, pLua );
+
+  return 0;
+}
+
+int ScriptLua::lua_device_register_add( lua_State* pLua ) {
+  // stack 1: userdata - this
+  // stack 2: string - unique device name
+  // stack 3: string - display name
+
+  int nStackEntries = lua_gettop( pLua );    /* number of arguments */
+  assert( 3 == nStackEntries );
+
+  int typeLuaData;
+  int ixStack = 0; // stack index, pre-increment into entries
+
+  typeLuaData = lua_type( pLua, ++ixStack );
+  assert( LUA_TLIGHTUSERDATA == typeLuaData );
+  void* object = lua_touserdata( pLua, ixStack );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
+  const char* szUniqueName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // unique device name
+  assert( LUA_TSTRING == typeLuaData );
+  szUniqueName = lua_tostring( pLua, ixStack );
+
+  const char* szDisplayName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // device display name
+  assert( LUA_TSTRING == typeLuaData );
+  szDisplayName = lua_tostring( pLua, ixStack );
+
+  self->m_fDeviceRegisterAdd( szUniqueName, szDisplayName );
+
+  return 0;
+}
+
+int ScriptLua::lua_device_register_del( lua_State* pLua ) {
+  // stack 1: userdata - this
+  // stack 2: string - unique device name
+
+  int nStackEntries = lua_gettop( pLua );    /* number of arguments */
+  assert( 2 == nStackEntries );
+
+  int typeLuaData;
+  int ixStack = 0; // stack index, pre-increment into entries
+
+  typeLuaData = lua_type( pLua, ++ixStack );
+  assert( LUA_TLIGHTUSERDATA == typeLuaData );
+  void* object = lua_touserdata( pLua, ixStack );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
+  const char* szUniqueName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // unique device name
+  assert( LUA_TSTRING == typeLuaData );
+  szUniqueName = lua_tostring( pLua, ixStack );
+
+  self->m_fDeviceRegisterDel( szUniqueName );
+
+  return 0;
+  return 0;
+}
+
+int ScriptLua::lua_sensor_register_add( lua_State* pLua ) {
+  // stack 1: userdata - this
+  // stack 2: string - unique device name
+  // stack 3: string - unique sensor name
+  // stack 4: string - sensor display name
+  // stack 5: string - sensor units
+
+  int nStackEntries = lua_gettop( pLua );    /* number of arguments */
+  assert( 5 == nStackEntries );
+
+  int typeLuaData;
+  int ixStack = 0; // stack index, pre-increment into entries
+
+  typeLuaData = lua_type( pLua, ++ixStack );
+  assert( LUA_TLIGHTUSERDATA == typeLuaData );
+  void* object = lua_touserdata( pLua, ixStack );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
+  const char* szUniqueDeviceName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // unique device name
+  assert( LUA_TSTRING == typeLuaData );
+  szUniqueDeviceName = lua_tostring( pLua, ixStack );
+
+  const char* szUniqueSensorName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // unique sensor name
+  assert( LUA_TSTRING == typeLuaData );
+  szUniqueSensorName = lua_tostring( pLua, ixStack );
+
+  const char* szSensorDisplayName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // sensor display name
+  assert( LUA_TSTRING == typeLuaData );
+  szSensorDisplayName = lua_tostring( pLua, ixStack );
+
+  const char* szSensorUnits;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // sensor units
+  assert( LUA_TSTRING == typeLuaData );
+  szSensorUnits = lua_tostring( pLua, ixStack );
+
+  self->m_fSensorRegisterAdd( szUniqueDeviceName, szUniqueSensorName, szSensorDisplayName, szSensorUnits );
+
+  return 0;
+}
+
+int ScriptLua::lua_sensor_register_del( lua_State* pLua ) {
+  // stack 1: userdata - this
+  // stack 2: string - unique device name
+  // stack 3: string - unique sensor name
+
+  int nStackEntries = lua_gettop( pLua );    /* number of arguments */
+  assert( 3 == nStackEntries );
+
+  int typeLuaData;
+  int ixStack = 0; // stack index, pre-increment into entries
+
+  typeLuaData = lua_type( pLua, ++ixStack );
+  assert( LUA_TLIGHTUSERDATA == typeLuaData );
+  void* object = lua_touserdata( pLua, ixStack );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
+  const char* szUniqueDeviceName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // unique device name
+  assert( LUA_TSTRING == typeLuaData );
+  szUniqueDeviceName = lua_tostring( pLua, ixStack );
+
+  const char* szUniqueSensorName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // unique sensor name
+  assert( LUA_TSTRING == typeLuaData );
+  szUniqueSensorName = lua_tostring( pLua, ixStack );
+
+  self->m_fSensorRegisterDel( szUniqueDeviceName, szUniqueSensorName );
+
+  return 0;
+}
+
+int ScriptLua::lua_device_location_tag_add( lua_State* pLua ) {
+  // stack 1: userdata - this
+  // stack 2: string - unique device name
+  // stack 3: string - location tag
+
+  int nStackEntries = lua_gettop( pLua );    /* number of arguments */
+  assert( 3 == nStackEntries );
+
+  int typeLuaData;
+  int ixStack = 0; // stack index, pre-increment into entries
+
+  typeLuaData = lua_type( pLua, ++ixStack );
+  assert( LUA_TLIGHTUSERDATA == typeLuaData );
+  void* object = lua_touserdata( pLua, ixStack );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
+  const char* szUniqueDeviceName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // unique device name
+  assert( LUA_TSTRING == typeLuaData );
+  szUniqueDeviceName = lua_tostring( pLua, ixStack );
+
+  const char* szLocationTag;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // unique sensor name
+  assert( LUA_TSTRING == typeLuaData );
+  szLocationTag = lua_tostring( pLua, ixStack );
+
+  self->m_fDeviceLocationTagAdd( szUniqueDeviceName, szLocationTag );
+
+  return 0;
+}
+
+int ScriptLua::lua_device_location_tag_del( lua_State* pLua ) {
+  // stack 1: userdata - this
+  // stack 2: string - unique device name
+  // stack 3: string - location tag
+
+  int nStackEntries = lua_gettop( pLua );    /* number of arguments */
+  assert( 3 == nStackEntries );
+
+  int typeLuaData;
+  int ixStack = 0; // stack index, pre-increment into entries
+
+  typeLuaData = lua_type( pLua, ++ixStack );
+  assert( LUA_TLIGHTUSERDATA == typeLuaData );
+  void* object = lua_touserdata( pLua, ixStack );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
+  const char* szUniqueDeviceName;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // unique device name
+  assert( LUA_TSTRING == typeLuaData );
+  szUniqueDeviceName = lua_tostring( pLua, ixStack );
+
+  const char* szLocationTag;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // unique sensor name
+  assert( LUA_TSTRING == typeLuaData );
+  szLocationTag = lua_tostring( pLua, ixStack );
+
+  self->m_fDeviceLocationTagDel( szUniqueDeviceName, szLocationTag );
 
   return 0;
 }

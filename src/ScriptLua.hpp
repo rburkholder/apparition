@@ -63,6 +63,28 @@ public:
 
   using vValue_t = std::vector<Value>;
 
+  using fDeviceRegisterAdd_t = std::function<bool(
+    const std::string_view& unique_name
+  , const std::string_view& display_name
+    )>;
+  using fDeviceRegisterDel_t = std::function<bool(
+    const std::string_view& unique_name
+    )>;
+
+  using fSensorRegisterAdd_t = std::function<bool(
+    const std::string_view& device_name
+  , const std::string_view& unique_name
+  , const std::string_view& display_name
+  , const std::string_view& units
+    )>;
+  using fSensorRegisterDel_t = std::function<bool(
+    const std::string_view& device_name
+  , const std::string_view& unique_name
+    )>;
+
+  using fDeviceLocationTagAdd_t = std::function<void( const std::string_view& device_name, const std::string_view& location_tag )>;
+  using fDeviceLocationTagDel_t = std::function<void( const std::string_view& device_name, const std::string_view& location_tag )>;
+
   using fMqttIn_t = std::function<void(const std::string_view& topic, const std::string_view& message)>;
 
   using fMqttConnect_t = std::function<void(void*)>;
@@ -88,6 +110,12 @@ public:
   void Set_MqttDeviceData( fMqttDeviceData_t&& );
   void Set_MqttPublish( fMqttPublish_t&& );
   void Set_MqttDisconnect( fMqttDisconnect_t&& );
+  void Set_DeviceRegisterAdd( fDeviceRegisterAdd_t&& );
+  void Set_DeviceRegisterDel( fDeviceRegisterDel_t&& );
+  void Set_SensorRegisterAdd( fSensorRegisterAdd_t&& );
+  void Set_SensorRegisterDel( fSensorRegisterDel_t&& );
+  void Set_DeviceLocationAdd( fDeviceLocationTagAdd_t&& );
+  void Set_DeviceLocationDel( fDeviceLocationTagDel_t&& );
 
   using fEvent_SensorChanged_t = std::function<
     void(const std::string& location, const std::string& device,const std::string& sensor,
@@ -134,6 +162,13 @@ private:
   fEventRegisterAdd_t m_fEventRegisterAdd;
   fEventRegisterDel_t m_fEventRegisterDel;
 
+  fDeviceRegisterAdd_t m_fDeviceRegisterAdd;
+  fDeviceRegisterDel_t m_fDeviceRegisterDel;
+  fSensorRegisterAdd_t m_fSensorRegisterAdd;
+  fSensorRegisterDel_t m_fSensorRegisterDel;
+  fDeviceLocationTagAdd_t m_fDeviceLocationTagAdd;
+  fDeviceLocationTagDel_t m_fDeviceLocationTagDel;
+
   mapScript_t::iterator Parse( const std::string& );
 
   void Attach( mapScript_t::iterator );
@@ -148,6 +183,13 @@ private:
 
   static int lua_event_register_add( lua_State* );
   static int lua_event_register_del( lua_State* );
+
+  static int lua_device_register_add( lua_State* );
+  static int lua_device_register_del( lua_State* );
+  static int lua_sensor_register_add( lua_State* );
+  static int lua_sensor_register_del( lua_State* );
+  static int lua_device_location_tag_add( lua_State* );
+  static int lua_device_location_tag_del( lua_State* );
 
   void Run_Test01( const std::string& name );
 
