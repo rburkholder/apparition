@@ -96,15 +96,15 @@ mqtt_in = function( topic_, message_ )
         end
       else
         if 3 == ix then
-          if 'laundry' == word then
+          if 'pir03' == word then
+            device_id = 'pir03'
             ix = ix + 1
           else
             break
           end
         else
           if 4 == ix then
-            if 'pir01' == word then
-              device_id = 'pir03'
+            if 'laundry' == word then
               ix = ix + 1
             end
           end
@@ -116,7 +116,10 @@ mqtt_in = function( topic_, message_ )
   if 5 == ix then
     -- local (faster gc) or global (space cached)?
     jvalues = json.decode( message_ )
-    pir03( jvalues )
+    if 'pir03' == device_id then
+      pir03( jvalues )
+    end
+
   end
 
 end
