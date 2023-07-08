@@ -71,7 +71,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
           }
         }
         else {
-          std::cout << "noop" << std::endl;;
+          std::cout << "noop: " << path << std::endl;;
         }
       },
       [this]( FileNotify::EType type, const std::string& s ){ // fScript
@@ -94,11 +94,11 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
               m_lua.Delete( path );
               break;
             case FileNotify::EType::move_from_:
-              std::cout << "move_from_ " << path << std::endl;
+              std::cout << "move from " << path << std::endl;
               m_lua.Delete( path );
               break;
             case FileNotify::EType::move_to_:
-              std::cout << "move_to_ " << path << std::endl;
+              std::cout << "move to " << path << std::endl;
               m_lua.Load( path );
               break;
             default:
@@ -107,7 +107,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
           }
         }
         else {
-          std::cout << "noop" << std::endl;
+          std::cout << "noop: " << path << std::endl;
         }
         //std::cout << s << std::endl;
       }
