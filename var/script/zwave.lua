@@ -50,7 +50,8 @@ zwave_value = function( json_, zwave_ix_dev_, zwave_ix_var_, sensor_ )
   local location = json_[ 'nodeLocation' ]
 
   if ( nil == device ) or ( nil == location ) then
-    io.write( '*** no device or location: ' .. sensor_ .. ', ' .. zwave_ix_dev_ .. ', ' .. zwave_ix_var_ .. '\n' )
+    -- SystemHeartbeat, 11, 113
+    -- io.write( 'zwave_value  ' .. topic .. ' *** no device or location: ' .. sensor_ .. ', ' .. zwave_ix_dev_ .. ', ' .. zwave_ix_var_ .. '\n' )
   else
     local units = ''
     local value = json_[ 'value' ]
