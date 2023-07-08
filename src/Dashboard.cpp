@@ -47,8 +47,8 @@ Dashboard::Dashboard( const Wt::WEnvironment& env )
     << env.internalPath() << "','"
     << env.locale().name() << "','"
     << env.timeZoneName() << "'";
-      BOOST_LOG_TRIVIAL(info) << sessionId() << ",environment ajax: " << env.ajax();
-      BOOST_LOG_TRIVIAL(info) << sessionId() << ",environment userAgent: " << env.userAgent();
+  BOOST_LOG_TRIVIAL(info) << sessionId() << ",environment ajax: " << env.ajax();
+  BOOST_LOG_TRIVIAL(info) << sessionId() << ",environment userAgent: " << env.userAgent();
 
 }
 
@@ -122,7 +122,7 @@ void Dashboard::UpdateDeviceSensor(
     Wt::WContainerWidget* pBoxSensor
       = iterDevice->second.m_pBoxDevice->addWidget( std::make_unique<Wt::WContainerWidget>() );
     pBoxSensor->addStyleClass( "card text-bg-secondary m-1 p-1" );
-    //pBoxSensor->setContentAlignment( Wt::AlignmentFlag::Justify );
+    //pBoxSensor->setContentAlignment( Wt::AlignmentFlag::Justify );  // performs a style rather than a class, this is where styles come from
 
     Wt::WContainerWidget* pBoxSensorValue
       = pBoxSensor->addWidget( std::make_unique<Wt::WContainerWidget>() );
