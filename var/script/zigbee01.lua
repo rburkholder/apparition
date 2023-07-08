@@ -17,12 +17,12 @@ extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
 local c_pir03_name = 'pir03'
 local meta_pir03_sensor = {
-  { extract2, "battery",     "%", "" },
-  { extract2, "battery_low", "",  ""  },
-  { extract3, "linkquality", "", "link_quality" },
-  { extract2, "occupancy",   "",   "occupancy" },
+  { extract2, "occupancy",   "",  "occupancy" },
   { extract3, "tamper",      "",  "tamper" },
+  { extract3, "linkquality", "", "link_quality" },
   { extract3, "voltage",     "mV",  "voltage" },
+  { extract2, "battery_low", "",  ""  },
+  { extract2, "battery",     "%", "" },
 }
 local meta_pir03_location_tag = {
   'laundry'
@@ -69,6 +69,9 @@ local pir03 = function( json_ )
 
   mqtt_device_data( object_ptr, "laundry", "pir", #data, data );
 end
+
+-- mqtt_in zigbee/1/bridge/logging: {"level":"info","message":"MQTT publish: topic 'zigbee/1/laundry/pir01', payload '{\"battery\":100,\"battery_low\":false,\"linkquality\":84,\"occupancy\":false,\"tamper\":false,\"voltage\":3000}'"}
+-- mqtt_in zigbee/1/laundry/pir01: {"battery":100,"battery_low":false,"linkquality":84,"occupancy":false,"tamper":false,"voltage":3000}
 
 mqtt_in = function( topic_, message_ )
 
