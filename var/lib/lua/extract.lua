@@ -11,16 +11,22 @@ local json = cjson.new()
 
 extract2 = function( json_, table_, column_, units_ )
   -- name, value, units
-  local record = {
-    column_, json_[ column_ ], units_
-  }
-  table_[ #table_ + 1 ] = record
+  local value = json_[ column_ ]
+  if nil ~= value then
+    local record = {
+      column_, value, units_
+    }
+    table_[ #table_ + 1 ] = record
+  end
 end
 
 extract3 = function( json_, table_, column_, units_, name_ )
   -- name, value, units
-  local record = {
-    name_, json_[ column_ ], units_
-  }
-  table_[ #table_ + 1 ] = record
+  local value = json_[ column_ ]
+  if nil ~= value then
+    local record = {
+      name_, value, units_
+    }
+    table_[ #table_ + 1 ] = record
+  end
 end
