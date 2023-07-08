@@ -59,7 +59,7 @@ detach = function ( object_ptr_ )
   object_ptr = nil
 end
 
-local pir03 = function( json_ )
+local pir03 = function( json_, location_, name_ )
   local data = {}
 
   for key, value in ipairs( meta_pir03_sensor ) do
@@ -73,12 +73,16 @@ end
 -- mqtt_in zigbee/1/bridge/logging: {"level":"info","message":"MQTT publish: topic 'zigbee/1/laundry/pir01', payload '{\"battery\":100,\"battery_low\":false,\"linkquality\":84,\"occupancy\":false,\"tamper\":false,\"voltage\":3000}'"}
 -- mqtt_in zigbee/1/laundry/pir01: {"battery":100,"battery_low":false,"linkquality":84,"occupancy":false,"tamper":false,"voltage":3000}
 
+local devices = {}
+devices[ 'pir03' ] = { 'pir03', 'laundry', 'pir', pir03 }
+
 mqtt_in = function( topic_, message_ )
 
   io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
 
   local ix = 1
-  local device_id = ''
+  local device = ''
+  local location = ''
   for word in string.gmatch( topic_, '[_%a%d]+' ) do
     -- io.write( 'zigbee ' .. ix .. ' ' .. word .. '\n' )
     if 1 == ix then
@@ -96,17 +100,12 @@ mqtt_in = function( topic_, message_ )
         end
       else
         if 3 == ix then
-          if 'pir03' == word then
-            device_id = 'pir03'
-            ix = ix + 1
-          else
-            break
-          end
+          device = word
+          ix = ix + 1
         else
           if 4 == ix then
-            if 'laundry' == word then
-              ix = ix + 1
-            end
+            location = word
+            ix = ix + 1
           end
         end
       end
@@ -116,10 +115,13 @@ mqtt_in = function( topic_, message_ )
   if 5 == ix then
     -- local (faster gc) or global (space cached)?
     jvalues = json.decode( message_ )
-    if 'pir03' == device_id then
-      pir03( jvalues )
+    table = devices[ device ]
+    if nil ~= table then
+      if location == table[ 2 ] then
+        local decode = table[ 4 ]
+        decode( jvalues, table[ 2 ], table[ 3 ] )
+      end
     end
-
   end
 
 end
