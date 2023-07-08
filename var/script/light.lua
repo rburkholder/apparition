@@ -61,15 +61,15 @@ event_sensor_changed = function( location_, device_, sensor_, value_ )
   if 'targetValue' == sensor_ then
     if false == value_ then
       io.write( 'turn off den light\n')
-      local topic1 = 'zigbee/1/den/light01/set'
-      local topic2 = 'zigbee/1/den/light02/set'
+      local topic1 = 'zigbee/1/light01/den/set'
+      local topic2 = 'zigbee/1/light02/den/set'
       local message = '{"state":"OFF"}'
       mqtt_publish( object_ptr, topic1, message )
       mqtt_publish( object_ptr, topic2, message )
     elseif true == value_ then
       io.write( 'turn on den light\n' )
-      local topic1 = 'zigbee/1/den/light01/set'
-      local topic2 = 'zigbee/1/den/light02/set'
+      local topic1 = 'zigbee/1/light01/den/set'
+      local topic2 = 'zigbee/1/light02/den/set'
       local message = '{"state":"ON"}'
       mqtt_publish( object_ptr, topic1, message )
       mqtt_publish( object_ptr, topic2, message )
@@ -77,33 +77,33 @@ event_sensor_changed = function( location_, device_, sensor_, value_ )
   elseif 'scene001' == sensor_ then -- eating area light
     if 0 == value_ then
       io.write( 'turn on eating area light\n')
-      local topic1 = 'zigbee/1/eating_area/light01/set'
+      local topic1 = 'zigbee/1/light04/eating_area/set'
       local message = '{"state":"ON"}'
       mqtt_publish( object_ptr, topic1, message )
     elseif 2 == value_ then
       io.write( 'turn off eating area light\n')
-      local topic1 = 'zigbee/1/eating_area/light01/set'
+      local topic1 = 'zigbee/1/light04/eating_area/set'
       local message = '{"state":"OFF"}'
       mqtt_publish( object_ptr, topic1, message )
     end
   elseif 'scene002' == sensor_ then -- back hallway light
     if 0 == value_ then
-      io.write( 'turn on back hallway light\n')
-      local topic1 = 'zigbee/1/back_hallway/light01/set'
+      io.write( 'turn on back entry light\n')
+      local topic1 = 'zigbee/1/light03/back_entry/set'
       local message = '{"state":"ON"}'
       mqtt_publish( object_ptr, topic1, message )
     elseif 2 == value_ then
-      io.write( 'turn off back hallway light\n')
-      local topic1 = 'zigbee/1/back_hallway/light01/set'
+      io.write( 'turn off back entry light\n')
+      local topic1 = 'zigbee/1/light03/back_entry/set'
       local message = '{"state":"OFF"}'
       mqtt_publish( object_ptr, topic1, message )
     end
   elseif 'scene003' == sensor_ then -- all lights on
     io.write( 'turn on all lights\n' )
-    local topic1 = 'zigbee/1/den/light01/set'
-    local topic2 = 'zigbee/1/den/light02/set'
-    local topic3 = 'zigbee/1/eating_area/light01/set'
-    local topic4 = 'zigbee/1/back_hallway/light01/set'
+    local topic1 = 'zigbee/1/light01/den/set'
+    local topic2 = 'zigbee/1/light02/den/set'
+    local topic3 = 'zigbee/1/light03/back_entry/set'
+    local topic4 = 'zigbee/1/light04/eating_area/set'
     local message = '{"state":"ON"}'
     -- TODO: update targetvalue on scene01 to maintain consistency
     mqtt_publish( object_ptr, topic1, message )
@@ -112,10 +112,10 @@ event_sensor_changed = function( location_, device_, sensor_, value_ )
     mqtt_publish( object_ptr, topic4, message )
   elseif 'scene004' == sensor_ then -- all lights off
     io.write( 'turn off all lights\n' )
-    local topic1 = 'zigbee/1/den/light01/set'
-    local topic2 = 'zigbee/1/den/light02/set'
-    local topic3 = 'zigbee/1/eating_area/light01/set'
-    local topic4 = 'zigbee/1/back_hallway/light01/set'
+    local topic1 = 'zigbee/1/light01/den/set'
+    local topic2 = 'zigbee/1/light02/den/set'
+    local topic3 = 'zigbee/1/light03/back_entry/set'
+    local topic4 = 'zigbee/1/light04/eating_area/set'
     local message = '{"state":"OFF"}'
     -- TODO: update targetvalue on scene01 to maintain consistency
     mqtt_publish( object_ptr, topic1, message )
