@@ -76,7 +76,7 @@ mqtt_in = function( topic_, message_ )
           if 'bme680' == word then
             ix = ix + 1
           else
-            break;
+            break
           end
         end
       end
