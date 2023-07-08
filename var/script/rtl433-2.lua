@@ -11,7 +11,7 @@ local topic = 'rtl433/2'
 local object_ptr = 0
 
 package.path='' -- can not have ?.so in script path
-package.cpath='lib/lua/?.so' -- dedicate to custom direcotry for now
+package.cpath='lib/lua/?.so' -- dedicate to custom directory for now
 local cjson = require( 'cjson' )
 local json = cjson.new()
 
