@@ -118,7 +118,7 @@ end
 
 -- zooz 5 button scene controller - scene control
 zwave_91 = function( json_, zwave_ix_dev_, zwave_ix_var_, sensor_ )
-  io.write( '*** to be processed: scene controller dev ' .. zwave_ix_dev_ .. '\n' )
+  -- io.write( '*** to be processed: scene controller dev ' .. zwave_ix_dev_ .. '\n' )
   -- scene00x:
   -- 0:     key quick press
   -- 1:     key released
@@ -154,24 +154,24 @@ end
 zwave_last_active = function( json_, zwave_ix_dev )
   -- send a 'last seen'
   -- {"time":1686982088722,"value":1686982088722}
-  io.write( '*** to be processed: last active dev ' .. zwave_ix_dev .. '\n' )
+  -- io.write( '*** to be processed: last active dev ' .. zwave_ix_dev .. '\n' )
 end
 
 zwave_status = function( json_, zwave_ix_dev )
   -- lookup node id
   -- {"time":1687025699989,"value":true,"status":"Awake","nodeId":11}
-  io.write( '*** to be processed: status dev ' .. zwave_ix_dev .. '\n' )
+  -- io.write( '*** to be processed: status dev ' .. zwave_ix_dev .. '\n' )
 end
 
 zwave_heart_beat = function( json_, zwave_ix_dev )
   -- lookup node id
   -- {"time":1686879218844}
-  io.write( '*** to be processed: heart beat dev ' .. zwave_ix_dev .. '\n' )
+  -- io.write( '*** to be processed: heart beat dev ' .. zwave_ix_dev .. '\n' )
 end
 
 mqtt_in = function( topic_, message_ )
 
-  io.write( "mqtt_in ".. topic_ .. ": ".. message_ .. '\n' )
+  -- io.write( "mqtt_in ".. topic_ .. ": ".. message_ .. '\n' )
   -- fileLog:write( topic_ .. ": ".. message_.. '\n' )
 
   local error = true
@@ -251,7 +251,7 @@ mqtt_in = function( topic_, message_ )
       zwave_value( jvalues, zwave_ix_dev, zwave_ix_var, sensor )
     else
       if error then
-        io.write( '*** discovery not complete: ' .. topic_ .. ': ' .. message_ .. '\n' )
+        -- io.write( '*** discovery not complete: ' .. topic_ .. ': ' .. message_ .. '\n' )
       end
 
     end
