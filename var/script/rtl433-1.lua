@@ -99,8 +99,8 @@ local ws90 = function( json_ )
   local data = {}
 
   for key, value in ipairs( meta_ws90_sensor ) do
-    local called = value[ 1 ]
-    called( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
+    local extract = value[ 1 ]
+    extract( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
   end
 
   mqtt_device_data( object_ptr, "patio", "ws90", #data, data );
@@ -110,8 +110,8 @@ local neptune = function( json_ )
   local data = {}
 
   for key, value in ipairs( meta_neptune_sensor ) do
-    local called = value[ 1 ]
-    called( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
+    local extract = value[ 1 ]
+    extract( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
   end
 
   mqtt_device_data( object_ptr, "house", "water", #data, data );
