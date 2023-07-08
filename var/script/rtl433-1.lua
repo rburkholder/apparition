@@ -10,26 +10,13 @@ description = 'rtl433/1 translation for ws90 and neptune water meter'
 local topic = 'rtl433/1'
 local object_ptr = 0
 
-package.path='' -- can not have ?.so in script path
-package.cpath='lib/lua/?.so' -- dedicate to custom direcotry for now
+package.path='lib/lua/*.lua'
+package.cpath='lib/lua/?.so'
 local cjson = require( 'cjson' )
 local json = cjson.new()
 
-local extract2 = function( json_, table_, column_, units_ )
-  -- name, value, units
-  local record = {
-    column_, json_[ column_ ], units_
-  }
-  table_[ #table_ + 1 ] = record
-end
-
-local extract3 = function( json_, table_, column_, units_, name_ )
-  -- name, value, units
-  local record = {
-    name_, json_[ column_ ], units_
-  }
-  table_[ #table_ + 1 ] = record
-end
+local extraction = assert( loadfile( "lib/lua/extract.lua" ) )
+extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
 local c_ws90_name = 'ws90_01'
 local meta_ws90_sensor = {
@@ -152,5 +139,3 @@ mqtt_in = function( topic_, message_ )
     end
   end
 end
-
-
