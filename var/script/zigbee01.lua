@@ -15,12 +15,11 @@ local json = cjson.new()
 local extraction = assert( loadfile( "lib/lua/extract.lua" ) )
 extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
-local c_pir03_name = 'pir03'
-local meta_pir03_sensor = {
-  { extract2, "occupancy",   "",  "occupancy" },
-  { extract3, "tamper",      "",  "tamper" },
+local meta_pir_sensor = {
+  { extract2, "occupancy",   "",  "" },
+  { extract2, "tamper",      "",  "" },
   { extract3, "linkquality", "", "link_quality" },
-  { extract3, "voltage",     "mV",  "voltage" },
+  { extract2, "voltage",     "mV",  "" },
   { extract2, "battery_low", "",  ""  },
   { extract2, "battery",     "%", "" },
 }
@@ -28,20 +27,55 @@ local meta_pir03_location_tag = {
   'laundry'
 }
 
+local meta_light_sensor = {
+  { extract2, "state", "", "" },
+  { extract2, "brightness", "%", "" },
+  { extract2, "color_temp", "K", "" },
+  { extract3, "linkquality", "", "link_quality" },
+}
+local meta_light01_location_tag = { 'den' }
+local meta_light02_location_tag = { 'den' }
+local meta_light03_location_tag = { 'back_entry' }
+local meta_light04_location_tag = { 'eating_area' }
+
+local sensor_list_data = function( json_, name_, device_ )
+  local location_ = device_[ 1 ]
+  local meta_sensor = device_[ 3 ]
+
+  local data = {}
+
+  for key, value in ipairs( meta_sensor ) do
+    local extract = value[ 1 ]
+    extract( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
+  end
+
+  mqtt_device_data( object_ptr, location_, name_, #data, data );
+end
+
+local devices = {}
+devices[ 'pir03' ]   = { 'laundry', 'laundry pir', meta_pir_sensor, meta_pir03_location_tag }
+devices[ 'light01' ] = { 'den', 'den light 1',  meta_light_sensor, meta_light01_location_tag }
+devices[ 'light02' ] = { 'den', 'den light 2',  meta_light_sensor, meta_light02_location_tag }
+devices[ 'light03' ] = { 'back_entry', 'back entry light',  meta_light_sensor, meta_light03_location_tag }
+devices[ 'light04' ] = { 'eating_area', 'eating area light',  meta_light_sensor, meta_light04_location_tag }
+
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
 
-  -- pir03 registration
+  for device_name, device in pairs( devices ) do
+    device_register_add( object_ptr, device_name, device[ 2 ] )
 
-  device_register_add( object_ptr, c_pir03_name, 'laundry pir' )
+    local meta_table = device[ 3 ]
+    for key2, value in ipairs( meta_table ) do
+      -- io.write( 'pir03 key ' .. key .. '=' .. value[ 2 ] .. ',' .. value[ 3 ] .. ',' .. value[ 4 ] .. '\n' )
+      sensor_register_add( object_ptr, device_name, value[ 2 ], value[ 4 ], value[ 3 ] )
+    end
 
-  for key, value in ipairs( meta_pir03_sensor ) do
-    -- io.write( 'pir03 key ' .. key .. '=' .. value[ 2 ] .. ',' .. value[ 3 ] .. ',' .. value[ 4 ] .. '\n' )
-    sensor_register_add( object_ptr, c_pir03_name, value[ 2 ], value[ 4 ], value[ 3 ] )
-  end
+    local location_table = device[ 4 ]
+    for key2, value in ipairs( location_table ) do
+      device_location_tag_add( object_ptr, device_name, value )
+    end
 
-  for key, value in ipairs( meta_pir03_location_tag ) do
-    device_location_tag_add( object_ptr, c_pir03_name, value )
   end
 
   -- mqtt registration
@@ -54,34 +88,22 @@ detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic )
   mqtt_disconnect( object_ptr )
 
-  device_register_del( object_ptr, c_pir03_name ) -- sensors, location tags auto deleted
+  for key, device in pairs( devices ) do
+    device_register_del( object_ptr, key )
+  end
 
   object_ptr = nil
 end
 
-local pir03 = function( json_, location_, name_ )
-  local data = {}
-
-  for key, value in ipairs( meta_pir03_sensor ) do
-    local extract = value[ 1 ]
-    extract( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
-  end
-
-  mqtt_device_data( object_ptr, "laundry", "pir", #data, data );
-end
-
 -- mqtt_in zigbee/1/bridge/logging: {"level":"info","message":"MQTT publish: topic 'zigbee/1/laundry/pir01', payload '{\"battery\":100,\"battery_low\":false,\"linkquality\":84,\"occupancy\":false,\"tamper\":false,\"voltage\":3000}'"}
 -- mqtt_in zigbee/1/laundry/pir01: {"battery":100,"battery_low":false,"linkquality":84,"occupancy":false,"tamper":false,"voltage":3000}
-
-local devices = {}
-devices[ 'pir03' ] = { 'pir03', 'laundry', 'pir', pir03 }
 
 mqtt_in = function( topic_, message_ )
 
   io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
 
   local ix = 1
-  local device = ''
+  local name = ''
   local location = ''
   for word in string.gmatch( topic_, '[_%a%d]+' ) do
     -- io.write( 'zigbee ' .. ix .. ' ' .. word .. '\n' )
@@ -100,7 +122,7 @@ mqtt_in = function( topic_, message_ )
         end
       else
         if 3 == ix then
-          device = word
+          name = word
           ix = ix + 1
         else
           if 4 == ix then
@@ -115,11 +137,10 @@ mqtt_in = function( topic_, message_ )
   if 5 == ix then
     -- local (faster gc) or global (space cached)?
     jvalues = json.decode( message_ )
-    table = devices[ device ]
-    if nil ~= table then
-      if location == table[ 2 ] then
-        local decode = table[ 4 ]
-        decode( jvalues, table[ 2 ], table[ 3 ] )
+    local device = devices[ name ]
+    if nil ~= device then
+      if location == device[ 1 ] then
+        sensor_list_data( jvalues, name, device )
       end
     end
   end
