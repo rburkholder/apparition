@@ -374,10 +374,8 @@ void ScriptLua::Detach( mapScript_t::iterator iterScript ) {
 }
 
 int ScriptLua::lua_mqtt_connect( lua_State* pLua ) { // called by lua to connect to mqtt broker
-
   int n = lua_gettop( pLua );    /* number of arguments */
   assert( 1 == n ); // LUA_TUSERDATA(this)
-
   void* object = lua_touserdata( pLua, 1 );
   ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
 
@@ -388,8 +386,12 @@ int ScriptLua::lua_mqtt_connect( lua_State* pLua ) { // called by lua to connect
 
 int ScriptLua::lua_mqtt_disconnect( lua_State* pLua ) { // called by lua to disconnect from mqtt broker
   int n = lua_gettop( pLua );    /* number of arguments */
+  assert( 1 == n ); // LUA_TUSERDATA(this)
   void* object = lua_touserdata( pLua, 1 );
   ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
+  self->m_fMqttDisconnect( pLua );
+
   return 0;
 }
 

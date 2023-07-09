@@ -136,7 +136,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
       m_pMQTT->Connect(
         context,
         [](){ // fSuccess_t
-          std::cout << "mqtt connection: success" << std::endl;
+          //std::cout << "mqtt connection: success" << std::endl;
         },
         [](){ // fFailure_t
           std::cout << "mqtt connection: failure" << std::endl;
@@ -230,7 +230,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
       m_pMQTT->Disconnect(
         context,
         [](){ // fSuccess_t
-
+          //std::cout << "mqtt disconnection: success" << std::endl;
         },
         [](){ // fFailure_t
           std::cout << "mqtt disconnection: failure" << std::endl;

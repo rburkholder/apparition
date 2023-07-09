@@ -41,6 +41,7 @@ void MQTT::Connect( void* context, fSuccess_t&& fSuccess, fFailure_t&& fFailure 
     auto result = m_mapConnection.emplace( mapConnection_t::value_type( context, std::move( pMQTT_impl ) ) );
     assert( result.second );
     iterConnection = result.first;
+    fSuccess(); // new entry
   }
   else {
     fFailure(); // already exists
@@ -55,6 +56,7 @@ void MQTT::Disconnect( void* context, fSuccess_t&& fSuccess, fFailure_t&& fFailu
   else {
     iterConnection->second.reset();
     m_mapConnection.erase( iterConnection );
+    fSuccess();
   }
 }
 
