@@ -38,20 +38,6 @@ local meta_light02_location_tag = { 'den' }
 local meta_light03_location_tag = { 'back_entry' }
 local meta_light04_location_tag = { 'eating_area' }
 
-local sensor_list_data = function( json_, name_, device_ )
-  local location_ = device_[ 1 ]
-  local meta_sensor = device_[ 3 ]
-
-  local data = {}
-
-  for key, value in ipairs( meta_sensor ) do
-    local extract = value[ 1 ]
-    extract( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
-  end
-
-  mqtt_device_data( object_ptr, location_, name_, #data, data );
-end
-
 local devices = {}
 devices[ 'pir03' ]   = { 'laundry', 'laundry pir', meta_pir_sensor, meta_pir03_location_tag }
 devices[ 'light01' ] = { 'den', 'den light 1',  meta_light_sensor, meta_light01_location_tag }
@@ -140,7 +126,7 @@ mqtt_in = function( topic_, message_ )
     local device = devices[ name ]
     if nil ~= device then
       if location == device[ 1 ] then
-        sensor_list_data( jvalues, name, device )
+        sensor_list_data( object_ptr, jvalues, name, device )
       end
     end
   end

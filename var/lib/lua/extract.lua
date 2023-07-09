@@ -30,3 +30,17 @@ extract3 = function( json_, table_, column_, units_, name_ )
     table_[ #table_ + 1 ] = record
   end
 end
+
+sensor_list_data = function( object_ptr_, json_, name_, device_ )
+  local location_ = device_[ 1 ]
+  local meta_sensor = device_[ 3 ]
+
+  local data = {}
+
+  for key, value in ipairs( meta_sensor ) do
+    local extract = value[ 1 ]
+    extract( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
+  end
+
+  mqtt_device_data( object_ptr_, location_, name_, #data, data );
+end
