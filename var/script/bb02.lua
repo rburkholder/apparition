@@ -9,10 +9,13 @@ description = 'watches zwave discovery channel supplied by bb02 - to be implemen
 local topic = 'bb02/#'
 local object_ptr = 0
 
-package.path='' -- can not have ?.so in script path
-package.cpath='lib/lua/?.so' -- dedicate to custom directory for now
+package.path='lib/lua/*.lua'
+package.cpath='lib/lua/?.so'
 local cjson = require( 'cjson' )
 local json = cjson.new()
+
+local extraction = assert( loadfile( "lib/lua/extract.lua" ) )
+extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
 -- local fileLog = nil;
 
@@ -28,22 +31,6 @@ detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic )
   mqtt_disconnect( object_ptr )
   object_ptr = 0
-end
-
-extract2 = function( json_, table_, column_, units_ )
-  -- name, value, units
-  local record = {
-    column_, json_[ column_ ], units_
-  }
-  table_[ #table_ + 1 ] = record
-end
-
-extract3 = function( json_, table_, column_, units_, name_ )
-  -- name, value, units
-  local record = {
-    name_, json_[ column_ ], units_
-  }
-  table_[ #table_ + 1 ] = record
 end
 
 zwave_discovery = function( json_, type_, device_, sensor_ )
