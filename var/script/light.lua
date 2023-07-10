@@ -58,6 +58,7 @@ event_sensor_changed = function( location_, device_, sensor_, value_ )
   -- false: end of state change (undefined) - use -1 as marker?
 
   -- will need to auto-compose strings from event/sensor dictionary?
+  -- perform a lookup on a table to determine action to take?
   if 'targetValue' == sensor_ then
     if false == value_ then
       -- io.write( 'turn off den light\n')
