@@ -4,6 +4,40 @@ _an immaterial appearance that seems real, and is generally sudden or startling 
 
 The philosophy with Apparition is to compose an automation/monitoring/alert tool from a series of mature packages, all integrated under one roof.  The tool should work in the background and only manifest itself when needed.
 
+Functionality:
+* C++ core for coordinating the subsystems
+* Lua scripting to handle parsing, variable aggregation, and event handling
+  * Scripts can be live edited without restarting the application
+* Current implementation sensors decoded & controlled via Lua:
+  * zwave controller via Zooz & Z-Wave JS UI (MQTT)
+    * Honeywell Thermostats
+    * GIG Thermostats
+    * Zooz Scene controllers controls lights
+    * New-One metered smartplug
+    * smoke alarm
+  * zigbee controller via Sonoff & Zigbee2MQTT (MQTT)
+    * Philips Hue lights
+    * PIR sensors
+  * RTLSDR 433Mhz & 915Mhz radios (MQTT)
+    * EcoWitt WS90 Weather Station
+    * DSC PIR, Door, Smoke alarm
+    * Thermopro temperature/humidity
+    * Neptune water meter
+  * BeagleBoard BME 680 (MQTT)
+    * temperature, humidity, pressure
+* Time series data sent to Prometheus for efficient recording
+  * over 120 time series currently collected so storage efficiency is important
+* Grafana tied to Prometheus for dashboards and charting
+* A simple web dashboard with current values
+
+On the immediate todo list:
+* dashboard updates:
+  * organize devices & sensors logically - defined by Lua config statements
+  * control devices using widgets - triggering Lua control scripts
+* provide persistence via an attached database, probably sqlite
+* embed charts of prometheus data in dashboard
+* improved recovery from failed scripts
+
 Order of install:
 * install packages:
   * [C++ library: mqtt-paho](docs/mqtt-paho.md) - mqtt client
@@ -24,7 +58,7 @@ Order of install:
   * [notes](docs/apparition.md)
 
 Proposed tooling:
-* C++ as primary backend
+* C++20 as primary backend
   * [boost](https://www.boost.org/) - use my [libs-build](https://github.com/rburkholder/libs-build) library to bulid and install
     * [asio](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio.html) - signals, network
     * [beast](https://www.boost.org/doc/libs/1_82_0/libs/beast/doc/html/index.html) - REST, WebSocket
