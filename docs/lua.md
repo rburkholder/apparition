@@ -29,7 +29,7 @@ index 30d64be..8c943f2 100644
 
 * not needed currently
 
-# Installation - lua-cjson - https://github.com/mpx/lua-cjson/
+# Installation - lua-cjson
 
 * pushd 3rdparty
 * git clone --depth=1 https://github.com/mpx/lua-cjson.git
