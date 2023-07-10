@@ -11,7 +11,7 @@ set(BOOST_INCLUDEDIR "/usr/local/include/boost")
 
 find_package(Boost ${TF_BOOST_VERSION} REQUIRED COMPONENTS system date_time filesystem serialization regex log log_setup)
 
-#message("boost    lib: ${Boost_LIBRARIES}")
+#message("boost lib: ${Boost_LIBRARIES}")
 
 set(
   file_hpp
@@ -23,6 +23,7 @@ set(
     FileNotify.hpp
     MQTT.hpp
     MQTT_impl.hpp
+    PrometheusClient.hpp
     ScriptLua.hpp
     WebServer.hpp
   )
@@ -37,6 +38,7 @@ set(
     main.cpp
     MQTT.cpp
     MQTT_impl.cpp
+    PrometheusClient.cpp
     ScriptLua.cpp
     WebServer.cpp
   )
@@ -66,6 +68,7 @@ target_link_libraries(
     paho-mqtt3c
     fmt
     prometheus-cpp-core
+    prometheus-cpp-pull
     wt
     wthttp
     ${Boost_LIBRARIES}

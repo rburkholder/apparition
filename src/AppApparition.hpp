@@ -29,10 +29,7 @@
 
 #include "ScriptLua.hpp"
 #include "ConfigYaml.hpp"
-
-namespace prometheus {
-  class Registry;
-}
+#include "PrometheusClient.hpp"
 
 class MQTT;
 class FileNotify;
@@ -50,11 +47,12 @@ private:
   ScriptLua m_lua;
   ConfigYaml m_yaml;
 
+  PrometheusClient m_clientPrometheus;
+
   std::unique_ptr<MQTT> m_pMQTT;
   std::unique_ptr<WebServer> m_pWebServer;
   std::unique_ptr<FileNotify> m_pFileNotify;
   std::unique_ptr<DashboardFactory> m_pDashboardFactory;
-  std::unique_ptr<prometheus::Registry> m_pPrometheusRegistry;
 
   using mapEventSensorChanged_t = std::unordered_map<void*,ScriptLua::fEvent_SensorChanged_t>;
 
@@ -63,21 +61,27 @@ private:
     ScriptLua::value_t value;
     std::string sUnits;
     boost::posix_time::ptime dtLastSeen;
+    prometheus::Family<prometheus::Gauge>* pFamily;
+    prometheus::Gauge* pGauge;
     mapEventSensorChanged_t mapEventSensorChanged;
     bool bHidden; // used for internal signalling between scripts
 
     Sensor( ScriptLua::value_t value_, const std::string sUnits_ )
-    : bHidden( false ), value( value_ ), sUnits( sUnits_ ), dtLastSeen(/*not a datetime*/) {}
+    : bHidden( false ), value( value_ ), sUnits( sUnits_ ), dtLastSeen(/*not a datetime*/)
+    , pFamily( nullptr ), pGauge( nullptr ) {}
     Sensor( const std::string& sDisplayName_, ScriptLua::value_t value_, const std::string sUnits_ )
-    : bHidden( false ), sDisplayName( sDisplayName_ ), value( value_ ), sUnits( sUnits_ ), dtLastSeen(/*not a datetime*/) {}
+    : bHidden( false ), sDisplayName( sDisplayName_ ), value( value_ ), sUnits( sUnits_ ), dtLastSeen(/*not a datetime*/)
+    , pFamily( nullptr ), pGauge( nullptr ) {}
     Sensor( const std::string& sDisplayName_, const std::string& sUnits_ )
-    : bHidden( false ), sDisplayName( sDisplayName_ ), sUnits( sUnits_ ), dtLastSeen(/*not a datetime*/) {}
+    : bHidden( false ), sDisplayName( sDisplayName_ ), sUnits( sUnits_ ), dtLastSeen(/*not a datetime*/)
+    , pFamily( nullptr ), pGauge( nullptr ) {}
     Sensor( const Sensor& ) = delete;
     Sensor( Sensor&& rhs )
     : bHidden( rhs.bHidden )
     , sDisplayName( std::move( rhs.sDisplayName ) )
     , value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) )
     , dtLastSeen( rhs.dtLastSeen ), mapEventSensorChanged( std::move( rhs.mapEventSensorChanged ))
+    , pFamily( rhs.pFamily ), pGauge( rhs.pGauge )
     {}
   };
 
@@ -115,7 +119,7 @@ private:
   using mapLocation_t = std::unordered_map<std::string,Location>;
   mapLocation_t m_mapLocation;
 
-  Location m_dummy; // until m_mapLocation is removed
+  Location m_dummy; // used in SensorPath until m_mapLocation is removed
 
   struct SensorPath {
     bool bInserted;

@@ -31,8 +31,6 @@
 
 #include <fmt/format.h>
 
-#include <prometheus/registry.h>
-
 #include "MQTT.hpp"
 #include "Common.hpp"
 #include "FileNotify.hpp"
@@ -117,8 +115,6 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
     std::cout << "FileNotify error: " << e.what() << std::endl;
   }
 
-  m_pPrometheusRegistry = std::make_unique<prometheus::Registry>();
-
   static const std::vector<std::string> vWebParameters = {
     "--docroot=web;/favicon.ico,/resources,/style,/image"
   , "--http-listen=0.0.0.0:8089"
@@ -148,6 +144,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
     } );
   m_lua.Set_MqttDeviceData(
     [this]( const std::string_view& svLocation, const std::string_view& svDevice, const ScriptLua::vValue_t&& vValue_ ){
+
       // TODO:
       // 1. publish to event handlers - via worker thread -- third?
       // 2. updates to web page -- fourth?
@@ -159,6 +156,12 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
       const auto now( boost::posix_time::microsec_clock::local_time() );
 
       for ( const ScriptLua::vValue_t::value_type& vt: vValue_ ) {
+        //BOOST_LOG_TRIVIAL(info)
+        //  << "MqttDeviceData: "
+        //  << sLocation << ','
+        //  << sDevice << ','
+        //  << vt.sName
+        //  ;
         SensorPath path( LookupSensor_Insert( sLocation, sDevice, vt.sName ) );
         Sensor& sensor( path.sensor );
         if ( path.bInserted || ( boost::posix_time::not_a_date_time == path.sensor.dtLastSeen ) ) {
@@ -172,6 +175,13 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
         for ( mapEventSensorChanged_t::value_type& event: sensor.mapEventSensorChanged ) {
           event.second( sLocation, sDevice, vt.sName, priorValue, sensor.value );
         }
+
+        if ( sensor.pGauge ) {
+          if ( std::holds_alternative<double>( vt.value ) ) {
+            sensor.pGauge->Set( std::get<double>( vt.value ) );
+          }
+        }
+
       }
 
       if ( false ) {
@@ -351,25 +361,36 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
         sDisplayName = std::move( std::string( display_name ) );
       }
 
+      //BOOST_LOG_TRIVIAL(info)
+      //  << "SensorRegisterAdd: "
+      //  << sDeviceName << ','
+      //  << sSensorName << ','
+      //  << sDisplayName << ','
+      //  << sUnits
+      //  ;
+
       mapDevice_t::iterator iterDevice = m_mapDevice.find( sDeviceName );
       if ( m_mapDevice.end() == iterDevice ) {
         bStatus = false;
         BOOST_LOG_TRIVIAL(warning)
-          << "Sensor Registration add, device " << sDeviceName << ":" << sSensorName
+          << "Sensor Registration add, device " << sDeviceName << ":" << sDisplayName
           << " not found, addition skipped";
       }
       else {
         Device& device( iterDevice->second );
-        mapSensor_t::iterator iterSensor = device.mapSensor.find( sSensorName );
+        mapSensor_t::iterator iterSensor = device.mapSensor.find( sDisplayName );
         if ( device.mapSensor.end() != iterSensor ) {
           bStatus = false;
           BOOST_LOG_TRIVIAL(warning)
-            << "Sensor Registration add" << sDeviceName << ":" << sSensorName
+            << "Sensor Registration add" << sDeviceName << ":" << sDisplayName
             << " already exists, addition skipped";
         }
         else {
-          auto result = device.mapSensor.emplace( sSensorName, Sensor( sDisplayName, sUnits ) );
+          auto result = device.mapSensor.emplace( sDisplayName, Sensor( sDisplayName, sUnits ) );
           assert( result.second );
+          Sensor& sensor( result.first->second );
+          sensor.pFamily = &m_clientPrometheus.AddSensor_Gauge( "apparition_" + sDeviceName + '_' + sDisplayName );
+          sensor.pGauge = &sensor.pFamily->Add( {} );
         }
       }
 
@@ -405,6 +426,15 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
             << " not found, deletion skipped";
         }
         else {
+          Sensor& sensor( iterSensor->second );
+          if ( sensor.pFamily ) {
+            if ( sensor.pGauge ) {
+              sensor.pFamily->Remove( sensor.pGauge );
+              sensor.pGauge = nullptr;
+            }
+            m_clientPrometheus.RemoveFamily( *sensor.pFamily );
+            sensor.pFamily = nullptr;
+          }
           device.mapSensor.erase( iterSensor );
         }
       }
@@ -478,68 +508,80 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
   }
 }
 
+// old data structure starting with m_mapLocation
 AppApparition::SensorPath AppApparition::LookupSensor_Insert(
-  const std::string& sLocation, const std::string& sDevice, const std::string& sSensor ) {
-
-  bool bInserted( false );
-
-  mapLocation_t::iterator iterMapLocation = m_mapLocation.find( sLocation );
-  if ( m_mapLocation.end() == iterMapLocation ) {
-    auto result = m_mapLocation.emplace( mapLocation_t::value_type( sLocation, Location() ) );
-    assert( result.second );
-    iterMapLocation = result.first;
+  const std::string& sLocation, const std::string& sDevice, const std::string& sSensor
+) {
+  try {
+    return LookupSensor_Exists( sDevice, sSensor );
   }
+  catch ( const std::runtime_error& e ) {
+    bool bInserted( false );
 
-  Location& location( iterMapLocation->second );
+    mapLocation_t::iterator iterMapLocation = m_mapLocation.find( sLocation );
+    if ( m_mapLocation.end() == iterMapLocation ) {
+      auto result = m_mapLocation.emplace( mapLocation_t::value_type( sLocation, Location() ) );
+      assert( result.second );
+      iterMapLocation = result.first;
+    }
 
-  mapDevice_t::iterator iterMapDevice = location.mapDevice.find( sDevice );
-  if ( location.mapDevice.end() == iterMapDevice ) {
-    auto result = location.mapDevice.emplace( mapDevice_t::value_type( sDevice, Device() ) );
-    assert( result.second );
-    iterMapDevice = result.first;
+    Location& location( iterMapLocation->second );
+
+    mapDevice_t::iterator iterMapDevice = location.mapDevice.find( sDevice );
+    if ( location.mapDevice.end() == iterMapDevice ) {
+      auto result = location.mapDevice.emplace( mapDevice_t::value_type( sDevice, Device() ) );
+      assert( result.second );
+      iterMapDevice = result.first;
+    }
+
+    Device& device( iterMapDevice->second );
+
+    mapSensor_t::iterator iterMapSensor = device.mapSensor.find( sSensor );
+    if ( device.mapSensor.end() == iterMapSensor ) {
+      auto result = device.mapSensor.emplace( mapSensor_t::value_type( sSensor, Sensor( ScriptLua::value_t(), "" ) ) );
+      assert( result.second );
+      iterMapSensor = result.first;
+      bInserted = true;
+    }
+
+    Sensor& sensor( iterMapSensor->second );
+
+    return SensorPath( bInserted, location, device, sensor );
   }
-
-  Device& device( iterMapDevice->second );
-
-  mapSensor_t::iterator iterMapSensor = device.mapSensor.find( sSensor );
-  if ( device.mapSensor.end() == iterMapSensor ) {
-    auto result = device.mapSensor.emplace( mapSensor_t::value_type( sSensor, Sensor( ScriptLua::value_t(), "" ) ) );
-    assert( result.second );
-    iterMapSensor = result.first;
-    bInserted = true;
-  }
-
-  return SensorPath( bInserted, location, device, iterMapSensor->second );
-
 }
 
+// old data structure starting with m_mapLocation
 AppApparition::SensorPath AppApparition::LookupSensor_Exists(
   const std::string& sLocation, const std::string& sDevice, const std::string& sSensor
 ) {
-
-  mapLocation_t::iterator iterMapLocation = m_mapLocation.find( sLocation );
-  if ( m_mapLocation.end() == iterMapLocation ) {
-    throw runtime_error_location( "location " + sLocation + " not found" );
+  try {
+    return LookupSensor_Exists( sDevice, sSensor );
   }
+  catch( const std::runtime_error& e ) {
+    mapLocation_t::iterator iterMapLocation = m_mapLocation.find( sLocation );
+    if ( m_mapLocation.end() == iterMapLocation ) {
+      throw runtime_error_location( "location " + sLocation + " not found" );
+    }
 
-  Location& location( iterMapLocation->second );
+    Location& location( iterMapLocation->second );
 
-  mapDevice_t::iterator iterMapDevice = location.mapDevice.find( sDevice );
-  if ( location.mapDevice.end() == iterMapDevice ) {
-    throw runtime_error_device( "device " + sLocation + '\\' + sDevice + " not found" );
+    mapDevice_t::iterator iterMapDevice = location.mapDevice.find( sDevice );
+    if ( location.mapDevice.end() == iterMapDevice ) {
+      throw runtime_error_device( "device " + sLocation + '\\' + sDevice + " not found" );
+    }
+
+    Device& device( iterMapDevice->second );
+
+    mapSensor_t::iterator iterMapSensor = device.mapSensor.find( sSensor );
+    if ( device.mapSensor.end() == iterMapSensor ) {
+      throw runtime_error_sensor( "sensor " + sLocation + '\\' + sDevice + '\\' + sSensor + " not found" );
+    }
+
+    return SensorPath( false, location, device, iterMapSensor->second );
   }
-
-  Device& device( iterMapDevice->second );
-
-  mapSensor_t::iterator iterMapSensor = device.mapSensor.find( sSensor );
-  if ( device.mapSensor.end() == iterMapSensor ) {
-    throw runtime_error_sensor( "sensor " + sLocation + '\\' + sDevice + '\\' + sSensor + " not found" );
-  }
-
-  return SensorPath( false, location, device, iterMapSensor->second );
-
 }
 
+// new data structure starting with m_mapDevice, and multiple location tags
 AppApparition::SensorPath AppApparition::LookupSensor_Exists(
   const std::string& sDevice, const std::string& sSensor
 ) {
@@ -566,5 +608,4 @@ AppApparition::~AppApparition() {
   m_pWebServer->stop();
   m_pDashboardFactory.reset();
   m_pWebServer.reset();
-  m_pPrometheusRegistry.reset();
 }

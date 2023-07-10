@@ -18,8 +18,9 @@ local json = cjson.new()
 local extraction = assert( loadfile( "lib/lua/extract.lua" ) )
 extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
-local c_ws90_name = 'ws90_01'
+local c_ws90_name = 'ws90'
 local meta_ws90_sensor = {
+  --          match            units   common
   { extract3, "temperature_C", "degC", "temperature" },
   { extract2, "humidity",      "%",    "" },
   { extract3, "light_lux",     "lux",  "light" },
@@ -103,7 +104,7 @@ local ws90 = function( json_ )
     extract( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
   end
 
-  mqtt_device_data( object_ptr, "patio", "ws90", #data, data );
+  mqtt_device_data( object_ptr, "patio", c_ws90_name, #data, data );
 end
 
 local neptune = function( json_ )
