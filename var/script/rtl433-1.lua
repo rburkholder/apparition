@@ -115,7 +115,7 @@ local neptune = function( json_ )
     extract( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
   end
 
-  mqtt_device_data( object_ptr, "house", "water", #data, data );
+  mqtt_device_data( object_ptr, "house", c_neptune_name, #data, data );
 end
 
 mqtt_in = function( topic_, message_ )
