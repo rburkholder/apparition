@@ -86,7 +86,7 @@ end
 
 mqtt_in = function( topic_, message_ )
 
-  io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
+  -- io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
 
   local ix = 1
   local name = ''
