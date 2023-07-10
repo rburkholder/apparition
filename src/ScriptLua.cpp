@@ -19,6 +19,10 @@
  * Created: 2023/06/08 09:27:18
  */
 
+// might be helpful for some api calls:  https://github.com/tylerneylon/lua_api_demo
+// look at for extension modules: http://luajit.org/extensions.html
+// tutorial: https://www.tutorialspoint.com/lua/lua_object_oriented.htm
+
 #include <cassert>
 
 #include <boost/log/trivial.hpp>
