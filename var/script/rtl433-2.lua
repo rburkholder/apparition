@@ -31,8 +31,8 @@ detach = function ( object_ptr_ )
 end
 
 local dsc_info = {}
-dsc_info[ 2592561 ] = { 'back entry', 'door' }
-dsc_info[ 2501272 ] = { 'utility entry', 'door' }
+dsc_info[ 2592561 ] = { 'side entry', 'door' }
+dsc_info[ 2501272 ] = { 'laundry entry', 'door' }
 dsc_info[ 2148418 ] = { 'patio', 'door' }
 dsc_info[ 2666062 ] = { 'front entry', 'door' }
 dsc_info[ 3860837 ] = { 'family room', 'pir' } -- seems to only trigger, not reset
