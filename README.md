@@ -37,6 +37,7 @@ On the immediate todo list:
 * provide persistence via an attached database, probably sqlite
 * embed charts of prometheus data in dashboard
 * improved recovery from failed scripts
+* add time-of-day and recurring events
 
 Order of install:
 * install packages:
