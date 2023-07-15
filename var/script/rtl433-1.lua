@@ -96,47 +96,49 @@ detach = function ( object_ptr_ )
   object_ptr = nil
 end
 
-local ws90 = function( json_ )
+local ws90 = function( jvalues_ )
+
   local data = {}
+  local id = jvalues_[ 'id']
 
-  for key, value in ipairs( meta_ws90_sensor ) do
-    local extract = value[ 1 ]
-    extract( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
+  if 14338 == id then
+    for key, value in ipairs( meta_ws90_sensor ) do
+      local extract = value[ 1 ]
+      extract( jvalues_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
+    end
+    mqtt_device_data( object_ptr, "patio", c_ws90_name, #data, data );
   end
-
-  mqtt_device_data( object_ptr, "patio", c_ws90_name, #data, data );
 end
 
-local neptune = function( json_ )
+local neptune = function( jvalues_ )
+
   local data = {}
 
-  for key, value in ipairs( meta_neptune_sensor ) do
-    local extract = value[ 1 ]
-    extract( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
+  local id = jvalues_[ 'id' ]
+  if 1830357134 == id then
+    for key, value in ipairs( meta_neptune_sensor ) do
+      local extract = value[ 1 ]
+      extract( jvalues_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
+    end
+    mqtt_device_data( object_ptr, "house", c_neptune_name, #data, data );
   end
-
-  mqtt_device_data( object_ptr, "house", c_neptune_name, #data, data );
 end
+
+local device_type = {}
+device_type[ 'Fineoffset-WS90' ] = ws90
+device_type[ 'Neptune-R900' ] = neptune
 
 mqtt_in = function( topic_, message_ )
 
   -- io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
 
-  -- local (faster gc) or global (space cached)?
-  jvalues = json.decode( message_ )
+  local jvalues = json.decode( message_ )
 
-  local model = jvalues[ 'model' ]
-  if model then
-    if 'Fineoffset-WS90' == model then
-      local id = jvalues[ 'id']
-      if 14338 == id then
-        ws90( jvalues )
-      end
-    elseif 'Neptune-R900' == model then
-      local id = jvalues[ 'id' ]
-      if 1830357134 == id then
-        neptune( jvalues )
-      end
+  local device_lookup = jvalues[ 'model' ]
+  if device_lookup then
+    local device = device_type[ device_lookup ]
+    if device then
+      device( jvalues )
     end
   end
 end
