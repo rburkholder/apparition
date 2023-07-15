@@ -131,9 +131,9 @@ int MQTT_impl::MessageArrived( void *context, char* topicName, int topicLen, MQT
 	return 1;
 }
 
-void MQTT_impl::DeliveryComplete( void* context, MQTTClient_deliveryToken dt ) {
+void MQTT_impl::DeliveryComplete( void* context, MQTTClient_deliveryToken token ) {
 	// not called with QoS0
 	assert( context );
 	MQTT_impl* self( reinterpret_cast<MQTT_impl*>( context ) );
-	BOOST_LOG_TRIVIAL(info) << "MQTT_impl::DeliveryComplete - " << dt;
+	//BOOST_LOG_TRIVIAL(info) << "MQTT_impl::DeliveryComplete - " << token; // is an increasing integer
 }
