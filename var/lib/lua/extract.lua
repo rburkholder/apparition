@@ -38,6 +38,18 @@ sensor_list_data = function( object_ptr_, json_, name_, device_ )
   local data = {}
 
   for key, value in ipairs( meta_sensor ) do
+
+    local extract = value[ 1 ]
+    extract( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
+  end
+
+  mqtt_device_data( object_ptr_, location_, name_, #data, data );
+end
+
+sensor_list_data_v2 = function( object_ptr_, json_, name_, location_, meta_sensor_ )
+  local data = {}
+
+  for key, value in ipairs( meta_sensor_ ) do
     local extract = value[ 1 ]
     extract( json_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
   end

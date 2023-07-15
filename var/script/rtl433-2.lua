@@ -5,10 +5,10 @@
 -- local m = require("strict")
 -- m.lua( true )
 
-description = 'rtl433/2 translation for dsc security and thermopro'
+description = 'rtl433/2 433mhz translation for dsc security and thermopro'
 
 local topic = 'rtl433/2'
-local object_ptr = 0
+local object_ptr = nil
 
 package.path='lib/lua/*.lua'
 package.cpath='lib/lua/?.so'
@@ -18,8 +18,69 @@ local json = cjson.new()
 local extraction = assert( loadfile( "lib/lua/extract.lua" ) )
 extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
+-- rtl433/2 {"time":"2023-06-22 19:37:10","model":"DSC-Security","id":3860837,"closed":0,"event":1,"tamper":0,"battery_ok":1,"xactivity":1,"xtamper1":0,"xtamper2":0,"exception":0,"esn":"3ae965","status":161,"status_hex":"a1","mic":"CRC","mod":"ASK","freq":433.93008,"rssi":-0.13023,"snr":22.19126,"noise":-22.3215}
+-- rtl433/2 {"time":"2023-06-22 19:37:14","model":"DSC-Security","id":2501272,"closed":1,"event":1,"tamper":0,"battery_ok":1,"xactivity":1,"xtamper1":0,"xtamper2":0,"exception":0,"esn":"262a98","status":163,"status_hex":"a3","mic":"CRC","mod":"ASK","freq":433.92666,"rssi":-0.121494,"snr":23.69761,"noise":-23.8191}
+local meta_sensor_dsc = {
+  --          match            units   common
+  { extract2, "closed",     "", "" },
+  { extract2, "tamper",     "", "" },
+  { extract2, "status",     "", "" },
+  { extract3, "battery_ok", "", "battery_state" },
+  { extract2, "rssi",       "dBm", "" },
+  { extract2, "snr",        "", "" },
+  { extract2, "noise",      "dBm", "" }
+}
+
+local meta_sensor_dsc_other = {
+  --          match            units   common
+  { extract3, "battery_ok", "", "battery_state" },
+  { extract2, "rssi",       "dBm", "" },
+  { extract2, "snr",        "", "" },
+  { extract2, "noise",      "dBm", "" }
+}
+
+-- rtl433/2 {"time":"2023-06-22 20:17:22","model":"Prologue-TH","subtype":9,"id":128,"channel":3,"battery_ok":1,"temperature_C":23.5,"humidity":33,"button":0,"mod":"ASK","freq":433.93552,"rssi":-2.04417,"snr":20.27732,"noise":-22.3215}
+local meta_sensor_thermapro = {
+  --          match            units   common
+  { extract3, "temperature_C", "degC", "temperature" },
+  { extract2, "humidity",      "%", "" },
+  { extract3, "battery_ok",    "",     "battery_state" },
+  { extract3, "button",        "",     "button_state" },
+  { extract2, "rssi",          "dBm", "" },
+  { extract2, "snr",           "", "" },
+  { extract2, "noise",         "dBm", "" }
+}
+
+local device_data = {}
+--                          display name,   location tags
+device_data[ 'door01' ]      = { 'side door', meta_sensor_dsc, { 'side entry' } }
+device_data[ 'door02' ]      = { 'laundry door', meta_sensor_dsc, { 'laundry' } }
+device_data[ 'door03' ]      = { 'patio door', meta_sensor_dsc, { 'patio' } }
+device_data[ 'door04' ]      = { 'front door', meta_sensor_dsc, { 'front entry' } }
+device_data[ 'pir02' ]       = { 'family room pir', meta_sensor_dsc, { 'family room' } }
+device_data[ 'smoke01' ]     = { 'top floor smoke', meta_sensor_dsc, { 'top floor', 'upstairs' } }
+device_data[ 'thermapro01' ] = { 'garage thermapro', meta_sensor_thermapro, { 'garage' } }
+device_data[ 'thermapro02' ] = { 'basement thermapro', meta_sensor_thermapro, { 'basement' } }
+device_data[ 'thermapro03' ] = { 'walkway thermapro', meta_sensor_thermapro, { 'walkway', 'outside' } }
+
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
+
+  for key1, value1 in pairs( device_data ) do
+    local display_name = value1[ 1 ]
+    local table_extract = value1[ 2 ]
+    local table_location = value1[ 3 ]
+    device_register_add( object_ptr, key1, display_name )
+
+    for key2, value2 in ipairs( table_extract ) do
+      sensor_register_add( object_ptr, key1, value2[ 2 ], value2[ 4 ], value2[ 3 ] )
+    end
+
+    for key3, value in ipairs( table_location ) do
+      device_location_tag_add( object_ptr, key1, value )
+    end
+    end
+
   mqtt_connect( object_ptr )
   mqtt_start_topic( object_ptr, topic );
 end
@@ -27,60 +88,48 @@ end
 detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic )
   mqtt_disconnect( object_ptr )
+
+  for key, value in pairs( device_data ) do
+    device_register_del( object_ptr, key ) -- sensors, location tags auto deleted
+  end
+
   object_ptr = nil
 end
 
-local dsc_info = {}
-dsc_info[ 2592561 ] = { 'side entry', 'door' }
-dsc_info[ 2501272 ] = { 'laundry entry', 'door' }
-dsc_info[ 2148418 ] = { 'patio', 'door' }
-dsc_info[ 2666062 ] = { 'front entry', 'door' }
-dsc_info[ 3860837 ] = { 'family room', 'pir' } -- seems to only trigger, not reset
+local device_dsc = {}
+device_dsc[ 2592561 ] = 'door01'
+device_dsc[ 2501272 ] = 'door02'
+device_dsc[ 2148418 ] = 'door03'
+device_dsc[ 2666062 ] = 'door04'
+device_dsc[ 3860837 ] = 'pir02' -- seems to only trigger, not reset
+device_dsc[ 4944307 ] = 'smoke01'
 
--- rtl433/2 {"time":"2023-06-22 19:37:10","model":"DSC-Security","id":3860837,"closed":0,"event":1,"tamper":0,"battery_ok":1,"xactivity":1,"xtamper1":0,"xtamper2":0,"exception":0,"esn":"3ae965","status":161,"status_hex":"a1","mic":"CRC","mod":"ASK","freq":433.93008,"rssi":-0.13023,"snr":22.19126,"noise":-22.3215}
--- rtl433/2 {"time":"2023-06-22 19:37:14","model":"DSC-Security","id":2501272,"closed":1,"event":1,"tamper":0,"battery_ok":1,"xactivity":1,"xtamper1":0,"xtamper2":0,"exception":0,"esn":"262a98","status":163,"status_hex":"a3","mic":"CRC","mod":"ASK","freq":433.92666,"rssi":-0.121494,"snr":23.69761,"noise":-23.8191}
 dsc = function( jvalues_ )
   local id = jvalues_[ 'id' ]
-  local info = dsc_info[ id ]
-  if nil ~= info then
-    local data = {}
-    extract2( jvalues_, data, "closed",     "")
-    extract2( jvalues_, data, "tamper",     "")
-    extract2( jvalues_, data, "status",     "")
-    extract3( jvalues_, data, "battery_ok", "", "battery_state" )
-    extract2( jvalues_, data, "rssi",       "dBm")
-    extract2( jvalues_, data, "snr",        "")
-    extract2( jvalues_, data, "noise",      "dBm")
-    mqtt_device_data( object_ptr, info[ 1 ] , info[ 2 ], #data, data );
-  else
-    local data = {}
-    extract3( jvalues_, data, "battery_ok", "", "battery_state" )
-    extract2( jvalues_, data, "rssi",       "dBm")
-    extract2( jvalues_, data, "snr",        "")
-    extract2( jvalues_, data, "noise",      "dBm")
-    mqtt_device_data( object_ptr, "top floor", "smoke", #data, data );
+  local device_name = device_dsc[ id ]
+  if nil ~= device_name then
+    local device = device_data[ device_name ]
+    local table_extract = device[ 2 ]
+    local location_tags = device[ 3 ]
+    local location = location_tags[ 1 ]
+    sensor_list_data_v2( object_ptr, jvalues_, device_name, location, table_extract )
   end
 end
 
-local thermapro_location = {}
-thermapro_location[ 163 ] = 'garage'   -- channel 1
-thermapro_location[ 100 ] = 'basement' -- channel 2
-thermapro_location[ 128 ] = 'walkway'  -- channel 3
+local device_thermapro = {}
+device_thermapro[ 163 ] = 'thermapro01' -- channel 1, garage
+device_thermapro[ 100 ] = 'thermapro02' -- channel 2, basement
+device_thermapro[ 128 ] = 'thermapro03' -- channel 3, walkway
 
--- rtl433/2 {"time":"2023-06-22 20:17:22","model":"Prologue-TH","subtype":9,"id":128,"channel":3,"battery_ok":1,"temperature_C":23.5,"humidity":33,"button":0,"mod":"ASK","freq":433.93552,"rssi":-2.04417,"snr":20.27732,"noise":-22.3215}
 thermapro = function( jvalues_ )
   local id = jvalues_[ 'id' ]
-  local location = thermapro_location[ id ]
-  if nil ~= location then
-    local data = {}
-    extract3( jvalues_, data, "temperature_C", "degC", "temperature" )
-    extract2( jvalues_, data, "humidity",      "%")
-    extract3( jvalues_, data, "battery_ok",    "",     "battery_state" )
-    extract3( jvalues_, data, "button",        "",     "button_state" )
-    extract2( jvalues_, data, "rssi",          "dBm")
-    extract2( jvalues_, data, "snr",           "")
-    extract2( jvalues_, data, "noise",         "dBm")
-    mqtt_device_data( object_ptr, location, "thermapro", #data, data );
+  local device_name = device_thermapro[ id ]
+  if nil ~= device_name then
+    local device = device_data[ device_name ]
+    local table_extract = device[ 2 ]
+    local location_tags = device[ 3 ]
+    local location = location_tags[ 1 ]
+    sensor_list_data_v2( object_ptr, jvalues_, device_name, location, table_extract )
   end
 end
 
