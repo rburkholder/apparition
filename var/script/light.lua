@@ -244,7 +244,7 @@ device[ 'scene02' ] = controllor_scene02
 device[ 'scene03' ] = controllor_scene03
 
 event_sensor_changed = function( location_, device_, sensor_, value_ )
-  if true then
+  if false then
     io.write(
       "light.lua event_sensor_changed: "
       .. location_ .. ','
@@ -259,10 +259,7 @@ event_sensor_changed = function( location_, device_, sensor_, value_ )
   -- 0:     key quick press
   -- 1:     key released
   -- 2:     key held down
-  -- false: end of state change (undefined) - use -1 as marker?
-
-  -- will need to auto-compose strings from event/sensor dictionary?
-  -- perform a lookup on a table to determine action to take?
+  -- false: end of state change (undefined)
 
   local controller = device[ device_ ]
   controller( sensor_, value_ )
