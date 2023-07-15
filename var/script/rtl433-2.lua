@@ -84,22 +84,24 @@ thermapro = function( json_ )
   end
 end
 
+local device_type = {}
+device_type[ 'DSC-Security' ] = dsc
+device_type[ 'Prologue-TH' ] = thermapro
+
 mqtt_in = function( topic_, message_ )
 
   -- io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
 
   jvalues = json.decode( message_ )
 
-  local model = jvalues[ 'model' ]
-  if model then
-    if 'DSC-Security' == model then
-      -- io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
-      dsc( jvalues )
-    elseif 'Prologue-TH' == model then
-      -- io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
-      thermapro( jvalues )
+  local device_lookup = jvalues[ 'model' ]
+  if device_lookup then
+    local device = device_type[ device_lookup ]
+    if device then
+      device( jvalues )
     end
   end
+
 end
 
 
