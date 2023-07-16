@@ -4,10 +4,10 @@
 
 -- local m = require("strict")
 
-description = 'reacts to changes in a zooz ZEN32 scene controllor'
+description = 'reacts to changes in a zooz ZEN32 scene controllor via sensor event registration'
 
 local topic = 'state/#' -- connection for publishing
-local object_ptr = 0
+local object_ptr = nil
 
 package.path='' -- can not have ?.so in script path
 package.cpath='lib/lua/?.so' -- dedicate to custom directory for now
@@ -18,28 +18,37 @@ local name_den = 'den'  -- scene01
 local name_laundry = 'side entry' -- scene02
 local name_eating_area = 'eating area' -- scene 03
 
+local registrations = {
+  { name_den, "scene01", "targetValue" },
+  { name_den, "scene01", "scene001" },
+  { name_den, "scene01", "scene002" },
+  { name_den, "scene01", "scene003" },
+  { name_den, "scene01", "scene004" },
+
+  { name_laundry, "scene02", "targetValue" },
+  { name_laundry, "scene02", "scene001" },
+  { name_laundry, "scene02", "scene002" },
+  { name_laundry, "scene02", "scene003" },
+  { name_laundry, "scene02", "scene004" },
+
+  { name_eating_area, "scene03", "targetValue" },
+  { name_eating_area, "scene03", "scene001" },
+  { name_eating_area, "scene03", "scene002" },
+  { name_eating_area, "scene03", "scene003" },
+  { name_eating_area, "scene03", "scene004" }
+}
+
 attach = function ( object_ptr_ )
   -- use os.getenv for username, password info
   object_ptr = object_ptr_
   mqtt_connect( object_ptr )
 
-  event_register_add( object_ptr, name_den, "scene01", "targetValue" )
-  event_register_add( object_ptr, name_den, "scene01", "scene001" )
-  event_register_add( object_ptr, name_den, "scene01", "scene002" )
-  event_register_add( object_ptr, name_den, "scene01", "scene003" )
-  event_register_add( object_ptr, name_den, "scene01", "scene004" )
-
-  event_register_add( object_ptr, name_laundry, "scene02", "targetValue" )
-  event_register_add( object_ptr, name_laundry, "scene02", "scene001" )
-  event_register_add( object_ptr, name_laundry, "scene02", "scene002" )
-  event_register_add( object_ptr, name_laundry, "scene02", "scene003" )
-  event_register_add( object_ptr, name_laundry, "scene02", "scene004" )
-
-  event_register_add( object_ptr, name_eating_area, "scene03", "targetValue" )
-  event_register_add( object_ptr, name_eating_area, "scene03", "scene001" )
-  event_register_add( object_ptr, name_eating_area, "scene03", "scene002" )
-  event_register_add( object_ptr, name_eating_area, "scene03", "scene003" )
-  event_register_add( object_ptr, name_eating_area, "scene03", "scene004" )
+  for key, registration in ipairs( registrations ) do
+    local name = registration[ 1 ]
+    local device = registration[ 2 ]
+    local sensor = registration[ 3 ]
+    event_register_add( object_ptr, name, device, sensor )
+  end
 
   mqtt_start_topic( object_ptr, topic ); -- needed?
 
@@ -48,23 +57,12 @@ end
 detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic ) -- needed?
 
-  event_register_del( object_ptr, name_den, "scene01", "targetValue" )
-  event_register_del( object_ptr, name_den, "scene01", "scene001" )
-  event_register_del( object_ptr, name_den, "scene01", "scene002" )
-  event_register_del( object_ptr, name_den, "scene01", "scene003" )
-  event_register_del( object_ptr, name_den, "scene01", "scene004" )
-
-  event_register_del( object_ptr, name_laundry, "scene02", "targetValue" )
-  event_register_del( object_ptr, name_laundry, "scene02", "scene001" )
-  event_register_del( object_ptr, name_laundry, "scene02", "scene002" )
-  event_register_del( object_ptr, name_laundry, "scene02", "scene003" )
-  event_register_del( object_ptr, name_laundry, "scene02", "scene004" )
-
-  event_register_del( object_ptr, name_eating_area, "scene03", "targetValue" )
-  event_register_del( object_ptr, name_eating_area, "scene03", "scene001" )
-  event_register_del( object_ptr, name_eating_area, "scene03", "scene002" )
-  event_register_del( object_ptr, name_eating_area, "scene03", "scene003" )
-  event_register_del( object_ptr, name_eating_area, "scene03", "scene004" )
+  for key, registration in ipairs( registrations ) do
+    local name = registration[ 1 ]
+    local device = registration[ 2 ]
+    local sensor = registration[ 3 ]
+    event_register_del( object_ptr, name, device, sensor )
+  end
 
   mqtt_disconnect( object_ptr )
   object_ptr = nil
