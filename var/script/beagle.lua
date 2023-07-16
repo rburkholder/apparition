@@ -26,7 +26,7 @@ local meta_sensor_bme = {
 }
 
 local device_data = {}
---                          display name,   location tags
+--                          display name,   sensor extraction, location tags
 device_data[ 'bb01' ] = { 'basement bme680', meta_sensor_bme, { 'basement' } }
 device_data[ 'bb02' ] = { 'top floor bme680', meta_sensor_bme, { 'top floor' } }
 device_data[ 'bb03' ] = { 'kitchen bme680', meta_sensor_bme, { 'kitchen', 'main floor' } }
@@ -36,9 +36,11 @@ attach = function ( object_ptr_ )
   object_ptr = object_ptr_
 
   for key1, value1 in pairs( device_data ) do
+
     local display_name = value1[ 1 ]
     local table_extract = value1[ 2 ]
     local table_location = value1[ 3 ]
+
     device_register_add( object_ptr, key1, display_name )
 
     for key2, value2 in ipairs( table_extract ) do
