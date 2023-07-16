@@ -22,6 +22,9 @@ meta_sensor_outlet[ "value66049" ] = { "Watt", "power" }
 meta_sensor_outlet[ "value66817" ] = { "Amp", "current" }
 meta_sensor_outlet[ "value66561" ] = { "Volt", "volt" }
 meta_sensor_outlet[ "value65537" ] = { "kWHr", "kwh"}
+meta_sensor_outlet[ "currentValue" ] = { "", "current_state" }
+meta_sensor_outlet[ "targetValue" ] = { "", "target_state" }
+meta_sensor_outlet[ "duration" ] = { "", "duration" }
 
 local meta_sensor_pir = {}
 meta_sensor_pir[ "currentValue" ] = { "", "activity" }
@@ -44,6 +47,7 @@ meta_sensor_scene[ "scene005" ] = { "", "scene005" }
 local meta_sensor_smoke = {}
 meta_sensor_smoke[ "alarmType" ] = { "", "type" }
 meta_sensor_smoke[ "alarmLevel" ] = { "", "level" }
+meta_sensor_smoke[ "isLow" ] = { "", "battery_low" }
 
 local meta_sensor_thermostat = {}
 meta_sensor_thermostat[ "Air_temperature" ] = { "degC", "temperature" }
