@@ -21,7 +21,7 @@ local meta_pir_sensor = {
   { extract3, "linkquality", "", "link_quality" },
   { extract2, "voltage",     "mV",  "" },
   { extract2, "battery_low", "",  ""  },
-  { extract2, "battery",     "%", "" },
+  { extract2, "battery",     "%", "battery_level" },
 }
 local meta_pir03_location_tag = {
   'laundry'
