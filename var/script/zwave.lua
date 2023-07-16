@@ -7,7 +7,7 @@
 description = 'zwave on bb'
 
 local topic = 'zwave/1/#'
-local object_ptr = 0
+local object_ptr = nil
 
 package.path='lib/lua/*.lua'
 package.cpath='lib/lua/?.so'
@@ -17,9 +17,72 @@ local json = cjson.new()
 local extraction = assert( loadfile( "lib/lua/extract.lua" ) )
 extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
+local meta_sensor_outlet = {}
+meta_sensor_outlet[ "value66049" ] = { "Watt", "power" }
+meta_sensor_outlet[ "value66817" ] = { "Amp", "current" }
+meta_sensor_outlet[ "value66561" ] = { "Volt", "volt" }
+meta_sensor_outlet[ "value65537" ] = { "kWHr", "kwh"}
+
+local meta_sensor_pir = {}
+meta_sensor_pir[ "currentValue" ] = { "", "activity" }
+meta_sensor_pir[ "Illuminance" ] = { "lux", "light" }
+meta_sensor_pir[ "Air_temperature" ] = { "degC", "temperature" }
+meta_sensor_pir[ "Humidity" ] = { "%", "humidity" }
+meta_sensor_pir[ "Home_SecurityMotion_sensor_status" ] = { "", "sensor_status" }
+meta_sensor_pir[ "alarmType" ] = { "", "alarm_type" }
+meta_sensor_pir[ "alarmLevel" ] = { "", "alarm_level" }
+
+local meta_sensor_scene = {}
+meta_sensor_scene[ "currentValue" ] = { "", "current_state" }
+meta_sensor_scene[ "targetValue" ] = { "", "target_state" }
+meta_sensor_scene[ "scene001" ] = { "", "scene001" }
+meta_sensor_scene[ "scene002" ] = { "", "scene002" }
+meta_sensor_scene[ "scene003" ] = { "", "scene003" }
+meta_sensor_scene[ "scene004" ] = { "", "scene004" }
+meta_sensor_scene[ "scene005" ] = { "", "scene005" }
+
+local meta_sensor_smoke = {}
+meta_sensor_smoke[ "alarmType" ] = { "", "type" }
+meta_sensor_smoke[ "alarmLevel" ] = { "", "level" }
+
+local meta_sensor_thermostat = {}
+meta_sensor_thermostat[ "Air_temperature" ] = { "degC", "temperature" }
+meta_sensor_thermostat[ "Humidity" ] = { "%", "humidity" }
+meta_sensor_thermostat[ "level" ] = { "%", "battery_level" }
+meta_sensor_thermostat[ "isLow" ] = { "", "battery_low" }
+
+local device_data = {}
+--                                 display name, sensor extraction, location tags
+device_data[ 'outlet01' ]     = { 'family room outlet', meta_sensor_outlet, { 'family room', 'main floor' } }
+device_data[ 'pir01' ]        = { 'den pir', meta_sensor_pir, { 'den', 'main floor' } }
+device_data[ 'scene01' ]      = { 'den scene', meta_sensor_scene, { 'den', 'main floor' } }
+device_data[ 'scene02' ]      = { 'side entry scene', meta_sensor_scene, { 'side entry', 'main floor' } }
+device_data[ 'scene03' ]      = { 'eating area scene', meta_sensor_scene, { 'eating area', 'main floor' } }
+device_data[ 'smoke02' ]      = { 'basement smoke', meta_sensor_smoke, { 'basement' } }
+device_data[ 'thermostat01' ] = { 'basement thermostat', meta_sensor_thermostat, { 'basement' } }
+device_data[ 'thermostat02' ] = { 'living room thermostat', meta_sensor_thermostat, { 'living room', 'main floor' } }
+device_data[ 'thermostat03' ] = { 'family room thermostat', meta_sensor_thermostat, { 'family room', 'main floor' } }
+device_data[ 'thermostat04' ] = { 'master bed. thermostat', meta_sensor_thermostat, { 'master bedroom', 'top floor' } }
+device_data[ 'thermostat05' ] = { 'top floor thermostat', meta_sensor_thermostat, { 'top floor' } }
+
 attach = function ( object_ptr_ )
-  -- use os.getenv for username, password info
   object_ptr = object_ptr_
+
+  for key1, value1 in pairs( device_data ) do
+    local display_name = value1[ 1 ]
+    local table_extract = value1[ 2 ]
+    local table_location = value1[ 3 ]
+    device_register_add( object_ptr, key1, display_name )
+
+    for key2, value2 in pairs( table_extract ) do
+      sensor_register_add( object_ptr, key1, key2, value2[ 2 ], value2[ 1 ] )
+    end
+
+    for key3, value in ipairs( table_location ) do
+      device_location_tag_add( object_ptr, key1, value )
+    end
+  end
+
   mqtt_connect( object_ptr )
   mqtt_start_topic( object_ptr, topic );
 end
@@ -27,33 +90,52 @@ end
 detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic )
   mqtt_disconnect( object_ptr )
-  object_ptr = 0
+
+  for key, value in pairs( device_data ) do
+    device_register_del( object_ptr, key ) -- sensors, location tags auto deleted
+  end
+
+  object_ptr = nil
 end
 
-zwave_value = function( json_, zwave_ix_dev_, zwave_ix_var_, sensor_ )
+zwave_value = function( jvalues_, zwave_ix_dev_, zwave_ix_var_, sensor_name_ )
+
   local data = {}
+  local location = jvalues_[ 'nodeLocation' ]
+  local device_name = jvalues_[ 'nodeName' ]
+  local sensor_name = sensor_name_
 
-  local device = json_[ 'nodeName' ]
-  local location = json_[ 'nodeLocation' ]
-
-  if ( nil == device ) or ( nil == location ) then
+  if ( nil == device_name ) or ( nil == location ) then
     -- SystemHeartbeat, 11, 113
     -- io.write( 'zwave_value  ' .. topic .. ' *** no device or location: ' .. sensor_ .. ', ' .. zwave_ix_dev_ .. ', ' .. zwave_ix_var_ .. '\n' )
   else
     local units = ''
-    local value = json_[ 'value' ]
+    local value = jvalues_[ 'value' ]
     if nil == value then
       -- value = 'n/a'
       value = false -- test if this can be 'visited' easier
     end
 
     if 'table' ~= type(value) then
-      record = {
-        sensor_, value, units -- empty units for now
-      }
-      data[ #data + 1 ] = record
 
-      mqtt_device_data( object_ptr, location, device, #data, data );
+      local device_template = device_data[ device_name ]
+      if  nil ~= device_template then
+        local meta_sensor = device_template[ 2 ]
+        local sensor = meta_sensor[ sensor_name_ ]
+        if nil ~= sensor then
+          units = sensor[ 1 ]
+          sensor_name = sensor[ 2 ]
+        end
+        local location_tags = device_template[ 3 ]
+        location = location_tags[ 1 ]
+      end
+
+      record = {
+        sensor_name, value, units
+      }
+
+      data[ #data + 1 ] = record
+      mqtt_device_data( object_ptr, location, device_name, #data, data );
     end
   end
 
@@ -225,6 +307,7 @@ mqtt_in = function( topic_, message_ )
   end
 
   -- will ultimately require the discovery information to decode & describe the stream
+  -- TODO: perform table lookup on zwave_ix_var
 
   if '91' == zwave_ix_var then -- zooz scenes
     jvalues = json.decode( message_ )
