@@ -172,6 +172,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
         sensor.dtLastSeen = now;
 
         // TODO post to m_context to close out this mqtt event faster
+        // TODO check if duplicate from last?  or if last seen has changed?
         for ( mapEventSensorChanged_t::value_type& event: sensor.mapEventSensorChanged ) {
           event.second( sLocation, sDevice, vt.sName, priorValue, sensor.value );
         }
@@ -516,6 +517,12 @@ AppApparition::SensorPath AppApparition::LookupSensor_Insert(
     return LookupSensor_Exists( sDevice, sSensor );
   }
   catch ( const std::runtime_error& e ) {
+
+    BOOST_LOG_TRIVIAL(warning)
+      << "AppApparition::LookupSensor_Insert non-exist: "
+      << sLocation << ',' << sDevice << ',' << sSensor
+      ;
+
     bool bInserted( false );
 
     mapLocation_t::iterator iterMapLocation = m_mapLocation.find( sLocation );
