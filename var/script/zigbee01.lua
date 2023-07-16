@@ -1,11 +1,11 @@
 -- file:    zigbee01.lua
 -- author:  raymond@burkholder.net
--- creawted 2023/07/08 13:11:08
+-- created: 2023/07/08 13:11:08
 
 description = 'zigbee/1 translation for zigbee attached sensors'
 
 local topic = 'zigbee/1/#'
-local object_ptr = 0
+local object_ptr = nil
 
 package.path='lib/lua/*.lua'
 package.cpath='lib/lua/?.so'
