@@ -1,6 +1,6 @@
 -- file:    rtl433.lua
 -- author:  raymond@burkholder.net
--- creawted 2023/06/10 16:29:50
+-- created: 2023/06/10 16:29:50
 
 -- local m = require("strict")
 -- m.lua( true )
