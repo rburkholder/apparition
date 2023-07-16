@@ -1,10 +1,10 @@
 -- file:    zwave.lua
 -- author:  raymond@burkholder.net
--- creawted 2023/06/14 16:24:04
+-- created: 2023/06/14 16:24:04
 
 -- local m = require("strict")
 
-description = 'watches zwave in topic domoticz/in '
+description = 'zwave on bb'
 
 local topic = 'zwave/1/#'
 local object_ptr = 0
