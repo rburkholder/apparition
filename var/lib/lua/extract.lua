@@ -1,6 +1,6 @@
 -- file:    extract.lua
 -- author:  raymond@burkholder.net
--- creawted 2023/07/08 13:47:34
+-- created: 2023/07/08 13:47:34
 
 description = 'common extraction functions'
 
