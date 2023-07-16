@@ -127,9 +127,9 @@ thermapro = function( jvalues_ )
   local id = jvalues_[ 'id' ]
   local device_name = device_thermapro[ id ]
   if nil ~= device_name then
-    local device = device_data[ device_name ]
-    local table_extract = device[ 2 ]
-    local location_tags = device[ 3 ]
+    local device_template = device_data[ device_name ]
+    local table_extract = device_template[ 2 ]
+    local location_tags = device_template[ 3 ]
     local location = location_tags[ 1 ]
     sensor_list_data_v2( object_ptr, jvalues_, device_name, location, table_extract )
   end
