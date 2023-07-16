@@ -113,6 +113,8 @@ dsc = function( jvalues_ )
     local location_tags = device[ 3 ]
     local location = location_tags[ 1 ]
     sensor_list_data_v2( object_ptr, jvalues_, device_name, location, table_extract )
+  else
+    io.write( 'mqtt_in dsc unknown id ' .. id .. '\n' )
   end
 end
 
