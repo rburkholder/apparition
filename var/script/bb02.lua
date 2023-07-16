@@ -1,13 +1,13 @@
 -- file:    bb02.lua
 -- author:  raymond@burkholder.net
--- creawted 2023/06/14 16:24:04
+-- created: 2023/06/14 16:24:04
 
 -- local m = require("strict")
 
 description = 'watches zwave discovery channel supplied by bb02 - to be implemented'
 
 local topic = 'bb02/#'
-local object_ptr = 0
+local object_ptr = nil
 
 package.path='lib/lua/*.lua'
 package.cpath='lib/lua/?.so'
@@ -30,7 +30,7 @@ end
 detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic )
   mqtt_disconnect( object_ptr )
-  object_ptr = 0
+  object_ptr = nil
 end
 
 zwave_discovery = function( json_, type_, device_, sensor_ )
