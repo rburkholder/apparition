@@ -1,6 +1,6 @@
 -- file:    light.lua
 -- author:  raymond@burkholder.net
--- creawted 2023/06/21 17:02:04
+-- created: 2023/06/21 17:02:04
 
 -- local m = require("strict")
 
@@ -19,19 +19,19 @@ local name_laundry = 'side entry' -- scene02
 local name_eating_area = 'eating area' -- scene 03
 
 local registrations = {
-  { name_den, "scene01", "targetValue" },
+  { name_den, "scene01", "target_state" },
   { name_den, "scene01", "scene001" },
   { name_den, "scene01", "scene002" },
   { name_den, "scene01", "scene003" },
   { name_den, "scene01", "scene004" },
 
-  { name_laundry, "scene02", "targetValue" },
+  { name_laundry, "scene02", "target_state" },
   { name_laundry, "scene02", "scene001" },
   { name_laundry, "scene02", "scene002" },
   { name_laundry, "scene02", "scene003" },
   { name_laundry, "scene02", "scene004" },
 
-  { name_eating_area, "scene03", "targetValue" },
+  { name_eating_area, "scene03", "target_state" },
   { name_eating_area, "scene03", "scene001" },
   { name_eating_area, "scene03", "scene002" },
   { name_eating_area, "scene03", "scene003" },
