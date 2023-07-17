@@ -250,6 +250,9 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
   m_lua.Set_EventRegisterAdd(
     [this](const std::string_view& svLocation, const std::string_view& svDevice, const std::string_view& svSensor,
                 void* key, ScriptLua::fEvent_SensorChanged_t&& fEvent ){
+
+      // Note: SensorRegisterDel probably breaks this
+
       const std::string sLocation( svLocation );
       const std::string sDevice( svDevice );
       const std::string sSensor( svSensor );
@@ -518,6 +521,9 @@ AppApparition::SensorPath AppApparition::LookupSensor_Insert(
   }
   catch ( const std::runtime_error& e ) {
 
+    // this may happen in an event registration occurs prior to sensor registration
+    //   eg light.lua prior to zwave.lua?
+    //   ie, reload of zwave.lua breaks event registration of light.lua
     BOOST_LOG_TRIVIAL(warning)
       << "AppApparition::LookupSensor_Insert non-exist: "
       << sLocation << ',' << sDevice << ',' << sSensor
