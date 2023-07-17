@@ -17,6 +17,9 @@ local json = cjson.new()
 local extraction = assert( loadfile( "lib/lua/extract.lua" ) )
 extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
+-- NOTE: reload will break light.lua, need to be able to reconnect sensors
+--   and leave events intact
+
 local meta_sensor_outlet = {}
 meta_sensor_outlet[ "value66049" ] = { "Watt", "power" }
 meta_sensor_outlet[ "value66817" ] = { "Amp", "current" }
@@ -38,6 +41,7 @@ meta_sensor_pir[ "alarmLevel" ] = { "", "alarm_level" }
 local meta_sensor_scene = {}
 meta_sensor_scene[ "currentValue" ] = { "", "current_state" }
 meta_sensor_scene[ "targetValue" ] = { "", "target_state" }
+meta_sensor_scene[ "duration" ] = { "", "duration" }
 meta_sensor_scene[ "scene001" ] = { "", "scene001" }
 meta_sensor_scene[ "scene002" ] = { "", "scene002" }
 meta_sensor_scene[ "scene003" ] = { "", "scene003" }
@@ -79,7 +83,7 @@ attach = function ( object_ptr_ )
     device_register_add( object_ptr, key1, display_name )
 
     for key2, value2 in pairs( table_extract ) do
-      sensor_register_add( object_ptr, key1, key2, value2[ 2 ], value2[ 1 ] )
+      sensor_register_add( object_ptr, key1, value2[ 2 ], value2[ 2 ], value2[ 1 ] )
     end
 
     for key3, value in ipairs( table_location ) do
@@ -125,7 +129,7 @@ zwave_value = function( jvalues_, zwave_ix_dev_, zwave_ix_var_, sensor_name_ )
       local device_template = device_data[ device_name ]
       if  nil ~= device_template then
         local meta_sensor = device_template[ 2 ]
-        local sensor = meta_sensor[ sensor_name_ ]
+        local sensor = meta_sensor[ sensor_name ]
         if nil ~= sensor then
           units = sensor[ 1 ]
           sensor_name = sensor[ 2 ]
@@ -146,28 +150,30 @@ zwave_value = function( jvalues_, zwave_ix_dev_, zwave_ix_var_, sensor_name_ )
 end
 
 -- zooz 5 button scene controller - binary button
-zwave_37 = function( json_, zwave_ix_dev_, zwave_ix_var_, sensor_ )
+zwave_37 = function( jvalues_, zwave_ix_dev_, zwave_ix_var_, sensor_name_ )
   local data = {}
 
-  local device = json_[ 'nodeName' ]
-  local location = json_[ 'nodeLocation' ]
+  local location = jvalues_[ 'nodeLocation' ]
+  local device_name = jvalues_[ 'nodeName' ]
+  local sensor_name = sensor_name_
 
-  if ( nil == device ) or ( nil == location ) then
-    io.write( '*** no device or location: ' .. sensor_ .. ', ' .. zwave_ix_dev_ .. ', ' .. zwave_ix_var_ .. '\n' )
+  if ( nil == device_name ) or ( nil == location ) then
+    io.write( '*** no device or location: ' .. sensor_name .. ', ' .. zwave_ix_dev_ .. ', ' .. zwave_ix_var_ .. '\n' )
   else
+
     local units = ''
-    local value = json_[ 'value' ]
+    local value = jvalues_[ 'value' ]
     if nil == value then
       -- value = 'n/a'
       value = false -- test if this can be 'visited' easier
     end
 
-    if 'duration' == sensor_ then
+    if 'duration' == sensor_name then
       -- might be able to generalize this to 37 for the variable type across devices
       -- will need to listen to discovery & confirm
       units = value[ 'unit' ] -- perform in this order
       value = value[ 'value' ] -- perform in this order
-    elseif 'targetValue' == sensor_ then
+    elseif 'targetValue' == sensor_name then
       -- TODO: use event registration instead
       if 'boolean' == type(value) then
         if value then
@@ -178,13 +184,25 @@ zwave_37 = function( json_, zwave_ix_dev_, zwave_ix_var_, sensor_ )
       end
     end
 
+    local device_template = device_data[ device_name ]
+    if  nil ~= device_template then
+      local meta_sensor = device_template[ 2 ]
+      local sensor = meta_sensor[ sensor_name ]
+      if nil ~= sensor then
+        units = sensor[ 1 ]
+        sensor_name = sensor[ 2 ]
+      end
+      local location_tags = device_template[ 3 ]
+      location = location_tags[ 1 ]
+    end
+
     if 'table' ~= type(value) then
-      record = {
-        sensor_, value, units -- empty units for now
+      local record = {
+        sensor_name, value, units -- empty units for now
       }
       data[ #data + 1 ] = record
 
-      mqtt_device_data( object_ptr, location, device, #data, data );
+      mqtt_device_data( object_ptr, location, device_name, #data, data );
     end
   end
 

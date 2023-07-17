@@ -136,7 +136,7 @@ local controllor_scene01 = function( sensor_, value_ )
   scenes[ 'scene003'] = sensor_scene003
   scenes[ 'scene004'] = sensor_scene004
 
-  if 'targetValue' == sensor_ then
+  if 'target_state' == sensor_ then
     if false == value_ then
       -- io.write( 'turn off den light\n')
       light_den( 'OFF' )
@@ -179,7 +179,7 @@ local controllor_scene02 = function( sensor_, value_ )
   scenes[ 'scene003'] = sensor_scene003
   scenes[ 'scene004'] = sensor_scene004
 
-  if 'targetValue' == sensor_ then
+  if 'target_state' == sensor_ then
     if false == value_ then
       -- io.write( 'turn off laundry light\n')
       light_laundry( 'OFF' )
@@ -222,7 +222,7 @@ local controllor_scene03 = function( sensor_, value_ )
   scenes[ 'scene003'] = sensor_scene003
   scenes[ 'scene004'] = sensor_scene004
 
-  if 'targetValue' == sensor_ then
+  if 'target_state' == sensor_ then
     if false == value_ then
       -- io.write( 'turn off eating area light\n')
       light_eating_area( 'OFF' )
