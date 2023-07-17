@@ -54,7 +54,11 @@ attach = function ( object_ptr_ )
     local meta_table = device[ 3 ]
     for key2, value in ipairs( meta_table ) do
       -- io.write( 'pir03 key ' .. key .. '=' .. value[ 2 ] .. ',' .. value[ 3 ] .. ',' .. value[ 4 ] .. '\n' )
-      sensor_register_add( object_ptr, device_name, value[ 2 ], value[ 4 ], value[ 3 ] )
+      local sensor_name = value[ 4 ]
+      if 0 == string.len( sensor_name ) then
+        sensor_name = value[ 2 ]
+      end
+      sensor_register_add( object_ptr, device_name, sensor_name, sensor_name, value[ 3 ] )
     end
 
     local location_table = device[ 4 ]
