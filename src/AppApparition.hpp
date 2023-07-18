@@ -66,6 +66,7 @@ private:
     mapEventSensorChanged_t mapEventSensorChanged;
     bool bHidden; // used for internal signalling between scripts
 
+    Sensor() = delete;
     Sensor( ScriptLua::value_t value_, const std::string sUnits_ )
     : bHidden( false ), value( value_ ), sUnits( sUnits_ ), dtLastSeen(/*not a datetime*/)
     , pFamily( nullptr ), pGauge( nullptr ) {}

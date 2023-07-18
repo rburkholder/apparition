@@ -171,15 +171,28 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
         sensor.value = vt.value;
         sensor.dtLastSeen = now;
 
-        // TODO post to m_context to close out this mqtt event faster
-        // TODO check if duplicate from last?  or if last seen has changed?
-        for ( mapEventSensorChanged_t::value_type& event: sensor.mapEventSensorChanged ) {
-          event.second( sLocation, sDevice, vt.sName, priorValue, sensor.value );
+        bool bChanged( false );
+        if ( priorValue.index() == vt.value.index() ) {
+          if ( priorValue != vt.value ) {
+            bChanged = true;
+          }
+        }
+        else {
+          bChanged = true;
         }
 
-        if ( sensor.pGauge ) {
-          if ( std::holds_alternative<double>( vt.value ) ) {
-            sensor.pGauge->Set( std::get<double>( vt.value ) );
+        // TODO post to m_context to close out this mqtt event faster
+        // TODO check if duplicate from last?  or if last seen has changed?
+
+        if ( bChanged ) {
+          for ( mapEventSensorChanged_t::value_type& event: sensor.mapEventSensorChanged ) {
+            event.second( sLocation, sDevice, vt.sName, priorValue, sensor.value );
+          }
+
+          if ( sensor.pGauge ) {
+            if ( std::holds_alternative<double>( vt.value ) ) {
+              sensor.pGauge->Set( std::get<double>( vt.value ) );
+            }
           }
         }
 
@@ -251,7 +264,10 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
     [this](const std::string_view& svLocation, const std::string_view& svDevice, const std::string_view& svSensor,
                 void* key, ScriptLua::fEvent_SensorChanged_t&& fEvent ){
 
-      // Note: SensorRegisterDel probably breaks this
+      // Note: SensorRegisterDel breaks this
+      //   if events attached to sensor:
+      //     don't delete device/sensor, allow re-attachment
+      //   use connection counter to release (in the case of device/sensor renaming)
 
       const std::string sLocation( svLocation );
       const std::string sDevice( svDevice );
