@@ -38,12 +38,23 @@ local meta_light02_location_tag = { 'den' }
 local meta_light03_location_tag = { 'back_entry' }
 local meta_light04_location_tag = { 'eating_area' }
 
+local meta_outlet_sensor = {
+  { extract2, "power", "Watt", "" },
+  { extract3, "ac_frequency", "Hz", "frequency" },
+  { extract2, "current", "Amp", "" },
+  { extract2, "voltage", "Volt", "" },
+  { extract3, "linkquality", "", "link_quality" },
+  { extract2, "energy", "kWh", "" }
+}
+local meta_outlet02_location_tag = { 'den' }
+
 local devices = {}
 devices[ 'pir03' ]   = { 'laundry', 'laundry pir', meta_pir_sensor, meta_pir03_location_tag }
 devices[ 'light01' ] = { 'den', 'den light 1',  meta_light_sensor, meta_light01_location_tag }
 devices[ 'light02' ] = { 'den', 'den light 2',  meta_light_sensor, meta_light02_location_tag }
 devices[ 'light03' ] = { 'back_entry', 'back entry light',  meta_light_sensor, meta_light03_location_tag }
 devices[ 'light04' ] = { 'eating_area', 'eating area light',  meta_light_sensor, meta_light04_location_tag }
+devices[ 'outlet02' ] = { 'den', 'den outlet', meta_outlet_sensor, meta_outlet02_location_tag }
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
@@ -93,7 +104,7 @@ mqtt_in = function( topic_, message_ )
   -- io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
 
   local ix = 1
-  local name = ''
+  local device_name = ''
   local location = ''
   for word in string.gmatch( topic_, '[_%a%d]+' ) do
     -- io.write( 'zigbee ' .. ix .. ' ' .. word .. '\n' )
@@ -112,7 +123,7 @@ mqtt_in = function( topic_, message_ )
         end
       else
         if 3 == ix then
-          name = word
+          device_name = word
           ix = ix + 1
         else
           if 4 == ix then
@@ -127,10 +138,10 @@ mqtt_in = function( topic_, message_ )
   if 5 == ix then
     -- local (faster gc) or global (space cached)?
     jvalues = json.decode( message_ )
-    local device = devices[ name ]
+    local device = devices[ device_name ]
     if nil ~= device then
       if location == device[ 1 ] then
-        sensor_list_data( object_ptr, jvalues, name, device )
+        sensor_list_data( object_ptr, jvalues, device_name, device )
       end
     end
   end
