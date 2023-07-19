@@ -37,11 +37,13 @@ public:
   using value_t = std::variant<bool, int64_t, double, std::string>;
 
   struct Value {
+
     std::string sName;
     value_t value;
     std::string sUnits;
     enum class ECategory {
-      temperature
+      uninitialized // to use this effectively, will need this in a class
+    , temperature
     , humidity
     , radio
     , wind
@@ -52,7 +54,8 @@ public:
     , firmware
     , unknown
     } eCategory;
-    Value(): eCategory( ECategory::unknown ) {} // not sure how to identify in lua, maybe pass a string and use spirit to decode
+
+    Value(): value( false ), eCategory( ECategory::uninitialized ) {} // not sure how to identify in lua, maybe pass a string and use spirit to decode
     Value( const std::string& sName_, const value_t value_, const std::string& sUnits_ )
     : sName( std::move( sName_ ) ), value( std::move( value_ ) ), sUnits( std::move( sUnits_ ) ), eCategory( ECategory::unknown ) {}
     Value( const Value& rhs )

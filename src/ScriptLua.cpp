@@ -773,7 +773,7 @@ int ScriptLua::lua_sensor_register_add( lua_State* pLua ) {
   // stack 1: userdata - this
   // stack 2: string - unique device name
   // stack 3: string - unique sensor name
-  // stack 4: string - sensor display name
+  // stack 4: string - sensor display name -- TODO remove this
   // stack 5: string - sensor units
 
   int nStackEntries = lua_gettop( pLua );    /* number of arguments */
