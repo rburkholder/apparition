@@ -23,8 +23,8 @@ extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 local meta_sensor_outlet = {}
 meta_sensor_outlet[ "value66049" ] = { "Watt", "power" }
 meta_sensor_outlet[ "value66817" ] = { "Amp", "current" }
-meta_sensor_outlet[ "value66561" ] = { "Volt", "volt" }
-meta_sensor_outlet[ "value65537" ] = { "kWHr", "kwh"}
+meta_sensor_outlet[ "value66561" ] = { "Volt", "voltage" }
+meta_sensor_outlet[ "value65537" ] = { "kWh", "kwh"}
 meta_sensor_outlet[ "currentValue" ] = { "", "current_state" }
 meta_sensor_outlet[ "targetValue" ] = { "", "target_state" }
 meta_sensor_outlet[ "duration" ] = { "", "duration" }
@@ -56,12 +56,15 @@ meta_sensor_smoke[ "isLow" ] = { "", "battery_low" }
 local meta_sensor_thermostat = {}
 meta_sensor_thermostat[ "Air_temperature" ] = { "degC", "temperature" }
 meta_sensor_thermostat[ "Humidity" ] = { "%", "humidity" }
+meta_sensor_thermostat[ "setpoint1" ] = { "degC", "setpoint_heat" }
+meta_sensor_thermostat[ "state" ] = { "", "state" }
 meta_sensor_thermostat[ "level" ] = { "%", "battery_level" }
 meta_sensor_thermostat[ "isLow" ] = { "", "battery_low" }
 
 local device_data = {}
 --                                 display name, sensor extraction, location tags
 device_data[ 'outlet01' ]     = { 'family room outlet', meta_sensor_outlet, { 'family room', 'main floor' } }
+device_data[ 'outlet06' ]     = { 'furnace outlet', meta_sensor_outlet, { 'furnace', 'basement' } }
 device_data[ 'pir01' ]        = { 'den pir', meta_sensor_pir, { 'den', 'main floor' } }
 device_data[ 'scene01' ]      = { 'den scene', meta_sensor_scene, { 'den', 'main floor' } }
 device_data[ 'scene02' ]      = { 'side entry scene', meta_sensor_scene, { 'side entry', 'main floor' } }
