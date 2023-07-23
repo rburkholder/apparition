@@ -21,7 +21,7 @@ local meta_pir_sensor = {
   { extract3, "linkquality", "", "link_quality" },
   { extract2, "voltage",     "mV",  "" },
   { extract2, "battery_low", "",  ""  },
-  { extract2, "battery",     "%", "battery_level" },
+  { extract3, "battery",     "%", "battery_level" },
 }
 local meta_pir03_location_tag = {
   'laundry'
@@ -44,7 +44,7 @@ local meta_outlet_sensor = {
   { extract2, "current", "Amp", "" },
   { extract2, "voltage", "Volt", "" },
   { extract3, "linkquality", "", "link_quality" },
-  { extract2, "energy", "kWh", "" }
+  { extract2, "kwh", "kWh", "" }
 }
 local meta_outlet02_location_tag = { 'den' }
 local meta_outlet03_location_tag = { 'basement', 'fridge' }
