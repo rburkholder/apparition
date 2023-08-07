@@ -119,8 +119,9 @@ dsc = function( jvalues_ )
 end
 
 local device_thermapro = {}
+-- NOTE: the id will change on battery change
 device_thermapro[ 163 ] = 'thermapro01' -- channel 1, garage
-device_thermapro[ 100 ] = 'thermapro02' -- channel 2, basement
+device_thermapro[ 114 ] = 'thermapro02' -- channel 2, basement
 device_thermapro[ 128 ] = 'thermapro03' -- channel 3, walkway
 
 thermapro = function( jvalues_ )
