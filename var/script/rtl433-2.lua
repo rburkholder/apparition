@@ -101,7 +101,7 @@ device_dsc[ 2592561 ] = 'door01'
 device_dsc[ 2501272 ] = 'door02'
 device_dsc[ 2148418 ] = 'door03'
 device_dsc[ 2666062 ] = 'door04'
-device_dsc[ 3860837 ] = 'pir02' -- seems to only trigger, not reset
+device_dsc[ 3524577 ] = 'pir02' -- seems to only trigger, not reset
 device_dsc[ 4944307 ] = 'smoke01'
 
 dsc = function( jvalues_ )
