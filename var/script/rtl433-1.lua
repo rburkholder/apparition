@@ -116,6 +116,10 @@ local neptune = function( jvalues_ )
 
   local id = jvalues_[ 'id' ]
   if 1830357134 == id then
+
+    -- local total_consumed = jvalues_[ 'consumption' ]
+    -- io.write( "house water: " .. total_consumed .. '\n' )
+
     for key, value in ipairs( meta_neptune_sensor ) do
       local extract = value[ 1 ]
       extract( jvalues_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
