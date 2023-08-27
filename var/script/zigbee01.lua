@@ -49,7 +49,7 @@ local meta_outlet_sensor = {
 local meta_outlet02_location_tag = { 'den' }
 local meta_outlet03_location_tag = { 'basement', 'fridge' }
 local meta_outlet04_location_tag = { 'family_room' }
-local meta_outlet05_location_tag = { 'den_unused' }
+local meta_outlet05_location_tag = { 'basement', 'dehumidifier' }
 
 local devices = {}
 devices[ 'pir03' ]   = { 'laundry', 'laundry pir', meta_pir_sensor, meta_pir03_location_tag }
@@ -60,6 +60,7 @@ devices[ 'light04' ] = { 'eating_area', 'eating area light',  meta_light_sensor,
 devices[ 'outlet02' ] = { 'den', 'den outlet', meta_outlet_sensor, meta_outlet02_location_tag }
 devices[ 'outlet03' ] = { 'fridge', 'basement fridge', meta_outlet_sensor, meta_outlet03_location_tag }
 devices[ 'outlet04' ] = { 'thermo', 'family room step', meta_outlet_sensor, meta_outlet04_location_tag }
+devices[ 'outlet05' ] = { 'dehumidifier', 'basement dehumidifier', meta_outlet_sensor, meta_outlet05_location_tag }
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
