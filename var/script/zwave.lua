@@ -19,6 +19,7 @@ extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
 -- NOTE: reload will break light.lua, need to be able to reconnect sensors
 --   and leave events intact
+-- => reload light.lua when reloading this
 
 local meta_sensor_outlet = {}
 meta_sensor_outlet[ "value66049" ] = { "Watt", "power" }
