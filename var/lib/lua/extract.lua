@@ -21,7 +21,7 @@ extract2 = function( json_, table_, column_, units_ )
 end
 
 extract3 = function( json_, table_, column_, units_, name_ )
-  -- name, value, units
+  -- name, value, units, substitute name
   local value = json_[ column_ ]
   if nil ~= value then
     local record = {
