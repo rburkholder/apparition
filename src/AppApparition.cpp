@@ -368,6 +368,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
           , const std::string_view& unique_name
           , const std::string_view& display_name
           , const std::string_view& units)->bool{
+
       bool bStatus( true );
       assert( 0 < device_name.size() );
       assert( 0 < unique_name.size() );
@@ -376,45 +377,61 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
       const std::string sSensorName( unique_name );
       const std::string sUnits( units );
 
-      std::string sDisplayName;
-      if ( 0 == display_name.size() ) {
-        sDisplayName = sSensorName;
-      }
-      else {
-        sDisplayName = std::move( std::string( display_name ) );
-      }
-
-      //BOOST_LOG_TRIVIAL(info)
-      //  << "SensorRegisterAdd: "
-      //  << sDeviceName << ','
-      //  << sSensorName << ','
-      //  << sDisplayName << ','
-      //  << sUnits
-      //  ;
-
-      mapDevice_t::iterator iterDevice = m_mapDevice.find( sDeviceName );
-      if ( m_mapDevice.end() == iterDevice ) {
-        bStatus = false;
-        BOOST_LOG_TRIVIAL(warning)
-          << "Sensor Registration add, device " << sDeviceName << ":" << sDisplayName
-          << " not found, addition skipped";
-      }
-      else {
-        Device& device( iterDevice->second );
-        mapSensor_t::iterator iterSensor = device.mapSensor.find( sDisplayName );
-        if ( device.mapSensor.end() != iterSensor ) {
-          bStatus = false;
-          BOOST_LOG_TRIVIAL(warning)
-            << "Sensor Registration add" << sDeviceName << ":" << sDisplayName
-            << " already exists, addition skipped";
+      try {
+        std::string sDisplayName;
+        if ( 0 == display_name.size() ) {
+          sDisplayName = sSensorName;
         }
         else {
-          auto result = device.mapSensor.emplace( sDisplayName, Sensor( sDisplayName, sUnits ) );
-          assert( result.second );
-          Sensor& sensor( result.first->second );
-          sensor.pFamily = &m_clientPrometheus.AddSensor_Gauge( "apparition_" + sDeviceName + '_' + sDisplayName );
-          sensor.pGauge = &sensor.pFamily->Add( {} );
+          sDisplayName = std::move( std::string( display_name ) );
         }
+
+        //BOOST_LOG_TRIVIAL(info)
+        //  << "SensorRegisterAdd: "
+        //  << sDeviceName << ','
+        //  << sSensorName << ','
+        //  << sDisplayName << ','
+        //  << sUnits
+        //  ;
+
+        mapDevice_t::iterator iterDevice = m_mapDevice.find( sDeviceName );
+        if ( m_mapDevice.end() == iterDevice ) {
+          bStatus = false;
+          BOOST_LOG_TRIVIAL(warning)
+            << "Sensor Registration add, device " << sDeviceName << ":" << sDisplayName
+            << " not found, addition skipped";
+        }
+        else {
+          Device& device( iterDevice->second );
+          mapSensor_t::iterator iterSensor = device.mapSensor.find( sDisplayName );
+          if ( device.mapSensor.end() != iterSensor ) {
+            bStatus = false;
+            BOOST_LOG_TRIVIAL(warning)
+              << "Sensor Registration add" << sDeviceName << ":" << sDisplayName
+              << " already exists, addition skipped";
+          }
+          else {
+            auto result = device.mapSensor.emplace( sDisplayName, Sensor( sDisplayName, sUnits ) );
+            assert( result.second );
+            Sensor& sensor( result.first->second );
+            try {
+              sensor.pFamily = &m_clientPrometheus.AddSensor_Gauge( "apparition_" + sDeviceName + '_' + sDisplayName );
+              sensor.pGauge = &sensor.pFamily->Add( {} );
+            }
+            catch(...) {
+              BOOST_LOG_TRIVIAL(error)
+                << "Set_SensorRegisterAdd m_clientPrometheus error: "
+                << sDeviceName << ','
+                << sSensorName << ','
+                << sDisplayName << ','
+                << sUnits
+                ;
+            }
+          }
+        }
+      }
+      catch(...) {
+        BOOST_LOG_TRIVIAL(error) << "Set_SensorRegisterAdd error";
       }
 
       return bStatus;
