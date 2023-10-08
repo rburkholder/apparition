@@ -79,7 +79,7 @@ attach = function ( object_ptr_ )
     for key3, value in ipairs( table_location ) do
       device_location_tag_add( object_ptr, key1, value )
     end
-    end
+  end
 
   mqtt_connect( object_ptr )
   mqtt_start_topic( object_ptr, topic );
