@@ -44,10 +44,10 @@ attach = function ( object_ptr_ )
   mqtt_connect( object_ptr )
 
   for key, registration in ipairs( registrations ) do
-    local name = registration[ 1 ]
-    local device = registration[ 2 ]
-    local sensor = registration[ 3 ]
-    event_register_add( object_ptr, name, device, sensor )
+    local location = registration[ 1 ]
+    local device   = registration[ 2 ]
+    local sensor   = registration[ 3 ]
+    event_register_add( object_ptr, location, device, sensor )
   end
 
   mqtt_start_topic( object_ptr, topic ); -- needed?
@@ -58,10 +58,10 @@ detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic ) -- needed?
 
   for key, registration in ipairs( registrations ) do
-    local name = registration[ 1 ]
-    local device = registration[ 2 ]
-    local sensor = registration[ 3 ]
-    event_register_del( object_ptr, name, device, sensor )
+    local location = registration[ 1 ]
+    local device   = registration[ 2 ]
+    local sensor   = registration[ 3 ]
+    event_register_del( object_ptr, location, device, sensor )
   end
 
   mqtt_disconnect( object_ptr )
@@ -242,6 +242,7 @@ device[ 'scene02' ] = controllor_scene02
 device[ 'scene03' ] = controllor_scene03
 
 event_sensor_changed = function( location_, device_, sensor_, value_ )
+
   if false then
     io.write(
       "light.lua event_sensor_changed: "
