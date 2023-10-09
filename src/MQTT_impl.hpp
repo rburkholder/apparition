@@ -31,12 +31,8 @@
 class MQTT_impl {
 public:
 
-  //using fSuccess_t = MQTT::fSuccess_t;
-  //using fFailure_t = MQTT::fFailure_t;
-
   using fMessage_t = MQTT::fMessage_t;
 
-  //MQTT_impl( const MqttSettings&, fSuccess_t&&, fFailure_t&& );
   MQTT_impl( const MqttSettings& );
   ~MQTT_impl();
 
@@ -57,8 +53,5 @@ private:
   static void ConnectionLost( void* context, char* cause );
   static  int MessageArrived( void *context, char* topicName, int topicLen, MQTTClient_message* message );
   static void DeliveryComplete( void* context, MQTTClient_deliveryToken dt );
-
-  //static void Published( void* context, int dt, int packet_type, MQTTProperties* properties, enum MQTTReasonCodes reasonCode ); // v5
-  //static void Disconnected( void* context,  MQTTProperties* properties, enum MQTTReasonCodes reasonCode ); // v5
 
 };
