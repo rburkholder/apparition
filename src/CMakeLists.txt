@@ -75,3 +75,5 @@ target_link_libraries(
 #    pthread
   )
 
+add_subdirectory(Telegram)
+
