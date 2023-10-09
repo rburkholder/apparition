@@ -16,10 +16,10 @@ local extraction = assert( loadfile( "lib/lua/extract.lua" ) )
 extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
 local meta_ups_sensor = { -- prometheus does not like dots in the name
-  { extract3, "battery.charge",   "%",  "battery_charge" },
-  { extract3, "battery.runtime",  "seconds",  "battery_runtime" },
-  { extract3, "battery.voltage",  "Volt",  "battery_voltage" },
-  { extract3, "ups.status",       "",  "ups_status" },
+  { extract3, "battery.charge",   "%",       "battery_charge" },
+  { extract3, "battery.runtime",  "seconds", "battery_runtime" },
+  { extract3, "battery.voltage",  "Volt",    "battery_voltage" },
+  { extract3, "ups.status",       "",        "ups_status" },
 }
 
 local meta_ups01_location_tag = { 'den' }
@@ -28,9 +28,9 @@ local meta_ups03_location_tag = { 'sw01', 'basement' }
 local meta_ups04_location_tag = { 'furnace', 'basement' }
 
 local devices = {} -- key based upon second word in topic
-devices[ 'den-sm1500' ]     = { 'ups01', 'den ups', meta_ups_sensor, meta_ups01_location_tag }
-devices[ 'host01-sm1500' ]  = { 'ups02', 'host01 ups', meta_ups_sensor, meta_ups02_location_tag }
-devices[ 'host01-xs1300' ]  = { 'ups03', 'sw01 ups', meta_ups_sensor, meta_ups03_location_tag }
+devices[ 'den-sm1500' ]     = { 'ups01', 'den ups',     meta_ups_sensor, meta_ups01_location_tag }
+devices[ 'host01-sm1500' ]  = { 'ups02', 'host01 ups',  meta_ups_sensor, meta_ups02_location_tag }
+devices[ 'host01-xs1300' ]  = { 'ups03', 'sw01 ups',    meta_ups_sensor, meta_ups03_location_tag }
 devices[ 'furnace-sm1500' ] = { 'ups04', 'furnace ups', meta_ups_sensor, meta_ups04_location_tag }
 
 attach = function ( object_ptr_ )
