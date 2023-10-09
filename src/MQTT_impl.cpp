@@ -35,10 +35,10 @@
 #include "MQTT_impl.hpp"
 
 namespace {
-  static const int c_qos( 1 );
-  static const int c_time_out( 1000L );
-  static const int c_n_retry_attempts( 5 );
-  static const size_t c_sleep_seconds( 2500 );
+  //static const int c_qos( 1 );
+  //static const int c_time_out( 1000L );
+  //static const int c_n_retry_attempts( 5 );
+  //static const size_t c_sleep_seconds( 2500 );
 }
 
 // documentation: https://eclipse.github.io/paho.mqtt.c/MQTTClient/html/_m_q_t_t_client_8h.html

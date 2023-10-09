@@ -31,8 +31,8 @@
 class MQTT_impl {
 public:
 
-  using fSuccess_t = MQTT::fSuccess_t;
-  using fFailure_t = MQTT::fFailure_t;
+  //using fSuccess_t = MQTT::fSuccess_t;
+  //using fFailure_t = MQTT::fFailure_t;
 
   using fMessage_t = MQTT::fMessage_t;
 
