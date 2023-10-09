@@ -115,13 +115,13 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
     std::cout << "FileNotify error: " << e.what() << std::endl;
   }
 
-  static const std::vector<std::string> vWebParameters = {
+  static const std::vector<std::string> c_vWebParameters = {
     "--docroot=web;/favicon.ico,/resources,/style,/image"
   , "--http-listen=0.0.0.0:8089"
   , "--config=etc/wt_config.xml"
   };
 
-  m_pWebServer = std::make_unique<WebServer>( settings.sPath, vWebParameters );
+  m_pWebServer = std::make_unique<WebServer>( settings.sPath, c_vWebParameters );
   m_pDashboardFactory = std::make_unique<DashboardFactory>( *m_pWebServer );
   m_pWebServer->start();
 
@@ -186,6 +186,7 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
 
         if ( bChanged ) {
           for ( mapEventSensorChanged_t::value_type& event: sensor.mapEventSensorChanged ) {
+            //BOOST_LOG_TRIVIAL(info) << "event: " << sLocation << ',' << sDevice << ',' << vt.sName;
             event.second( sLocation, sDevice, vt.sName, priorValue, sensor.value );
           }
 
