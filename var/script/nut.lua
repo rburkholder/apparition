@@ -24,14 +24,16 @@ local meta_ups_sensor = { -- prometheus does not like dots in the name
 
 local meta_ups01_location_tag = { 'den' }
 local meta_ups02_location_tag = { 'host01', 'basement' }
-local meta_ups03_location_tag = { 'sw01', 'basement' }
+local meta_ups03_location_tag = { 'host01', 'basement' }
 local meta_ups04_location_tag = { 'furnace', 'basement' }
+local meta_ups05_location_tag = { 'host01', 'basement' }
 
 local devices = {} -- key based upon second word in topic
-devices[ 'den-sm1500' ]     = { 'ups01', 'den ups',     meta_ups_sensor, meta_ups01_location_tag }
-devices[ 'host01-sm1500' ]  = { 'ups02', 'host01 ups',  meta_ups_sensor, meta_ups02_location_tag }
-devices[ 'host01-xs1300' ]  = { 'ups03', 'sw01 ups',    meta_ups_sensor, meta_ups03_location_tag }
+devices[ 'den-sm1500' ]     = { 'ups01', 'den apc ups',     meta_ups_sensor, meta_ups01_location_tag }
+devices[ 'host01-sm1500' ]  = { 'ups02', 'sw01 apc ups',  meta_ups_sensor, meta_ups02_location_tag }
+devices[ 'host01-xs1300' ]  = { 'ups03', 'eid internet',    meta_ups_sensor, meta_ups03_location_tag }
 devices[ 'furnace-sm1500' ] = { 'ups04', 'furnace ups', meta_ups_sensor, meta_ups04_location_tag }
+devices[ 'host01-5p1500' ]  = { 'ups05', 'host01 eaton ups',  meta_ups_sensor, meta_ups05_location_tag }
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
