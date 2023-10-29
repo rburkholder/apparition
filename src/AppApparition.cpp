@@ -52,11 +52,11 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
         if ( ConfigYaml::TestExtension( path ) ) {
           switch ( type ) {
             case FileNotify::EType::create_:
-              std::cout << "create" << std::endl;
+              //std::cout << "create" << std::endl;
               m_yaml.Load( path );
               break;
             case FileNotify::EType::modify_:
-              std::cout << "modify" << std::endl;
+              //std::cout << "modify" << std::endl;
               m_yaml.Modify( path );
               break;
             case FileNotify::EType::delete_:
