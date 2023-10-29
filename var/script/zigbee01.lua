@@ -15,6 +15,20 @@ local json = cjson.new()
 local extraction = assert( loadfile( "lib/lua/extract.lua" ) )
 extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
+-- {"battery":100,"battery_low":false,"contact":false,"linkquality":232,"tamper":false,"voltage":3000}
+local meta_mag_sensor = {
+  { extract3, "contact",     "",   "closed"  },
+  { extract2, "tamper",      "",   ""  },
+  { extract2, "voltage",     "mV", "" },
+  { extract3, "linkquality", "", "link_quality" },
+  { extract3, "battery",     "%", "battery_level" },
+  { extract2, "battery_low", "",  ""  },
+}
+
+local meta_door01_location_tag = {
+  'garage'
+}
+
 local meta_pir_sensor = {
   { extract2, "occupancy",   "",  "" },
   { extract2, "tamper",      "",  "" },
@@ -61,6 +75,7 @@ devices[ 'outlet02' ] = { 'den', 'den outlet', meta_outlet_sensor, meta_outlet02
 devices[ 'outlet03' ] = { 'fridge', 'basement fridge', meta_outlet_sensor, meta_outlet03_location_tag }
 devices[ 'outlet04' ] = { 'thermo', 'family room step', meta_outlet_sensor, meta_outlet04_location_tag }
 devices[ 'outlet05' ] = { 'dehumidifier', 'basement dehumidifier', meta_outlet_sensor, meta_outlet05_location_tag }
+devices[ 'door05' ] = { 'garage', 'garage entry', meta_mag_sensor, meta_door01_location_tag }
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
