@@ -17,8 +17,8 @@ extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
 -- {"battery":100,"battery_low":false,"contact":false,"linkquality":232,"tamper":false,"voltage":3000}
 local meta_mag_sensor = {
-  { extract3, "contact",     "",   "closed"  },
-  { extract2, "tamper",      "",   ""  },
+  { extract3, "contact",     "",   "closed"  }, -- bool
+  { extract2, "tamper",      "",   ""  }, -- bool
   { extract2, "voltage",     "mV", "" },
   { extract3, "linkquality", "", "link_quality" },
   { extract3, "battery",     "%", "battery_level" },
