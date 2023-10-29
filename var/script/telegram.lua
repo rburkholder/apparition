@@ -6,7 +6,7 @@
 
 description = 'listens for events and transmits notifications to telegram'
 
-local topic = 'state/#' -- connection for publishing
+-- local topic = 'state/#' -- connection for publishing
 local object_ptr = nil
 
 package.path='' -- can not have ?.so in script path
@@ -17,15 +17,17 @@ local json = cjson.new()
 -- locations, match in nut.lua
 local registrations = {
   { 'den',     "ups01", "ups_status" },
-  { 'host01',  "ups02", "ups_status" },
-  { 'sw01',    "ups03", "ups_status" },
+  { 'sw01',    "ups02", "ups_status" },
+  { 'eid',     "ups03", "ups_status" },
   { 'furnace', "ups04", "ups_status" },
+  { 'host01',  "ups05", "ups_status" },
+  { 'den',     "ups06", "ups_status" },
 }
 
 attach = function ( object_ptr_ )
   -- use os.getenv for username, password info
   object_ptr = object_ptr_
-  mqtt_connect( object_ptr )
+  --mqtt_connect( object_ptr )
 
   for key, registration in ipairs( registrations ) do
     local location = registration[ 1 ]
@@ -34,12 +36,12 @@ attach = function ( object_ptr_ )
     event_register_add( object_ptr, location, device, sensor )
   end
 
-  mqtt_start_topic( object_ptr, topic ); -- needed?
+  -- mqtt_start_topic( object_ptr, topic ); -- needed?
 
 end
 
 detach = function ( object_ptr_ )
-  mqtt_stop_topic( object_ptr, topic ) -- needed?
+  -- mqtt_stop_topic( object_ptr, topic ) -- needed?
 
   for key, registration in ipairs( registrations ) do
     local location = registration[ 1 ]
@@ -48,7 +50,7 @@ detach = function ( object_ptr_ )
     event_register_del( object_ptr, location, device, sensor )
   end
 
-  mqtt_disconnect( object_ptr )
+  --mqtt_disconnect( object_ptr )
   object_ptr = nil
 end
 
@@ -60,7 +62,7 @@ event_sensor_changed = function( location_, device_, sensor_, value_ )
       .. location_ .. ','
       .. device_ .. ','
       .. sensor_ .. ','
-      .. type(value_) ..
+      .. type( value_ ) ..
       '\n'
       )
   end
