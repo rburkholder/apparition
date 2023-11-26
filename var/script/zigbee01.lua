@@ -65,6 +65,16 @@ local meta_outlet03_location_tag = { 'basement', 'fridge' }
 local meta_outlet04_location_tag = { 'family_room' }
 local meta_outlet05_location_tag = { 'basement', 'dehumidifier' }
 
+local meta_water_sensor = {
+  { extract3, "battery", "%", "battery_level" },
+  { extract2, "water_leak", "", "" },
+  { extract2, "battery_low", "", "" },
+  { extract3, "voltage", "mV", "battery_mv" },
+  { extract3, "device_temperature", "degC", "temperature" },
+  { extract2, "power_outage_count", "", "" },
+  { extract3, "linkquality", "", "link_quality" }
+}
+
 local devices = {}
 devices[ 'pir03' ]   = { 'laundry', 'laundry pir', meta_pir_sensor, meta_pir03_location_tag }
 devices[ 'light01' ] = { 'den', 'den light 1',  meta_light_sensor, meta_light01_location_tag }
@@ -76,6 +86,9 @@ devices[ 'outlet03' ] = { 'fridge', 'basement fridge', meta_outlet_sensor, meta_
 devices[ 'outlet04' ] = { 'thermo', 'family room step', meta_outlet_sensor, meta_outlet04_location_tag }
 devices[ 'outlet05' ] = { 'dehumidifier', 'basement dehumidifier', meta_outlet_sensor, meta_outlet05_location_tag }
 devices[ 'door05' ] = { 'garage', 'garage entry', meta_mag_sensor, meta_door05_location_tag }
+devices[ 'water01' ] = { 'furnace', 'furnace water', meta_water_sensor, { "furnace_floor" } }
+devices[ 'water02' ] = { 'sewer' , 'sewer water', meta_water_sensor, { "basement" } }
+devices[ 'water03' ] = { 'kitchen', 'kitchen water', meta_water_sensor, { "kitchen" } }
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
