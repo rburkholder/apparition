@@ -25,7 +25,7 @@ local meta_mag_sensor = {
   { extract2, "battery_low", "",  ""  },
 }
 
-local meta_door01_location_tag = {
+local meta_door05_location_tag = {
   'garage'
 }
 
@@ -75,7 +75,7 @@ devices[ 'outlet02' ] = { 'den', 'den outlet', meta_outlet_sensor, meta_outlet02
 devices[ 'outlet03' ] = { 'fridge', 'basement fridge', meta_outlet_sensor, meta_outlet03_location_tag }
 devices[ 'outlet04' ] = { 'thermo', 'family room step', meta_outlet_sensor, meta_outlet04_location_tag }
 devices[ 'outlet05' ] = { 'dehumidifier', 'basement dehumidifier', meta_outlet_sensor, meta_outlet05_location_tag }
-devices[ 'door05' ] = { 'garage', 'garage entry', meta_mag_sensor, meta_door01_location_tag }
+devices[ 'door05' ] = { 'garage', 'garage entry', meta_mag_sensor, meta_door05_location_tag }
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
