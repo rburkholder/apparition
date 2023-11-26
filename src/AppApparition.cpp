@@ -563,7 +563,8 @@ AppApparition::SensorPath AppApparition::LookupSensor_Insert(
     //   ie, reload of zwave.lua breaks event registration of light.lua
     BOOST_LOG_TRIVIAL(warning)
       << "AppApparition::LookupSensor_Insert non-exist: "
-      << sLocation << ',' << sDevice << ',' << sSensor
+      << sDevice << ',' << sLocation << ',' << sSensor
+      << ',' << e.what()
       ;
 
     bool bInserted( false );
