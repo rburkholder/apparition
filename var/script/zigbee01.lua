@@ -16,7 +16,7 @@ local extraction = assert( loadfile( "lib/lua/extract.lua" ) )
 extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
 -- {"battery":100,"battery_low":false,"contact":false,"linkquality":232,"tamper":false,"voltage":3000}
-local meta_mag_sensor = {
+local meta_mag_sensor = { -- SONOFF	SNZB-04
   { extract3, "contact",     "",   "closed"  }, -- bool
   { extract2, "tamper",      "",   ""  }, -- bool
   { extract2, "voltage",     "mV", "" },
@@ -29,7 +29,7 @@ local meta_door05_location_tag = {
   'garage'
 }
 
-local meta_pir_sensor = {
+local meta_pir_sensor = { -- SONOFF	SNZB-03
   { extract2, "occupancy",   "",  "" },
   { extract2, "tamper",      "",  "" },
   { extract3, "linkquality", "", "link_quality" },
@@ -41,7 +41,7 @@ local meta_pir03_location_tag = {
   'laundry'
 }
 
-local meta_light_sensor = {
+local meta_light_sensor = { -- Philips Hue 9290012573A
   { extract2, "state", "", "" },
   { extract2, "brightness", "%", "" },
   { extract2, "color_temp", "K", "" },
@@ -52,7 +52,7 @@ local meta_light02_location_tag = { 'den' }
 local meta_light03_location_tag = { 'back_entry' }
 local meta_light04_location_tag = { 'eating_area' }
 
-local meta_outlet_sensor = {
+local meta_outlet_sensor = { -- Third Reality	3RSP02028BZ
   { extract2, "power", "Watt", "" },
   { extract3, "ac_frequency", "Hz", "frequency" },
   { extract2, "current", "Amp", "" },
@@ -65,7 +65,7 @@ local meta_outlet03_location_tag = { 'basement', 'fridge' }
 local meta_outlet04_location_tag = { 'family_room' }
 local meta_outlet05_location_tag = { 'basement', 'dehumidifier' }
 
-local meta_water_sensor = {
+local meta_water_sensor = { -- Xiaomi	SJCGQ11LM
   { extract3, "battery", "%", "battery_level" },
   { extract2, "water_leak", "", "" },
   { extract2, "battery_low", "", "" },
