@@ -194,8 +194,16 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
             if ( std::holds_alternative<double>( vt.value ) ) {
               sensor.pGauge->Set( std::get<double>( vt.value ) );
             }
-            if ( std::holds_alternative<int64_t>( vt.value ) ) {
-              sensor.pGauge->Set( std::get<int64_t>( vt.value ) );
+            else {
+              if ( std::holds_alternative<int64_t>( vt.value ) ) {
+                sensor.pGauge->Set( std::get<int64_t>( vt.value ) );
+              }
+              else {
+                if ( std::holds_alternative<bool>( vt.value ) ) {
+                  const bool value( std::get<bool>( vt.value ) );
+                  sensor.pGauge->Set( (int64_t) (value ? 1 : 0 ) );
+                }
+              }
             }
           }
         }
