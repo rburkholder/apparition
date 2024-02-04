@@ -26,16 +26,14 @@
 #include <functional>
 #include <unordered_map>
 
-#include "Common.hpp"
-
-class MQTT_impl;
+#include <ou/mqtt/mqtt.hpp>
 
 class MQTT {
 public:
 
   using fMessage_t = std::function<void( const std::string_view& svTopic, const std::string_view& svMessage )>;
 
-  MQTT( const MqttSettings& );
+  MQTT( const ou::mqtt::Config& );
   ~MQTT();
 
   using fSuccess_t = std::function<void()>;
@@ -52,11 +50,13 @@ public:
 protected:
 private:
 
-  const MqttSettings& m_settings;
+  static size_t m_nConnection;
 
-  using pMQTT_impl_t = std::unique_ptr<MQTT_impl>;
+  const ou::mqtt::Config& m_settings;
 
-  using mapConnection_t = std::unordered_map<void*,pMQTT_impl_t>;
+  using pMQTT_t = std::unique_ptr<ou::Mqtt>;
+
+  using mapConnection_t = std::unordered_map<void*,pMQTT_t>;
   mapConnection_t m_mapConnection;
 
 };

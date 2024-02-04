@@ -32,7 +32,7 @@
 #include <fmt/format.h>
 
 #include "MQTT.hpp"
-#include "Common.hpp"
+#include "Config.hpp"
 #include "FileNotify.hpp"
 
 #include "WebServer.hpp"
@@ -41,7 +41,7 @@
 
 #include "AppApparition.hpp"
 
-AppApparition::AppApparition( const MqttSettings& settings ) {
+AppApparition::AppApparition( const config::Values& settings ) {
 
   try {
     m_pFileNotify = std::make_unique<FileNotify>(
@@ -121,11 +121,11 @@ AppApparition::AppApparition( const MqttSettings& settings ) {
   , "--config=etc/wt_config.xml"
   };
 
-  m_pWebServer = std::make_unique<WebServer>( settings.sPath, c_vWebParameters );
+  m_pWebServer = std::make_unique<WebServer>( settings.mqtt.sId, c_vWebParameters );
   m_pDashboardFactory = std::make_unique<DashboardFactory>( *m_pWebServer );
   m_pWebServer->start();
 
-  m_pMQTT = std::make_unique<MQTT>( settings );
+  m_pMQTT = std::make_unique<MQTT>( settings.mqtt );
 
   m_lua.Set_MqttConnect(
     [this]( void* context ){

@@ -33,13 +33,16 @@
 
 class MQTT;
 class FileNotify;
-class MqttSettings;
 class WebServer;
 class DashboardFactory;
 
+namespace config {
+  class Values;
+}
+
 class AppApparition {
 public:
-  AppApparition( const MqttSettings& settings );
+  AppApparition( const config::Values& settings );
   ~AppApparition();
 protected:
 private:

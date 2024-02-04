@@ -1,5 +1,5 @@
 /************************************************************************
- * Copyright(c) 2023, One Unified. All rights reserved.                 *
+ * Copyright(c) 2024, One Unified. All rights reserved.                 *
  * email: info@oneunified.net                                           *
  *                                                                      *
  * This file is provided as is WITHOUT ANY WARRANTY                     *
@@ -13,23 +13,34 @@
  ************************************************************************/
 
 /*
- * File:    Common.hpp
+ * File:    Config.hpp
  * Author:  raymond@burkholder.net
  * Project: Apparition
- * Created: 2023/06/09 20:41:13
+ * Created: February 3, 2024 14:42:24
  */
 
 #pragma once
 
 #include <string>
 
-struct MqttSettings {
+#include <ou/mqtt/config.hpp>
 
-  std::string sPath;
-  std::string sHostName;
-  std::string sAddress;
-  std::string sPort;
-  std::string sUserName;
-  std::string sPassword;
+namespace config {
+
+struct Telegram {
+  std::string sToken;
+  uint64_t idChat;
+};
+
+struct Values {
+
+  std::string sVarDirectory;
+
+  Telegram telegram;
+  ou::mqtt::Config mqtt;
 
 };
+
+bool Load( const std::string& sFileName, Values& );
+
+} // namespace config

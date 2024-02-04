@@ -9,20 +9,19 @@ set(Boost_USE_MULTITHREADED ON)
 set(BOOST_USE_STATIC_RUNTIME OFF)
 set(BOOST_INCLUDEDIR "/usr/local/include/boost")
 
-find_package(Boost ${TF_BOOST_VERSION} REQUIRED COMPONENTS system date_time filesystem serialization regex log log_setup)
+find_package(Boost ${TF_BOOST_VERSION} REQUIRED COMPONENTS program_options system date_time filesystem serialization regex log log_setup)
 
 #message("boost lib: ${Boost_LIBRARIES}")
 
 set(
   file_hpp
     AppApparition.hpp
-    Common.hpp
+    Config.hpp
     ConfigYaml.hpp
     Dashboard.hpp
     DashboardFactory.hpp
     FileNotify.hpp
     MQTT.hpp
-    MQTT_impl.hpp
     PrometheusClient.hpp
     ScriptLua.hpp
     WebServer.hpp
@@ -31,13 +30,13 @@ set(
 set(
   file_cpp
     AppApparition.cpp
+    Config.cpp
     ConfigYaml.cpp
     Dashboard.cpp
     DashboardFactory.cpp
     FileNotify.cpp
     main.cpp
     MQTT.cpp
-    MQTT_impl.cpp
     PrometheusClient.cpp
     ScriptLua.cpp
     WebServer.cpp
@@ -65,7 +64,8 @@ target_link_libraries(
   ${PROJECT_NAME}
     yaml-cpp
     luajit-5.1
-    paho-mqtt3c
+    libou_mqtt.a
+    paho-mqtt3c.a
     fmt
     prometheus-cpp-core
     prometheus-cpp-pull

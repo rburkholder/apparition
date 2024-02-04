@@ -21,10 +21,13 @@
 
 #include <cassert>
 
-#include "MQTT.hpp"
-#include "MQTT_impl.hpp"
+#include <boost/lexical_cast.hpp>
 
-MQTT::MQTT( const MqttSettings& settings )
+#include "MQTT.hpp"
+
+size_t MQTT::m_nConnection = 0;
+
+MQTT::MQTT( const ou::mqtt::Config& settings )
 : m_settings( settings )
 {}
 
@@ -36,9 +39,10 @@ void MQTT::Connect( void* context, fSuccess_t&& fSuccess, fFailure_t&& fFailure 
 
   mapConnection_t::iterator iterConnection = m_mapConnection.find( context );
   if ( m_mapConnection.end() == iterConnection ) {
-    pMQTT_impl_t pMQTT_impl
-      = std::make_unique<MQTT_impl>( m_settings );
-    auto result = m_mapConnection.emplace( mapConnection_t::value_type( context, std::move( pMQTT_impl ) ) );
+    const std::string sClientId = m_settings.sHost + '-' + boost::lexical_cast<std::string>( m_nConnection++ );
+    pMQTT_t pMQTT
+      = std::make_unique<ou::Mqtt>( m_settings, sClientId );
+    auto result = m_mapConnection.emplace( mapConnection_t::value_type( context, std::move( pMQTT ) ) );
     assert( result.second );
     iterConnection = result.first;
     fSuccess(); // new entry
@@ -78,5 +82,8 @@ void MQTT::Publish( void* context, const std::string_view& topic, const std::str
   mapConnection_t::iterator iterConnection = m_mapConnection.find( context );
   assert( m_mapConnection.end() != iterConnection );
   assert( iterConnection->second );
-  iterConnection->second->Publish( topic, message );
+  iterConnection->second->Publish(
+    topic, message,
+    [](bool b, int n ){}
+    );
 }

@@ -29,36 +29,42 @@
 #include <boost/asio/execution/context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 
-#include "Common.hpp"
+#include "Config.hpp"
 #include "AppApparition.hpp"
 
 int main( int argc, char* argv[] ) {
 
-  std::cout << "apparition - (C)2023 One Unified Net Limited" << std::endl;
+  static const std::string c_sConfigFilename( "apparition.cfg" );
 
-  if ( 4 != argc ) {
-    std::cerr << "error: wrong number of parameters" << std::endl;
-    std::cerr << "  apparition <mqtt address> <mqtt username> <mqtt password>" << std::endl;
-    return EXIT_FAILURE;
+  std::cout << "apparition - (C)2023-2024 One Unified Net Limited" << std::endl;
+
+  config::Values settings;
+
+  if ( Load( c_sConfigFilename, settings ) ) {
   }
+  else {
+    if ( 4 != argc ) {
+      std::cerr << "error: wrong number of parameters" << std::endl;
+      std::cerr << "  apparition <mqtt address> <mqtt username> <mqtt password>" << std::endl;
+      return EXIT_FAILURE;
+    }
+    else {
 
-  MqttSettings settings;
+      char szHostName[ HOST_NAME_MAX + 1 ];
+      int result = gethostname( szHostName, HOST_NAME_MAX + 1 );
+      if ( 0 != result ) {
+        printf( "failure with gethostname\n" );
+        exit( EXIT_FAILURE );
+      }
 
-  char szHostName[ HOST_NAME_MAX + 1 ];
-  int result = gethostname( szHostName, HOST_NAME_MAX + 1 );
-  if ( 0 != result ) {
-    printf( "failure with gethostname\n" );
-    exit( EXIT_FAILURE );
+      std::cout << "application " << argv[0] << " hostname: " << szHostName << std::endl; // TODO: move outside to generic location
+
+      settings.mqtt.sId = szHostName;
+      settings.mqtt.sHost = argv[ 1 ];
+      settings.mqtt.sUserName = argv[ 2 ];
+      settings.mqtt.sPassword = argv[ 3 ];
+    }
   }
-
-  std::cout << "application " << argv[0] << " hostname: " << szHostName << std::endl; // TODO: move outside to generic location
-
-  settings.sPath = argv[ 0 ];
-  settings.sHostName = szHostName;
-  settings.sAddress = argv[ 1 ];
-  settings.sPort = "1883";
-  settings.sUserName = argv[ 2 ];
-  settings.sPassword = argv[ 3 ];
 
   AppApparition app( settings );
 
