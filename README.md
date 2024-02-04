@@ -40,6 +40,7 @@ On the immediate todo list:
 * add time-of-day and recurring events
 
 Order of install:
+* need to build and install https://github.com/rburkholder/repertory for MQTT
 * install packages:
   * [C++ library: mqtt-paho](docs/mqtt-paho.md) - mqtt client
 * build libs-build libraries - use [libs-build](https://github.com/rburkholder/libs-build)
