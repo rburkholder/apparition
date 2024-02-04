@@ -317,7 +317,7 @@ void ScriptLua::Run_Test01( const std::string& sPath ) {
 
 void ScriptLua::Attach( mapScript_t::iterator iterScript ) {
 
-  BOOST_LOG_TRIVIAL(info) << "Attach";
+  //BOOST_LOG_TRIVIAL(info) << "Attach";
   Script& script( iterScript->second );
   lua_State* pLua( script.pLua );
   int result {};
@@ -357,7 +357,7 @@ void ScriptLua::Attach( mapScript_t::iterator iterScript ) {
 }
 
 void ScriptLua::Detach( mapScript_t::iterator iterScript ) {
-  BOOST_LOG_TRIVIAL(info) << "Detach";
+  //BOOST_LOG_TRIVIAL(info) << "Detach";
   Script& script( iterScript->second );
   lua_State* pLua( script.pLua );
 
@@ -623,7 +623,7 @@ int ScriptLua::lua_event_register_add( lua_State* pLua ) {
   self->m_fEventRegisterAdd(
     szLocation, szDeviceName, szSensorName, pLua,
     [pLua](const std::string& location, const std::string& device,const std::string& sensor,
-         const value_t& prior, const value_t& current ){
+           const value_t& prior, const value_t& current ){
       lua_getglobal( pLua, "event_sensor_changed" );
       lua_pushlstring( pLua, location.data(), location.size() );
       lua_pushlstring( pLua, device.data(), device.size() );
@@ -643,6 +643,9 @@ int ScriptLua::lua_event_register_add( lua_State* pLua ) {
           else {
             if ( std::holds_alternative<int64_t>( current ) ) {
               lua_pushinteger( pLua, std::get<int64_t>( current ) );
+            }
+            else {
+              // need a default push here, or an error?
             }
           }
         }
