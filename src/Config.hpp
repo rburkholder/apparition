@@ -34,7 +34,12 @@ struct Telegram {
 
 struct Values {
 
-  std::string sVarDirectory;
+  std::string sDirConfig;
+  std::string sDirEtc;
+  std::string sDirLib;
+  std::string sDirLog;
+  std::string sDirScript;
+  std::string sDirWeb;
 
   Telegram telegram;
   ou::mqtt::Config mqtt;
