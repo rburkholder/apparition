@@ -64,8 +64,8 @@ meta_sensor_thermostat[ "isLow" ] = { "", "battery_low" }
 
 local device_data = {}
 --                                 display name, sensor extraction, location tags
-device_data[ 'outlet01' ]     = { 'family room outlet', meta_sensor_outlet, { 'family room', 'main floor' } }
-device_data[ 'outlet06' ]     = { 'furnace outlet', meta_sensor_outlet, { 'furnace', 'basement' } }
+device_data[ 'outlet01' ]     = { 'water cooler outlet', meta_sensor_outlet, { 'family room', 'main floor' } }
+device_data[ 'outlet06' ]     = { 'alarm system outlet', meta_sensor_outlet, { 'basement' } }
 device_data[ 'pir01' ]        = { 'den pir', meta_sensor_pir, { 'den', 'main floor' } }
 device_data[ 'scene01' ]      = { 'den scene', meta_sensor_scene, { 'den', 'main floor' } }
 device_data[ 'scene02' ]      = { 'side entry scene', meta_sensor_scene, { 'side entry', 'main floor' } }
