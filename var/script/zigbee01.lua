@@ -54,6 +54,7 @@ local meta_light04_location_tag = { 'eating_area' }
 
 local meta_outlet_sensor = { -- Third Reality	3RSP02028BZ
   { extract2, "power", "Watt", "" },
+  { extract2, "power_factor", "", "" },
   { extract3, "ac_frequency", "Hz", "frequency" },
   { extract2, "current", "Amp", "" },
   { extract2, "voltage", "Volt", "" },
