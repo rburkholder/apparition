@@ -62,7 +62,7 @@ local meta_outlet_sensor = { -- Third Reality	3RSP02028BZ
 }
 local meta_outlet02_location_tag = { 'den' }
 local meta_outlet03_location_tag = { 'basement', 'fridge' }
-local meta_outlet04_location_tag = { 'family_room' }
+local meta_outlet04_location_tag = { 'furnace' }
 local meta_outlet05_location_tag = { 'basement', 'dehumidifier' }
 
 local meta_water_sensor = { -- Xiaomi	SJCGQ11LM
@@ -83,7 +83,7 @@ devices[ 'light03' ] = { 'back_entry', 'back entry light',  meta_light_sensor, m
 devices[ 'light04' ] = { 'eating_area', 'eating area light',  meta_light_sensor, meta_light04_location_tag }
 devices[ 'outlet02' ] = { 'den', 'den outlet', meta_outlet_sensor, meta_outlet02_location_tag }
 devices[ 'outlet03' ] = { 'fridge', 'basement fridge', meta_outlet_sensor, meta_outlet03_location_tag }
-devices[ 'outlet04' ] = { 'thermo', 'family room step', meta_outlet_sensor, meta_outlet04_location_tag }
+devices[ 'outlet04' ] = { 'furnace', 'furnace ups', meta_outlet_sensor, meta_outlet04_location_tag }
 devices[ 'outlet05' ] = { 'dehumidifier', 'basement dehumidifier', meta_outlet_sensor, meta_outlet05_location_tag }
 devices[ 'door05' ] = { 'garage', 'garage entry', meta_mag_sensor, meta_door05_location_tag }
 devices[ 'water01' ] = { 'furnace', 'furnace water', meta_water_sensor, { "furnace_floor" } }
