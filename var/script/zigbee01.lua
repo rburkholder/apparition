@@ -136,7 +136,11 @@ end
 
 mqtt_in = function( topic_, message_ )
 
-  -- io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
+  -- local result = string.find( topic_, "outlet05" )
+  -- if nil == result then
+  -- else
+  --   io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
+  -- end
 
   local ix = 1
   local device_name = ''
@@ -154,7 +158,7 @@ mqtt_in = function( topic_, message_ )
         if '1' == word then
           ix = ix + 1
         else
-          break;
+          break
         end
       else
         if 3 == ix then
