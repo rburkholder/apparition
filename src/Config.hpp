@@ -43,8 +43,8 @@ struct Values {
 
   std::string sDirConfig;
   std::string sDirEtc;
-  std::string sDirLib;
-  std::string sDirLog;
+  std::string sDirLib; // used in lua apps, eg "lib/lua/extract.lua", how to use?
+  std::string sDirLog; // unused for now
   std::string sDirScript;
   std::string sDirWeb;
 

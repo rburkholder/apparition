@@ -45,8 +45,8 @@ AppApparition::AppApparition( const config::Values& settings ) {
 
   try {
     m_pFileNotify = std::make_unique<FileNotify>(
-      [this]( FileNotify::EType type, const std::string& s ){ // fConfig
-        std::filesystem::path path( "config/" + s );
+      [this, sDir=settings.sDirConfig ]( FileNotify::EType type, const std::string& s ){ // fConfig
+        std::filesystem::path path( sDir + '/' + s );
         //std::cout << path << ' ';
 
         if ( ConfigYaml::TestExtension( path ) ) {
@@ -72,8 +72,8 @@ AppApparition::AppApparition( const config::Values& settings ) {
           std::cout << "noop: " << path << std::endl;;
         }
       },
-      [this]( FileNotify::EType type, const std::string& s ){ // fScript
-        std::filesystem::path path( "script/" + s );
+      [this, sDir=settings.sDirScript ]( FileNotify::EType type, const std::string& s ){ // fScript
+        std::filesystem::path path( sDir + '/' + s );
 
         std::cout << "iFileNotify ";
 
@@ -115,13 +115,19 @@ AppApparition::AppApparition( const config::Values& settings ) {
     std::cout << "FileNotify error: " << e.what() << std::endl;
   }
 
-  static const std::vector<std::string> c_vWebParameters = {
-    "--docroot=web;/favicon.ico,/resources,/style,/image"
+  //static const std::vector<std::string> c_vWebParameters = {
+  //  "--docroot=web;/favicon.ico,/resources,/style,/image"
+  //, "--http-listen=0.0.0.0:8089"
+  //, "--config=etc/wt_config.xml"
+  //};
+
+  const std::vector<std::string> vWebParameters = {
+    fmt::format( "--docroot={};/favicon.ico,/resources,/style,/image", settings.sDirWeb )
   , "--http-listen=0.0.0.0:8089"
-  , "--config=etc/wt_config.xml"
+  , fmt::format( "--config={}/wt_config.xml", settings.sDirEtc )
   };
 
-  m_pWebServer = std::make_unique<WebServer>( settings.mqtt.sId, c_vWebParameters );
+  m_pWebServer = std::make_unique<WebServer>( settings.mqtt.sId, vWebParameters );
   m_pDashboardFactory = std::make_unique<DashboardFactory>( *m_pWebServer );
   m_pWebServer->start();
 
