@@ -413,7 +413,7 @@ AppApparition::AppApparition( const config::Values& settings ) {
         if ( m_mapDevice.end() == iterDevice ) {
           bStatus = false;
           BOOST_LOG_TRIVIAL(warning)
-            << "Sensor Registration add, device " << sDeviceName << ":" << sDisplayName
+            << "Sensor Registration add (1) " << sDeviceName << ":" << sDisplayName
             << " not found, addition skipped";
         }
         else {
@@ -422,7 +422,7 @@ AppApparition::AppApparition( const config::Values& settings ) {
           if ( device.mapSensor.end() != iterSensor ) {
             bStatus = false;
             BOOST_LOG_TRIVIAL(warning)
-              << "Sensor Registration add" << sDeviceName << ":" << sDisplayName
+              << "Sensor Registration add (2) " << sDeviceName << ":" << sDisplayName
               << " already exists, addition skipped";
           }
           else {
