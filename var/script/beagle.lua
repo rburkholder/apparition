@@ -31,6 +31,7 @@ device_data[ 'bb01' ] = { 'basement bme680', meta_sensor_bme, { 'basement' } }
 device_data[ 'bb02' ] = { 'top floor bme680', meta_sensor_bme, { 'top floor' } }
 device_data[ 'bb03' ] = { 'kitchen bme680', meta_sensor_bme, { 'kitchen', 'main floor' } }
 device_data[ 'bb04' ] = { 'garage bme680', meta_sensor_bme, { 'garage' } }
+device_data[ 'bb06' ] = { 'master bedroom bme680', meta_sensor_bme, { 'master bedroom' } }
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
