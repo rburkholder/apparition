@@ -468,7 +468,7 @@ AppApparition::AppApparition( const config::Values& settings ) {
       if ( m_mapDevice.end() == iterDevice ) {
         bStatus = false;
         BOOST_LOG_TRIVIAL(warning)
-          << "Sensor Registration del, device " << sDeviceName << ":" << sSensorName
+          << "Sensor Registration del (1) " << sDeviceName << ":" << sSensorName
           << " not found, deletion skipped";
       }
       else {
@@ -477,7 +477,7 @@ AppApparition::AppApparition( const config::Values& settings ) {
         if ( device.mapSensor.end() == iterSensor ) {
           bStatus = false;
           BOOST_LOG_TRIVIAL(warning)
-            << "Sensor Registration del sensor " << sDeviceName << ":" << sSensorName
+            << "Sensor Registration del (2) " << sDeviceName << ":" << sSensorName
             << " not found, deletion skipped";
         }
         else {
