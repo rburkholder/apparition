@@ -19,6 +19,13 @@
  * Created: February 3, 2024 14:42:24
  */
 
+// change this to reflect file locations only.
+// keep the defaults local, and the custom one elsewhere
+// multiple directories, then can search through the list, keep or delete the defaults
+// will config append to vectors?
+// use yaml or lua config files?
+//   use yaml, easier to load
+
 #pragma once
 
 #include <string>

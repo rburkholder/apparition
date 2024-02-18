@@ -30,6 +30,10 @@ Functionality:
 * Grafana tied to Prometheus for dashboards and charting
 * A simple web dashboard with current values
 
+Operation:
+* update the var/apparition.cfg with your specific requirements
+* start the application using ./var as your working directory
+
 On the immediate todo list:
 * dashboard updates:
   * organize devices & sensors logically - defined by Lua config statements

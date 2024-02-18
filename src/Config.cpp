@@ -75,12 +75,12 @@ bool Load( const std::string& sFileName, Values& values ) {
     po::options_description config( c_sDescription );
     config.add_options()
 
-      ( sValue_Var_Directory_Config.c_str(), po::value<std::string>( &values.sDirConfig )->default_value( "./" ), "var directory config" )
-      ( sValue_Var_Directory_Etc.c_str(),    po::value<std::string>( &values.sDirEtc    )->default_value( "./" ), "var directory etc" )
-      ( sValue_Var_Directory_Lib.c_str(),    po::value<std::string>( &values.sDirLib    )->default_value( "./" ), "var directory lib" )
-      ( sValue_Var_Directory_Log.c_str(),    po::value<std::string>( &values.sDirLog    )->default_value( "./" ), "var directory log" )
-      ( sValue_Var_Directory_Script.c_str(), po::value<std::string>( &values.sDirScript )->default_value( "./" ), "var directory script" )
-      ( sValue_Var_Directory_Web.c_str(),    po::value<std::string>( &values.sDirWeb    )->default_value( "./" ), "var directory web" )
+      ( sValue_Var_Directory_Config.c_str(), po::value<std::string>( &values.sDirConfig )->default_value( "./config" ), "var directory config" )
+      ( sValue_Var_Directory_Etc.c_str(),    po::value<std::string>( &values.sDirEtc    )->default_value( "./etc" ),    "var directory etc" )
+      ( sValue_Var_Directory_Lib.c_str(),    po::value<std::string>( &values.sDirLib    )->default_value( "./lib" ),    "var directory lib" )
+      ( sValue_Var_Directory_Log.c_str(),    po::value<std::string>( &values.sDirLog    )->default_value( "./log" ),    "var directory log" )
+      ( sValue_Var_Directory_Script.c_str(), po::value<std::string>( &values.sDirScript )->default_value( "./script" ), "var directory script" )
+      ( sValue_Var_Directory_Web.c_str(),    po::value<std::string>( &values.sDirWeb    )->default_value( "./web" ),    "var directory web" )
 
       ( sValue_Mqtt_Id.c_str(),       po::value<std::string>( &values.mqtt.sId       )->default_value( "apparition"  ), "mqtt client id" )
       ( sValue_Mqtt_Host.c_str(),     po::value<std::string>( &values.mqtt.sHost     )->default_value( "localhost"   ), "mqtt host address or name" )
