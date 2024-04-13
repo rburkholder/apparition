@@ -84,6 +84,8 @@ Proposed tooling:
 * [Grafana](https://grafana.com/) - data visualization aka visibility stack
   * [github](https://github.com/grafana/grafana)
 * [RabbitMQ / MQTT](https://www.rabbitmq.com/mqtt.html) - event backbone
+* [Rhasspy](https://github.com/rhasspy) - Offline voice assistant [docs](https://rhasspy.readthedocs.io/en/latest/)
+  * [ESP32-Rhasspy-Satellite](https://github.com/Romkabouter/ESP32-Rhasspy-Satellite) - esp32 standalone MQTT audio streamer. Is is desinged to work as a satellite for Rhasspy
 
 Thoughts influencing the design & implementation of this solution:
 
