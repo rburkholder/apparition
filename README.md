@@ -86,6 +86,7 @@ Proposed tooling:
 * [RabbitMQ / MQTT](https://www.rabbitmq.com/mqtt.html) - event backbone
 * [Rhasspy](https://github.com/rhasspy) - Offline voice assistant [docs](https://rhasspy.readthedocs.io/en/latest/)
   * [ESP32-Rhasspy-Satellite](https://github.com/Romkabouter/ESP32-Rhasspy-Satellite) - esp32 standalone MQTT audio streamer. Is is desinged to work as a satellite for Rhasspy
+  * [Snips](https://docs.snips.ai/) - a software solution powering Private-by-Design voice assistants
 
 Thoughts influencing the design & implementation of this solution:
 
