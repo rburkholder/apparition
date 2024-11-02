@@ -265,5 +265,6 @@ event_sensor_changed = function( location_, device_, sensor_, value_ )
 
 end
 
--- scene control is going to need to remmmber state
+-- scene control is going to need to remember state
 --   and needs to query controller to determine current state?
+
