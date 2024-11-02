@@ -120,12 +120,16 @@ end
 
 local device_thermapro = {}
 -- NOTE: the id will change on battery change
-device_thermapro[  87 ] = 'thermapro01' -- channel 1, garage
-device_thermapro[  30 ] = 'thermapro02' -- channel 2, basement
-device_thermapro[ 190 ] = 'thermapro03' -- channel 3, walkway
+--device_thermapro[  87 ] = 'thermapro01' -- channel 1, garage
+--device_thermapro[ 116 ] = 'thermapro02' -- channel 2, basement
+--device_thermapro[ 239 ] = 'thermapro03' -- channel 3, walkway
+device_thermapro[ 1 ] = 'thermapro01' -- channel 1, garage
+device_thermapro[ 2 ] = 'thermapro02' -- channel 2, basement
+device_thermapro[ 3 ] = 'thermapro03' -- channel 3, walkway
 
 thermapro = function( jvalues_ )
-  local id = jvalues_[ 'id' ]
+  -- local id = jvalues_[ 'id' ] // changes with battery change
+  local id = jvalues_[ 'channel' ]
   local device_name = device_thermapro[ id ]
   if nil ~= device_name then
     local device_template = device_data[ device_name ]
