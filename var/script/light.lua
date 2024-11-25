@@ -131,10 +131,10 @@ local controllor_scene01 = function( sensor_, value_ )
   end
 
   local scenes = {}
-  scenes[ 'scene001'] = scene001
-  scenes[ 'scene002'] = scene002
-  scenes[ 'scene003'] = sensor_scene003
-  scenes[ 'scene004'] = sensor_scene004
+  scenes[ 'scene001' ] = scene001
+  scenes[ 'scene002' ] = scene002
+  scenes[ 'scene003' ] = sensor_scene003
+  scenes[ 'scene004' ] = sensor_scene004
 
   if 'target_state' == sensor_ then
     if false == value_ then
@@ -174,10 +174,10 @@ local controllor_scene02 = function( sensor_, value_ )
   end
 
   local scenes = {}
-  scenes[ 'scene001'] = scene001
-  scenes[ 'scene002'] = scene002
-  scenes[ 'scene003'] = sensor_scene003
-  scenes[ 'scene004'] = sensor_scene004
+  scenes[ 'scene001' ] = scene001
+  scenes[ 'scene002' ] = scene002
+  scenes[ 'scene003' ] = sensor_scene003
+  scenes[ 'scene004' ] = sensor_scene004
 
   if 'target_state' == sensor_ then
     if false == value_ then
@@ -217,10 +217,10 @@ local controllor_scene03 = function( sensor_, value_ )
   end
 
   local scenes = {}
-  scenes[ 'scene001'] = scene001
-  scenes[ 'scene002'] = scene002
-  scenes[ 'scene003'] = sensor_scene003
-  scenes[ 'scene004'] = sensor_scene004
+  scenes[ 'scene001' ] = scene001
+  scenes[ 'scene002' ] = scene002
+  scenes[ 'scene003' ] = sensor_scene003
+  scenes[ 'scene004' ] = sensor_scene004
 
   if 'target_state' == sensor_ then
     if false == value_ then
