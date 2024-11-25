@@ -191,11 +191,14 @@ AppApparition::AppApparition( const config::Values& settings ) {
         // TODO check if duplicate from last?  or if last seen has changed?
 
         if ( bChanged ) {
+
+          // Event Process:  lua callbacks
           for ( mapEventSensorChanged_t::value_type& event: sensor.mapEventSensorChanged ) {
             //BOOST_LOG_TRIVIAL(info) << "event: " << sLocation << ',' << sDevice << ',' << vt.sName;
             event.second( sLocation, sDevice, vt.sName, priorValue, sensor.value );
           }
 
+          // Event Process:  send changes to prometheus
           if ( sensor.pGauge ) {
             if ( std::holds_alternative<double>( vt.value ) ) {
               sensor.pGauge->Set( std::get<double>( vt.value ) );
@@ -286,6 +289,7 @@ AppApparition::AppApparition( const config::Values& settings ) {
       //   if events attached to sensor:
       //     don't delete device/sensor, allow re-attachment
       //   use connection counter to release (in the case of device/sensor renaming)
+      //     use shared_ptr?
 
       const std::string sLocation( svLocation );
       const std::string sDevice( svDevice );
