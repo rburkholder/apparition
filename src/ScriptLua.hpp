@@ -39,27 +39,14 @@ public:
     std::string sName;
     value_t value;
     std::string sUnits;
-    enum class ECategory {
-      uninitialized // to use this effectively, will need this in a class
-    , temperature
-    , humidity
-    , radio
-    , wind
-    , light
-    , rain
-    , power
-    , battery
-    , firmware
-    , unknown
-    } eCategory;
 
-    Value(): value( false ), eCategory( ECategory::uninitialized ) {} // not sure how to identify in lua, maybe pass a string and use spirit to decode
+    Value(): value( false ) {} // not sure how to identify in lua, maybe pass a string and use spirit to decode
     Value( const std::string& sName_, const value_t value_, const std::string& sUnits_ )
-    : sName( std::move( sName_ ) ), value( std::move( value_ ) ), sUnits( std::move( sUnits_ ) ), eCategory( ECategory::unknown ) {}
+    : sName( std::move( sName_ ) ), value( std::move( value_ ) ), sUnits( std::move( sUnits_ ) ) {}
     Value( const Value& rhs )
-    : sName( std::move( rhs.sName ) ), value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) ), eCategory( rhs.eCategory ) {}
+    : sName( std::move( rhs.sName ) ), value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) ) {}
     Value( Value&& rhs )
-    : sName( std::move( rhs.sName ) ), value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) ), eCategory( rhs.eCategory ) {}
+    : sName( std::move( rhs.sName ) ), value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) ) {}
   };
 
   using vValue_t = std::vector<Value>;
