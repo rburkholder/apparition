@@ -21,6 +21,7 @@ set(
     Dashboard.hpp
     DashboardFactory.hpp
     FileNotify.hpp
+    Lua.hpp
     MQTT.hpp
     PrometheusClient.hpp
     ScriptLua.hpp
@@ -35,6 +36,7 @@ set(
     Dashboard.cpp
     DashboardFactory.cpp
     FileNotify.cpp
+    Lua.cpp
     main.cpp
     MQTT.cpp
     PrometheusClient.cpp

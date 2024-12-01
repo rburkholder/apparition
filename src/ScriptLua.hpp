@@ -27,9 +27,7 @@
 #include <functional>
 #include <unordered_map>
 
-extern "C" {
-#include <luajit-2.1/lua.h>
-}
+#include "Lua.hpp"
 
 class ScriptLua {
 public:
@@ -139,20 +137,7 @@ public:
 protected:
 private:
 
-  struct Script {
-    lua_State* pLua;
-    Script() = delete;
-    Script( lua_State* pLua_ ): pLua( pLua_ ) {}
-    Script( Script&& rhs ): pLua( rhs.pLua ) { rhs.pLua = nullptr; }
-    ~Script() {
-      if ( pLua ) {
-        lua_close( pLua );
-        pLua = nullptr;
-      }
-    }
-  };
-
-  using mapScript_t = std::unordered_map<std::string, Script>;
+  using mapScript_t = std::unordered_map<std::string, Lua>;
   mapScript_t m_mapScript;
 
   fMqttConnect_t m_fMqttConnect;

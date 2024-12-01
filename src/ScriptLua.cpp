@@ -23,11 +23,10 @@
 // look at for extension modules: http://luajit.org/extensions.html
 // tutorial: https://www.tutorialspoint.com/lua/lua_object_oriented.htm
 
-#include <cassert>
-
 #include <boost/log/trivial.hpp>
 
 extern "C" {
+#include <luajit-2.1/lua.h>
 #include <luajit-2.1/lualib.h>
 #include <luajit-2.1/lauxlib.h>
 }
@@ -122,17 +121,6 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
 
   mapScript_t::iterator iterScript( m_mapScript.end() );
 
-  // http://lua-users.org/wiki/SimpleLuaApiExample
-
-  /*
-    * All Lua contexts are held in this structure. We work with it almost
-    * all the time.
-    */
-  lua_State* pLua = luaL_newstate();
-  assert( pLua );
-
-  luaL_openlibs( pLua ); /* Load Lua libraries */ // TODO: skip if reduced time/space footprint desirable
-
   // TODO: put these functions into a named table: mqtt
   //   2016 programming in lua page 251
   //   thus: mqtt.start_topic, mqtt.stop_topic
@@ -141,55 +129,57 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
   //   keep current location hierarchy, but migrate once tags are in place
   // TODO: send category tags for sensors: thermostat, humidity, rssi, ...
 
-  lua_pushcfunction( pLua, lua_mqtt_connect );
-  lua_setglobal( pLua, "mqtt_connect" );
+  Lua lua;
 
-  lua_pushcfunction( pLua, lua_mqtt_start_topic );
-  lua_setglobal( pLua, "mqtt_start_topic" );
+  lua_pushcfunction( lua(), lua_mqtt_connect );
+  lua_setglobal( lua(), "mqtt_connect" );
 
-  lua_pushcfunction( pLua, lua_mqtt_stop_topic );
-  lua_setglobal( pLua, "mqtt_stop_topic" );
+  lua_pushcfunction( lua(), lua_mqtt_start_topic );
+  lua_setglobal( lua(), "mqtt_start_topic" );
 
-  lua_pushcfunction( pLua, lua_mqtt_device_data );
-  lua_setglobal( pLua, "mqtt_device_data" );
+  lua_pushcfunction( lua(), lua_mqtt_stop_topic );
+  lua_setglobal( lua(), "mqtt_stop_topic" );
 
-  lua_pushcfunction( pLua, lua_mqtt_publish );
-  lua_setglobal( pLua, "mqtt_publish" );
+  lua_pushcfunction( lua(), lua_mqtt_device_data );
+  lua_setglobal( lua(), "mqtt_device_data" );
 
-  lua_pushcfunction( pLua, lua_mqtt_disconnect );
-  lua_setglobal( pLua, "mqtt_disconnect" );
+  lua_pushcfunction( lua(), lua_mqtt_publish );
+  lua_setglobal( lua(), "mqtt_publish" );
 
-  lua_pushcfunction( pLua, lua_event_register_add );
-  lua_setglobal( pLua, "event_register_add" );
+  lua_pushcfunction( lua(), lua_mqtt_disconnect );
+  lua_setglobal( lua(), "mqtt_disconnect" );
 
-  lua_pushcfunction( pLua, lua_event_register_del );
-  lua_setglobal( pLua, "event_register_del" );
+  lua_pushcfunction( lua(), lua_event_register_add );
+  lua_setglobal( lua(), "event_register_add" );
 
-  lua_pushcfunction( pLua, lua_device_register_add );
-  lua_setglobal( pLua, "device_register_add" );
+  lua_pushcfunction( lua(), lua_event_register_del );
+  lua_setglobal( lua(), "event_register_del" );
 
-  lua_pushcfunction( pLua, lua_device_register_del );
-  lua_setglobal( pLua, "device_register_del" );
+  lua_pushcfunction( lua(), lua_device_register_add );
+  lua_setglobal( lua(), "device_register_add" );
 
-  lua_pushcfunction( pLua, lua_sensor_register_add );
-  lua_setglobal( pLua, "sensor_register_add" );
+  lua_pushcfunction( lua(), lua_device_register_del );
+  lua_setglobal( lua(), "device_register_del" );
 
-  lua_pushcfunction( pLua, lua_sensor_register_del );
-  lua_setglobal( pLua, "sensor_register_del" );
+  lua_pushcfunction( lua(), lua_sensor_register_add );
+  lua_setglobal( lua(), "sensor_register_add" );
 
-  lua_pushcfunction( pLua, lua_device_location_tag_add );
-  lua_setglobal( pLua, "device_location_tag_add" );
+  lua_pushcfunction( lua(), lua_sensor_register_del );
+  lua_setglobal( lua(), "sensor_register_del" );
 
-  lua_pushcfunction( pLua, lua_device_location_tag_del );
-  lua_setglobal( pLua, "device_location_tag_del" );
+  lua_pushcfunction( lua(), lua_device_location_tag_add );
+  lua_setglobal( lua(), "device_location_tag_add" );
+
+  lua_pushcfunction( lua(), lua_device_location_tag_del );
+  lua_setglobal( lua(), "device_location_tag_del" );
 
   /* Load the file containing the script to be run */
-  int status = luaL_loadfile( pLua, sPath.c_str() );
+  int status = luaL_loadfile( lua(), sPath.c_str() );
   if ( LUA_OK == status ) {
     auto result = m_mapScript.emplace(
       mapScript_t::value_type(
         sPath,
-        std::move( Script( pLua ) )
+        std::move( lua )
       ) );
     assert( result.second );
 
@@ -200,7 +190,7 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
     BOOST_LOG_TRIVIAL(error)
       << "ScriptLua::Parse Couldn't load file: "
       << '(' << status << ')' << ' '
-      << lua_tostring( pLua, -1 )
+      << lua_tostring( lua(), -1 )
       ;
   }
 
@@ -259,16 +249,14 @@ void ScriptLua::Run_Test01( const std::string& sPath ) {
     int i;
     double sum;
 
-    Script& script( iterScript->second );
-
-    lua_State* pLua( script.pLua );
+    Lua& lua( iterScript->second );
 
     /*
       * Ok, now here we go: We pass data to the lua script on the stack.
       * That is, we first have to prepare Lua's virtual stack the way we
       * want the script to receive it, then ask Lua to run it.
       */
-    lua_newtable( pLua );    /* We will pass a table */
+    lua_newtable( lua() );    /* We will pass a table */
 
     /*
       * To put values into the table, we first push the index, then the
@@ -286,32 +274,32 @@ void ScriptLua::Run_Test01( const std::string& sPath ) {
       * top of the stack.
       */
     for ( i = 1; i <= 5; i++ ) {
-        lua_pushnumber( pLua, i );   /* Push the table index */
-        lua_pushnumber( pLua, i*2 ); /* Push the cell value */
-        lua_rawset( pLua, -3 );      /* Stores the pair in the table */
+        lua_pushnumber( lua(), i );   /* Push the table index */
+        lua_pushnumber( lua(), i*2 ); /* Push the cell value */
+        lua_rawset( lua(), -3 );      /* Stores the pair in the table */
     }
 
     /* By what name is the script going to reference our table? */
-    lua_setglobal( pLua, "foo" );
+    lua_setglobal( lua(), "foo" );
 
     /* Ask Lua to run our little script */
-    int result = lua_pcall( pLua, 0, LUA_MULTRET, 0 );
+    int result = lua_pcall( lua(), 0, LUA_MULTRET, 0 );
     if ( result ) {
       BOOST_LOG_TRIVIAL(error)
         << "ScriptLua::Run failed to run script: "
-        << lua_tostring( pLua, -1 )
+        << lua_tostring( lua(), -1 )
         ;
     }
     else {
       /* Get the returned value at the top of the stack (index -1) */
-      sum = lua_tonumber( pLua, -1 );
+      sum = lua_tonumber( lua(), -1 );
 
       BOOST_LOG_TRIVIAL(info)
         << "ScriptLua::Run returned "
         << sum
         ;
 
-      lua_pop( pLua, 1 );  /* Take the returned value out of the stack */
+      lua_pop( lua(), 1 );  /* Take the returned value out of the stack */
     }
   }
 }
@@ -319,35 +307,35 @@ void ScriptLua::Run_Test01( const std::string& sPath ) {
 void ScriptLua::Attach( mapScript_t::iterator iterScript ) {
 
   //BOOST_LOG_TRIVIAL(info) << "Attach";
-  Script& script( iterScript->second );
-  lua_State* pLua( script.pLua );
+  Lua& lua( iterScript->second );
+  //lua_State* pLua( script.pLua );
   int result {};
   int test {};
 
   // first pass: register endpoints, initialize variables
-  result = lua_pcall( pLua, 0, 0, 0 );
+  result = lua_pcall( lua(), 0, 0, 0 );
   if ( LUA_OK != result ) {
     BOOST_LOG_TRIVIAL(error)
       << "ScriptLua::Attach0 failed to run script 1: "
-      << lua_tostring( pLua, -1 )
+      << lua_tostring( lua(), -1 )
       ;
-    lua_pop( pLua, 1 );
+    lua_pop( lua(), 1 );
   }
   else {
     // second pass: call the attachment function
-    lua_getglobal( pLua, "attach" ); // page 242 of 2016 Programming in Lua
+    lua_getglobal( lua(), "attach" ); // page 242 of 2016 Programming in Lua
     //test = lua_isnil( pLua, -1 ); // page 227
-    lua_pushlightuserdata( pLua , this );
+    lua_pushlightuserdata( lua() , this );
     //test = lua_isuserdata( pLua, -1 );
     //test = lua_isnil( pLua, -2 );
 
-    result = lua_pcall( pLua, 1, 0, 0 );
+    result = lua_pcall( lua(), 1, 0, 0 );
     if ( LUA_OK != result ) {
       BOOST_LOG_TRIVIAL(error)
         << "ScriptLua::Attach1 failed to run script 2: "
-        << lua_tostring( pLua, -1 )
+        << lua_tostring( lua(), -1 )
         ;
-      lua_pop( pLua, 1 );
+      lua_pop( lua(), 1 );
     }
     else {
       // no return value
@@ -359,19 +347,19 @@ void ScriptLua::Attach( mapScript_t::iterator iterScript ) {
 
 void ScriptLua::Detach( mapScript_t::iterator iterScript ) {
   //BOOST_LOG_TRIVIAL(info) << "Detach";
-  Script& script( iterScript->second );
-  lua_State* pLua( script.pLua );
+  Lua& lua( iterScript->second );
+  //lua_State* pLua( script.pLua );
 
-  lua_getglobal( pLua, "detach" ); // page 242 of 2016 Programming in Lua
-  lua_pushlightuserdata( pLua , this );
+  lua_getglobal( lua(), "detach" ); // page 242 of 2016 Programming in Lua
+  lua_pushlightuserdata( lua() , this );
 
-  int result = lua_pcall( pLua, 1, 0, 0 );
+  int result = lua_pcall( lua(), 1, 0, 0 );
   if ( LUA_OK != result ) {
     BOOST_LOG_TRIVIAL(error)
       << "ScriptLua::Detach failed to run script: "
-      << lua_tostring( pLua, -1 )
+      << lua_tostring( lua(), -1 )
       ;
-    lua_pop( pLua, 1 );
+    lua_pop( lua(), 1 );
   }
   else {
     // no return value
