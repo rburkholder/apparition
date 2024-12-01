@@ -199,6 +199,7 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
     /* If something went wrong, error message is at the top of the stack */
     BOOST_LOG_TRIVIAL(error)
       << "ScriptLua::Parse Couldn't load file: "
+      << '(' << status << ')' << ' '
       << lua_tostring( pLua, -1 )
       ;
   }
