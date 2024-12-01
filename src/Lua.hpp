@@ -33,7 +33,7 @@ public:
   lua_State* operator()() { return m_pLua; } // temporary transitionary
 
 protected:
-private:
   lua_State* m_pLua;
+private:
 };
 
