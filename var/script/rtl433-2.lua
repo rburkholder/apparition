@@ -21,21 +21,13 @@ extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 -- rtl433/2 {"time":"2023-06-22 19:37:10","model":"DSC-Security","id":3860837,"closed":0,"event":1,"tamper":0,"battery_ok":1,"xactivity":1,"xtamper1":0,"xtamper2":0,"exception":0,"esn":"3ae965","status":161,"status_hex":"a1","mic":"CRC","mod":"ASK","freq":433.93008,"rssi":-0.13023,"snr":22.19126,"noise":-22.3215}
 -- rtl433/2 {"time":"2023-06-22 19:37:14","model":"DSC-Security","id":2501272,"closed":1,"event":1,"tamper":0,"battery_ok":1,"xactivity":1,"xtamper1":0,"xtamper2":0,"exception":0,"esn":"262a98","status":163,"status_hex":"a3","mic":"CRC","mod":"ASK","freq":433.92666,"rssi":-0.121494,"snr":23.69761,"noise":-23.8191}
 local meta_sensor_dsc = {
-  --          match            units   common
-  { extract2, "closed",     "", "" },
-  { extract2, "tamper",     "", "" },
-  { extract2, "status",     "", "" },
-  { extract3, "battery_ok", "", "battery_state" },
+  --          match        units   common
+  { extract2, "closed",     "",    "" },
+  { extract2, "tamper",     "",    "" },
+  { extract2, "status",     "",    "" },
+  { extract3, "battery_ok", "",    "battery_state" },
   { extract2, "rssi",       "dBm", "" },
-  { extract2, "snr",        "", "" },
-  { extract2, "noise",      "dBm", "" }
-}
-
-local meta_sensor_dsc_other = {
-  --          match            units   common
-  { extract3, "battery_ok", "", "battery_state" },
-  { extract2, "rssi",       "dBm", "" },
-  { extract2, "snr",        "", "" },
+  { extract2, "snr",        "",    "" },
   { extract2, "noise",      "dBm", "" }
 }
 
@@ -43,25 +35,25 @@ local meta_sensor_dsc_other = {
 local meta_sensor_thermapro = {
   --          match            units   common
   { extract3, "temperature_C", "degC", "temperature" },
-  { extract2, "humidity",      "%", "" },
+  { extract2, "humidity",      "%",    "" },
   { extract3, "battery_ok",    "",     "battery_state" },
   { extract3, "button",        "",     "button_state" },
-  { extract2, "rssi",          "dBm", "" },
-  { extract2, "snr",           "", "" },
-  { extract2, "noise",         "dBm", "" }
+  { extract2, "rssi",          "dBm",  "" },
+  { extract2, "snr",           "",     "" },
+  { extract2, "noise",         "dBm",  "" }
 }
 
 local device_data = {}
 --                          display name,   location tags
-device_data[ 'door01' ]      = { 'side door', meta_sensor_dsc, { 'side entry' } }
-device_data[ 'door02' ]      = { 'laundry door', meta_sensor_dsc, { 'laundry' } }
-device_data[ 'door03' ]      = { 'patio door', meta_sensor_dsc, { 'patio' } }
-device_data[ 'door04' ]      = { 'front door', meta_sensor_dsc, { 'front entry' } }
-device_data[ 'pir02' ]       = { 'family room pir', meta_sensor_dsc, { 'family room' } }
-device_data[ 'smoke01' ]     = { 'top floor smoke', meta_sensor_dsc, { 'top floor', 'upstairs' } }
-device_data[ 'thermapro01' ] = { 'garage thermapro', meta_sensor_thermapro, { 'garage' } }
+device_data[ 'door01' ]      = { 'side door',          meta_sensor_dsc,       { 'side entry' } }
+device_data[ 'door02' ]      = { 'laundry door',       meta_sensor_dsc,       { 'laundry' } }
+device_data[ 'door03' ]      = { 'patio door',         meta_sensor_dsc,       { 'patio' } }
+device_data[ 'door04' ]      = { 'front door',         meta_sensor_dsc,       { 'front entry' } }
+device_data[ 'pir02' ]       = { 'family room pir',    meta_sensor_dsc,       { 'family room' } }
+device_data[ 'smoke01' ]     = { 'top floor smoke',    meta_sensor_dsc,       { 'top floor', 'upstairs' } }
+device_data[ 'thermapro01' ] = { 'garage thermapro',   meta_sensor_thermapro, { 'garage' } }
 device_data[ 'thermapro02' ] = { 'basement thermapro', meta_sensor_thermapro, { 'basement' } }
-device_data[ 'thermapro03' ] = { 'walkway thermapro', meta_sensor_thermapro, { 'walkway', 'outside' } }
+device_data[ 'thermapro03' ] = { 'walkway thermapro',  meta_sensor_thermapro, { 'walkway', 'outside' } }
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
