@@ -185,14 +185,7 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
 
   /* Load the file containing the script to be run */
   int status = luaL_loadfile( pLua, sPath.c_str() );
-  if ( status ) {
-    /* If something went wrong, error message is at the top of the stack */
-    BOOST_LOG_TRIVIAL(error)
-      << "ScriptLua::Parse Couldn't load file: "
-      << lua_tostring( pLua, -1 )
-      ;
-  }
-  else {
+  if ( LUA_OK == status ) {
     auto result = m_mapScript.emplace(
       mapScript_t::value_type(
         sPath,
@@ -201,6 +194,13 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
     assert( result.second );
 
     iterScript = result.first;
+  }
+  else {
+    /* If something went wrong, error message is at the top of the stack */
+    BOOST_LOG_TRIVIAL(error)
+      << "ScriptLua::Parse Couldn't load file: "
+      << lua_tostring( pLua, -1 )
+      ;
   }
 
   return iterScript;
