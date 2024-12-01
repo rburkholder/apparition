@@ -13,27 +13,20 @@
  ************************************************************************/
 
 /*
- * File:    Lua.hpp
+ * File:    LuaModule.cpp
  * Author:  raymond@burkholder.net
  * Project: Apparition
- * Created: 2024/11/30 21:29:46
+ * Created: 2024/12/01 12:20:37
  */
 
-#pragma once
+extern "C" {
+#include <luajit-2.1/lua.h>
+//#include <luajit-2.1/lauxlib.h>
+}
 
-class lua_State;
+#include "LuaModule.hpp"
 
-class Lua {
-public:
-
-  Lua();
-  Lua( Lua&& rhs ): m_pLua( rhs.m_pLua ) { rhs.m_pLua = nullptr; }
-  virtual ~Lua();
-
-  lua_State* operator()() { return m_pLua; } // temporary transitionary
-
-protected:
-  lua_State* m_pLua;
-private:
-};
-
+int LuaModule::luaPushUpValues( lua_State* pLua ) {
+  lua_pushlightuserdata( pLua, this );
+  return 1;
+}

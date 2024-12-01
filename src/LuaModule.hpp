@@ -13,27 +13,37 @@
  ************************************************************************/
 
 /*
- * File:    Lua.hpp
+ * File:    LuaModule.hpp
  * Author:  raymond@burkholder.net
  * Project: Apparition
- * Created: 2024/11/30 21:29:46
+ * Created: 2024/12/01 12:20:37
  */
+
+// Integrate Lua with C++ - page 103
 
 #pragma once
 
+#include <luajit-2.1/lua.h>
+#include <string>
+#include <vector>
+
+extern "C" {
+//#include <luajit-2.1/lua.h>
+#include <luajit-2.1/lauxlib.h>
+}
+
 class lua_State;
 
-class Lua {
+class LuaModule {
+public:
 public:
 
-  Lua();
-  Lua( Lua&& rhs ): m_pLua( rhs.m_pLua ) { rhs.m_pLua = nullptr; }
-  virtual ~Lua();
+  virtual ~LuaModule() = default;
 
-  lua_State* operator()() { return m_pLua; } // temporary transitionary
+  virtual const std::string& luaInstanceName() const = 0;
+  virtual const std::vector<luaL_Reg>& luaRegistration() const = 0;
+  virtual int luaPushUpValues( lua_State* );  // push 'this'
 
 protected:
-  lua_State* m_pLua;
 private:
 };
-

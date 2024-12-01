@@ -23,6 +23,8 @@
 // look at for extension modules: http://luajit.org/extensions.html
 // tutorial: https://www.tutorialspoint.com/lua/lua_object_oriented.htm
 
+// 2024/12/01 Integrate Lua with C++ - page 96 override lua print function - todo
+
 #include <boost/log/trivial.hpp>
 
 extern "C" {
@@ -44,8 +46,17 @@ ScriptLua::ScriptLua()
 , m_fMqttDeviceData( nullptr )
 , m_fMqttPublish( nullptr )
 , m_fMqttDisconnect( nullptr )
+
 , m_fEventRegisterAdd( nullptr )
 , m_fEventRegisterDel( nullptr )
+
+, m_fDeviceRegisterAdd( nullptr )
+, m_fDeviceRegisterDel( nullptr )
+, m_fSensorRegisterAdd( nullptr )
+, m_fSensorRegisterDel( nullptr )
+
+, m_fDeviceLocationTagAdd( nullptr )
+, m_fDeviceLocationTagDel( nullptr )
 {}
 
 ScriptLua::~ScriptLua() {
@@ -117,6 +128,13 @@ bool ScriptLua::TestExtension( const std::filesystem::path& path ) {
   return bResult;
 }
 
+void ScriptLua::RegisterLuaModule( lua_State* pLua, LuaModule& module ) {
+  lua_createtable( pLua, 0, module.luaRegistration().size() - 1 );
+  int nUpValues = module.luaPushUpValues( pLua );
+  luaL_setfuncs( pLua, module.luaRegistration().data(), nUpValues );
+  lua_setglobal( pLua, module.luaInstanceName().c_str() );
+}
+
 ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
 
   mapScript_t::iterator iterScript( m_mapScript.end() );
@@ -131,6 +149,9 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
 
   Lua lua;
 
+  //RegisterLuaModule( lua(), module );
+
+  // can ultimately replace the following function assignments
   lua_pushcfunction( lua(), lua_mqtt_connect );
   lua_setglobal( lua(), "mqtt_connect" );
 
@@ -634,7 +655,7 @@ int ScriptLua::lua_event_register_add( lua_State* pLua ) {
               lua_pushinteger( pLua, std::get<int64_t>( current ) );
             }
             else {
-              // need a default push here, or an error?
+              assert( false ); // need a default push here, or an error?
             }
           }
         }
@@ -757,7 +778,6 @@ int ScriptLua::lua_device_register_del( lua_State* pLua ) {
 
   self->m_fDeviceRegisterDel( szUniqueName );
 
-  return 0;
   return 0;
 }
 

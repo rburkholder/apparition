@@ -16,12 +16,15 @@ find_package(Boost ${TF_BOOST_VERSION} REQUIRED COMPONENTS program_options syste
 set(
   file_hpp
     AppApparition.hpp
+    Common.hpp
     Config.hpp
     ConfigYaml.hpp
     Dashboard.hpp
     DashboardFactory.hpp
+#    ExportToLua.hpp
     FileNotify.hpp
     Lua.hpp
+    LuaModule.hpp
     MQTT.hpp
     PrometheusClient.hpp
     ScriptLua.hpp
@@ -30,13 +33,16 @@ set(
 
 set(
   file_cpp
+    AppApparition_impl.cpp
     AppApparition.cpp
     Config.cpp
     ConfigYaml.cpp
     Dashboard.cpp
     DashboardFactory.cpp
+#    ExportToLua.cpp
     FileNotify.cpp
     Lua.cpp
+    LuaModule.cpp
     main.cpp
     MQTT.cpp
     PrometheusClient.cpp

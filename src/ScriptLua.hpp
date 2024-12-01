@@ -22,34 +22,16 @@
 #pragma once
 
 #include <vector>
-#include <variant>
 #include <filesystem>
 #include <functional>
 #include <unordered_map>
 
 #include "Lua.hpp"
+#include "Common.hpp"
+#include "LuaModule.hpp"
 
 class ScriptLua {
 public:
-
-  using value_t = std::variant<bool, int64_t, double, std::string>;
-
-  struct Value {
-
-    std::string sName;
-    value_t value;
-    std::string sUnits;
-
-    Value(): value( false ) {} // not sure how to identify in lua, maybe pass a string and use spirit to decode
-    Value( const std::string& sName_, const value_t value_, const std::string& sUnits_ )
-    : sName( std::move( sName_ ) ), value( std::move( value_ ) ), sUnits( std::move( sUnits_ ) ) {}
-    Value( const Value& rhs )
-    : sName( std::move( rhs.sName ) ), value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) ) {}
-    Value( Value&& rhs )
-    : sName( std::move( rhs.sName ) ), value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) ) {}
-  };
-
-  using vValue_t = std::vector<Value>;
 
   using fDeviceRegisterAdd_t = std::function<bool(
     const std::string_view& unique_name
@@ -105,19 +87,6 @@ public:
   void Set_DeviceLocationAdd( fDeviceLocationTagAdd_t&& );
   void Set_DeviceLocationDel( fDeviceLocationTagDel_t&& );
 
-  using fEvent_SensorChanged_t = std::function<
-    void(const std::string& location, const std::string& device,const std::string& sensor,
-         const value_t& prior, const value_t& current
-    )>;
-  using fEventRegisterAdd_t = std::function<
-    void(const std::string_view& location, const std::string_view& device, const std::string_view& sensor,
-         void* key, fEvent_SensorChanged_t&&
-    )>;
-  using fEventRegisterDel_t = std::function<
-    void(const std::string_view& location, const std::string_view& device, const std::string_view& sensor,
-         void* key
-    )>;
-
   void Set_EventRegisterAdd( fEventRegisterAdd_t&& );
   void Set_EventRegisterDel( fEventRegisterDel_t&& );
 
@@ -148,6 +117,8 @@ private:
 
   void Attach( mapScript_t::iterator );
   void Detach( mapScript_t::iterator );
+
+  void RegisterLuaModule( lua_State* lua, LuaModule& );
 
   static int lua_mqtt_connect( lua_State* );
   static int lua_mqtt_start_topic( lua_State* );

@@ -41,7 +41,53 @@
 
 #include "AppApparition.hpp"
 
-AppApparition::AppApparition( const config::Values& settings ) {
+namespace lua_app_apparition {
+
+  inline AppApparition* Self( lua_State* pLua ) {
+    return reinterpret_cast<AppApparition*>( lua_touserdata( pLua, lua_upvalueindex( 1 ) ) ); // LuaModule 'this'
+  }
+
+  // TODO: migrate the wrappers from ScriptLua.cpp over to AppApparition_impl
+  // TODO: convert lambdas to regular method calls
+  int lua_mqtt_connect( lua_State* );
+  int lua_mqtt_start_topic( lua_State* );
+  int lua_mqtt_stop_topic( lua_State* );
+  int lua_mqtt_device_data( lua_State* );
+  int lua_mqtt_publish( lua_State* );
+  int lua_mqtt_disconnect( lua_State* );
+
+  int lua_event_register_add( lua_State* );
+  int lua_event_register_del( lua_State* );
+
+  int lua_device_register_add( lua_State* );
+  int lua_device_register_del( lua_State* );
+  int lua_sensor_register_add( lua_State* );
+  int lua_sensor_register_del( lua_State* );
+  int lua_device_location_tag_add( lua_State* );
+  int lua_device_location_tag_del( lua_State* );
+
+  const std::vector<luaL_Reg> Registrations = {
+    { "mqtt_connect",            lua_mqtt_connect }
+  , { "mqtt_start_topic",        lua_mqtt_start_topic }
+  , { "mqtt_stop_topic",         lua_mqtt_stop_topic }
+  , { "mqtt_device_data",        lua_mqtt_device_data }
+  , { "mqtt_publish",            lua_mqtt_publish }
+  , { "mqtt_disconnect",         lua_mqtt_disconnect }
+  , { "event_register_add",      lua_event_register_add }
+  , { "event_register_del",      lua_event_register_del }
+  , { "device_register_add",     lua_device_register_add }
+  , { "device_register_del",     lua_device_register_del }
+  , { "sensor_register_add",     lua_sensor_register_add }
+  , { "sensor_register_del",     lua_sensor_register_del }
+  , { "device_location_tag_add", lua_device_location_tag_add }
+  , { "device_location_tag_del", lua_device_location_tag_del }
+  , { nullptr, nullptr }
+  };
+}
+
+AppApparition::AppApparition( const config::Values& settings )
+: m_sInstanceName( "apparition" )
+{
 
   try {
     m_pFileNotify = std::make_unique<FileNotify>(
@@ -149,7 +195,7 @@ AppApparition::AppApparition( const config::Values& settings ) {
       m_pMQTT->Subscribe( pLua, topic, std::move( fMqttIn ) );
     } );
   m_lua.Set_MqttDeviceData(
-    [this]( const std::string_view& svLocation, const std::string_view& svDevice, const ScriptLua::vValue_t&& vValue_ ){
+    [this]( const std::string_view& svLocation, const std::string_view& svDevice, const vValue_t&& vValue_ ){
 
       // TODO:
       // 1. publish to event handlers - via worker thread -- third?
@@ -161,7 +207,7 @@ AppApparition::AppApparition( const config::Values& settings ) {
       const std::string sDevice( svDevice );
       const auto now( boost::posix_time::microsec_clock::local_time() );
 
-      for ( const ScriptLua::vValue_t::value_type& vt: vValue_ ) {
+      for ( const vValue_t::value_type& vt: vValue_ ) {
         //BOOST_LOG_TRIVIAL(info)
         //  << "MqttDeviceData: "
         //  << sLocation << ','
@@ -173,7 +219,7 @@ AppApparition::AppApparition( const config::Values& settings ) {
         if ( path.bInserted || ( boost::posix_time::not_a_date_time == path.sensor.dtLastSeen ) ) {
           sensor.sUnits = vt.sUnits;
         }
-        ScriptLua::value_t priorValue( path.sensor.value );
+        value_t priorValue( path.sensor.value );
         sensor.value = vt.value;
         sensor.dtLastSeen = now;
 
@@ -222,7 +268,7 @@ AppApparition::AppApparition( const config::Values& settings ) {
       if ( false ) {
         std::cout
           << sLocation << '\\' << sDevice;
-        for ( const ScriptLua::Value& value: vValue_ ) {
+        for ( const Value& value: vValue_ ) {
           std::cout << "," << value.sName << ':';
           std::visit([](auto&& arg){ std::cout << arg; }, value.value );
           if ( 0 < value.sUnits.size() ) {
@@ -283,7 +329,7 @@ AppApparition::AppApparition( const config::Values& settings ) {
     } );
   m_lua.Set_EventRegisterAdd(
     [this](const std::string_view& svLocation, const std::string_view& svDevice, const std::string_view& svSensor,
-                void* key, ScriptLua::fEvent_SensorChanged_t&& fEvent ){
+                void* key, fEvent_SensorChanged_t&& fEvent ){
 
       // Note: SensorRegisterDel breaks this
       //   if events attached to sensor:
@@ -607,7 +653,7 @@ AppApparition::SensorPath AppApparition::LookupSensor_Insert(
 
     mapSensor_t::iterator iterMapSensor = device.mapSensor.find( sSensor );
     if ( device.mapSensor.end() == iterMapSensor ) {
-      auto result = device.mapSensor.emplace( mapSensor_t::value_type( sSensor, Sensor( ScriptLua::value_t(), "" ) ) );
+      auto result = device.mapSensor.emplace( mapSensor_t::value_type( sSensor, Sensor( value_t(), "" ) ) );
       assert( result.second );
       iterMapSensor = result.first;
       bInserted = true;
@@ -669,6 +715,14 @@ AppApparition::SensorPath AppApparition::LookupSensor_Exists(
 
   return SensorPath( false, m_dummy, device, iterMapSensor->second );
 
+}
+
+const std::string& AppApparition::luaInstanceName() const {
+  return m_sInstanceName;
+}
+
+const std::vector<luaL_Reg>& AppApparition::luaRegistration() const {
+  return lua_app_apparition::Registrations;
 }
 
 AppApparition::~AppApparition() {
