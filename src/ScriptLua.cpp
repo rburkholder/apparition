@@ -118,6 +118,10 @@ void ScriptLua::Set_DeviceLocationDel( fDeviceLocationTagDel_t&& f ) {
   m_fDeviceLocationTagDel = std::move( f );
 }
 
+void ScriptLua::SetTelegramSendMessage( fTelegramSendMessage_t&& f ) {
+  m_fTelegramSendMessage = std::move( f );
+}
+
 bool ScriptLua::TestExtension( const std::filesystem::path& path ) {
   bool bResult( false );
   if ( path.has_extension() ) {
@@ -193,6 +197,9 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
 
   lua_pushcfunction( lua(), lua_device_location_tag_del );
   lua_setglobal( lua(), "device_location_tag_del" );
+
+  lua_pushcfunction( lua(), lua_telegram_send_message );
+  lua_setglobal( lua(), "telegram_send_message" );
 
   /* Load the file containing the script to be run */
   int status = luaL_loadfile( lua(), sPath.c_str() );
@@ -926,3 +933,31 @@ int ScriptLua::lua_device_location_tag_del( lua_State* pLua ) {
 
   return 0;
 }
+
+int ScriptLua::lua_telegram_send_message( lua_State* pLua ) {
+
+  // stack 1: userdata - this
+  // stack 2: string - message
+
+  int nStackEntries = lua_gettop( pLua );    /* number of arguments */
+  assert( 2 == nStackEntries );
+
+  int typeLuaData;
+  int ixStack = 0; // stack index, pre-increment into entries
+
+  typeLuaData = lua_type( pLua, ++ixStack );
+  assert( LUA_TLIGHTUSERDATA == typeLuaData );
+  void* object = lua_touserdata( pLua, ixStack );
+  ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
+
+  const char* szMessage;
+
+  typeLuaData = lua_type( pLua, ++ixStack ); // message
+  assert( LUA_TSTRING == typeLuaData );
+  szMessage = lua_tostring( pLua, ixStack );
+
+  self->m_fTelegramSendMessage( szMessage );
+
+  return 0;
+}
+

@@ -30,7 +30,7 @@
 #include "ConfigYaml.hpp"
 #include "LuaModule.hpp"
 
-class MQTT;
+class MQTT; // TODO: use the common mqtt client
 class FileNotify;
 class WebServer;
 class DashboardFactory;
@@ -38,6 +38,13 @@ class DashboardFactory;
 namespace config {
   class Values;
 }
+
+namespace ou {
+namespace telegram {
+  class Bot;
+} // telegram
+} // ou
+
 
 class AppApparition: public LuaModule {
 public:
@@ -50,6 +57,8 @@ public:
 protected:
 private:
 
+  using time_point = std::chrono::time_point<std::chrono::system_clock>;
+
   const std::string m_sInstanceName;
 
   ScriptLua m_lua;
@@ -60,6 +69,7 @@ private:
   std::unique_ptr<MQTT> m_pMQTT;
   std::unique_ptr<WebServer> m_pWebServer;
   std::unique_ptr<FileNotify> m_pFileNotify;
+  std::unique_ptr<ou::telegram::Bot> m_telegram_bot;
   std::unique_ptr<DashboardFactory> m_pDashboardFactory;
 
   using mapDevice_t = std::unordered_map<std::string,Device>;

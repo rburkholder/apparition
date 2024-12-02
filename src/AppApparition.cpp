@@ -31,6 +31,8 @@
 
 #include <fmt/format.h>
 
+#include <ou/telegram/Bot.hpp>
+
 #include "MQTT.hpp"
 #include "Config.hpp"
 #include "FileNotify.hpp"
@@ -176,6 +178,52 @@ AppApparition::AppApparition( const config::Values& settings )
   m_pWebServer = std::make_unique<WebServer>( settings.mqtt.sId, vWebParameters );
   m_pDashboardFactory = std::make_unique<DashboardFactory>( *m_pWebServer );
   m_pWebServer->start();
+
+  try {
+    if ( settings.telegram.sToken.empty() ) {
+      BOOST_LOG_TRIVIAL(warning) << "telegram: no token available" << std::endl;
+    }
+    else {
+      m_telegram_bot = std::make_unique<ou::telegram::Bot>( settings.telegram.sToken );
+
+      auto id = m_telegram_bot->GetChatId();
+      BOOST_LOG_TRIVIAL(info) << "telegram chat id " << id;
+      m_telegram_bot->SetChatId( settings.telegram.idChat );
+
+      //m_telegram_bot->SetCommand(
+      //  "start", "initialization", false,
+      //  [this]( const std::string& sCmd ){
+      //    m_telegram_bot->SendMessage( "start (to be implemented)" );
+      //  }
+      //);
+
+      //m_telegram_bot->SetCommand(
+      //  "help", "command list", false,
+      //  [this]( const std::string& sCmd ){
+      //    m_telegram_bot->SendMessage( "commands: /help, /status" );
+      //  }
+      //);
+
+      m_telegram_bot->SetCommand(
+        "events", "list latest events", true,
+        [this]( const std::string& sCmd ){
+          if ( sCmd == "events" ) { // need to be aware of parameters
+            time_point tp = std::chrono::system_clock::now();
+            //std::string sCurrent( "ups state:\n" );
+            //for ( const umapStatus_t::value_type& v: m_umapStatus ) {
+            //  auto duration = std::chrono::duration_cast<std::chrono::seconds>( tp - v.second.tpLastSeen );
+            //  const std::string sDuration( boost::lexical_cast<std::string>( duration.count() ) );
+            //  sCurrent += ' ' + v.first + ":" + v.second.sStatus_full + ',' + v.second.sRunTime + "s," + sDuration + "s ago" + '\n';
+            //}
+            //m_telegram_bot->SendMessage( sCurrent );
+          }
+        } );
+
+    }
+  }
+  catch (...) {
+    BOOST_LOG_TRIVIAL(error) << "telegram open failure";
+  }
 
   m_pMQTT = std::make_unique<MQTT>( settings.mqtt );
 
@@ -589,6 +637,13 @@ AppApparition::AppApparition( const config::Values& settings )
       }
     } );
 
+  m_lua.SetTelegramSendMessage(
+    [this]( const std::string_view& sMessage ){
+      if ( m_telegram_bot ) {
+        m_telegram_bot->SendMessage( std::string( sMessage ) ); // TODO: create a string_view SendMessage
+      }
+    } );
+
   // TODO: start loading after mqtt connection completion
   static const std::filesystem::path pathConfig( "config" );
   for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathConfig } ) {
@@ -728,6 +783,7 @@ const std::vector<luaL_Reg>& AppApparition::luaRegistration() const {
 AppApparition::~AppApparition() {
   m_pFileNotify.reset();
   m_pMQTT.reset();
+  m_telegram_bot.reset();
   m_pWebServer->stop();
   m_pDashboardFactory.reset();
   m_pWebServer.reset();

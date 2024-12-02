@@ -9,7 +9,7 @@ set(Boost_USE_MULTITHREADED ON)
 set(BOOST_USE_STATIC_RUNTIME OFF)
 set(BOOST_INCLUDEDIR "/usr/local/include/boost")
 
-find_package(Boost ${TF_BOOST_VERSION} REQUIRED COMPONENTS program_options system date_time filesystem serialization regex log log_setup)
+find_package(Boost ${TF_BOOST_VERSION} REQUIRED COMPONENTS program_options system date_time filesystem serialization regex log log_setup json)
 
 #message("boost lib: ${Boost_LIBRARIES}")
 
@@ -70,16 +70,20 @@ target_link_directories(
 # https://stackoverflow.com/questions/70101198/paho-mqtt-library-names
 target_link_libraries(
   ${PROJECT_NAME}
+    pthread
     yaml-cpp
     luajit-5.1
     libou_mqtt.a
     paho-mqtt3c.a
+    libou_telegram.a
     fmt
     prometheus-cpp-core
     prometheus-cpp-pull
     wt
     wthttp
+    #libpaho-mqtt3c.a
     ${Boost_LIBRARIES}
-#    pthread
+    crypto
+    ssl
   )
 

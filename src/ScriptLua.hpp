@@ -65,6 +65,9 @@ public:
   using fMqttPublish_t = std::function<void(void*, const std::string_view& topic, const std::string_view& msg )>;
   using fMqttDisconnect_t = std::function<void(void*)>;
 
+  //using fTelegramSendMessage_t = std::function<void(const std::string_view&, const value_t& )>;
+  using fTelegramSendMessage_t = std::function<void(const std::string_view& )>;
+
   ScriptLua();
   ~ScriptLua();
 
@@ -90,6 +93,8 @@ public:
   void Set_EventRegisterAdd( fEventRegisterAdd_t&& );
   void Set_EventRegisterDel( fEventRegisterDel_t&& );
 
+  void SetTelegramSendMessage( fTelegramSendMessage_t&& );
+
 protected:
 private:
 
@@ -112,6 +117,8 @@ private:
   fSensorRegisterDel_t m_fSensorRegisterDel;
   fDeviceLocationTagAdd_t m_fDeviceLocationTagAdd;
   fDeviceLocationTagDel_t m_fDeviceLocationTagDel;
+
+  fTelegramSendMessage_t m_fTelegramSendMessage;
 
   mapScript_t::iterator Parse( const std::string& );
 
@@ -136,6 +143,8 @@ private:
   static int lua_sensor_register_del( lua_State* );
   static int lua_device_location_tag_add( lua_State* );
   static int lua_device_location_tag_del( lua_State* );
+
+  static int lua_telegram_send_message( lua_State* );
 
   void Run_Test01( const std::string& name );
 
