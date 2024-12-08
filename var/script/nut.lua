@@ -28,12 +28,12 @@ local meta_ups_sensor_eaton = { -- prometheus does not like dots in the name
   { extract3, "ups.status",       "",        "ups_status" },
 }
 
-local meta_ups01_location_tag = { 'den', 'main floor' }
-local meta_ups02_location_tag = { 'host01', 'basement' }
-local meta_ups03_location_tag = { 'host01', 'basement' }
-local meta_ups04_location_tag = { 'furnace', 'basement' }
-local meta_ups05_location_tag = { 'host01', 'basement' }
-local meta_ups06_location_tag = { 'den', 'main floor' }
+local meta_ups01_location_tag = { 'room:den',      'floor:main' }
+local meta_ups02_location_tag = { 'server:host01', 'floor:basement' }
+local meta_ups03_location_tag = { 'server:host01', 'floor:basement' }
+local meta_ups04_location_tag = { 'room:furnace',  'floor:basement' }
+local meta_ups05_location_tag = { 'server:host01', 'floor:basement' }
+local meta_ups06_location_tag = { 'room:den',      'floor:main' }
 
 local devices = {} -- key based upon second word in topic
 devices[ 'den-sm1500' ]     = { 'ups01', 'den apc 1500',      meta_ups_sensor_apc,   meta_ups01_location_tag }
