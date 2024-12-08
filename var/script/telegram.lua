@@ -14,11 +14,11 @@ package.cpath='lib/lua/?.so' -- dedicate to custom directory for now
 local cjson = require( 'cjson' )
 local json = cjson.new()
 
-local decode_default = function( device_, sensor_, value_ )
+local decode_default = function( display_name_, device_, sensor_, value_ )
 
   local message =
     "event_sensor_changed,"
-    .. device_ .. ','
+    .. display_name_ .. ','
     .. sensor_ .. ','
     .. tostring( value_ )
 
@@ -28,17 +28,17 @@ local decode_default = function( device_, sensor_, value_ )
 
 local ups_status = {}
 
-local decode_ups = function( device_, sensor_, value_ )
+local decode_ups = function( display_name_, device_, sensor_, value_ )
 
   local basic_status = string.match( value_, "%a%a")
 
   if nil == ups_status[ device_ ] then
     ups_status[ device_ ] = basic_status
-    decode_default( device_, sensor_, value_ )
+    decode_default( display_name_, device_, sensor_, value_ )
   else
     if basic_status ~= ups_status[ device_ ] then
       ups_status[ device_ ] = basic_status
-      decode_default( device_, sensor_, value_ )
+      decode_default( display_name_, device_, sensor_, value_ )
     else
       -- ignore the non-change, remainder of message is charging state
     end
@@ -49,11 +49,11 @@ end
 -- locations, match in nut.lua
 local devices = {}
 --
-devices[ 'water01' ] = { 'furnace', 'water_leak', decode_default }
-devices[ 'water02' ] = { 'sewer',   'water_leak', decode_default }
-devices[ 'water03' ] = { 'kitchen', 'water_leak', decode_default }
+devices[ 'water01' ] = { 'furnace leak', 'water_leak', decode_default }
+devices[ 'water02' ] = { 'sewer leak',   'water_leak', decode_default }
+devices[ 'water03' ] = { 'kitchen leak', 'water_leak', decode_default }
 
-devices[ 'door05'  ] = { 'garage',  'closed',     decode_default }
+devices[ 'door05'  ] = { 'garage door',  'closed',     decode_default }
 
 devices[ 'ups01' ] = { 'den apc 1500'    , 'ups_status', decode_ups }
 devices[ 'ups02' ] = { 'sw01 apc 1500'   , 'ups_status', decode_ups }
@@ -77,7 +77,6 @@ end
 detach = function ( object_ptr_ )
 
   for device, data in ipairs( devices ) do
-    --local location = data[ 1 ]
     local sensor = data[ 2 ]
     event_register_del( object_ptr, device, sensor )
   end
@@ -87,11 +86,12 @@ end
 
 event_sensor_changed = function( device_, sensor_, value_ )
 
-  io.write( 'telegram,' .. device_ .. ',' .. sensor_ .. ',' .. tostring( value_ ) .. '\n' )
+  -- io.write( 'telegram,' .. device_ .. ',' .. sensor_ .. ',' .. tostring( value_ ) .. '\n' )
 
   local data = devices[ device_ ]
+  local display_name = data[ 1 ]
   local decode = data[ 3 ]
-  decode( device_, sensor_, value_ )
+  decode( display_name, device_, sensor_, value_ )
 
 end
 
