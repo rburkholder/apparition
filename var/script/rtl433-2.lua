@@ -51,9 +51,9 @@ device_data[ 'door03' ]      = { 'patio door',         meta_sensor_dsc,       { 
 device_data[ 'door04' ]      = { 'front door',         meta_sensor_dsc,       { 'front entry' } }
 device_data[ 'pir02' ]       = { 'family room pir',    meta_sensor_dsc,       { 'family room' } }
 device_data[ 'smoke01' ]     = { 'top floor smoke',    meta_sensor_dsc,       { 'top floor', 'upstairs' } }
-device_data[ 'thermapro01' ] = { 'garage thermapro',   meta_sensor_thermapro, { 'garage' } }
-device_data[ 'thermapro02' ] = { 'basement thermapro', meta_sensor_thermapro, { 'basement' } }
-device_data[ 'thermapro03' ] = { 'walkway thermapro',  meta_sensor_thermapro, { 'walkway', 'outside' } }
+device_data[ 'tpro01' ]      = { 'garage thermapro',   meta_sensor_thermapro, { 'garage' } }
+device_data[ 'tpro02' ]      = { 'basement thermapro', meta_sensor_thermapro, { 'basement' } }
+device_data[ 'tpro03' ]      = { 'walkway thermapro',  meta_sensor_thermapro, { 'walkway', 'outside' } }
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
@@ -115,9 +115,9 @@ local device_thermapro = {}
 --device_thermapro[  87 ] = 'thermapro01' -- channel 1, garage
 --device_thermapro[ 116 ] = 'thermapro02' -- channel 2, basement
 --device_thermapro[ 239 ] = 'thermapro03' -- channel 3, walkway
-device_thermapro[ 1 ] = 'thermapro01' -- channel 1, garage
-device_thermapro[ 2 ] = 'thermapro02' -- channel 2, basement
-device_thermapro[ 3 ] = 'thermapro03' -- channel 3, walkway
+device_thermapro[ 1 ] = 'tpro01' -- channel 1, garage
+device_thermapro[ 2 ] = 'tpro02' -- channel 2, basement
+device_thermapro[ 3 ] = 'tpro03' -- channel 3, walkway
 
 thermapro = function( jvalues_ )
   -- local id = jvalues_[ 'id' ] // changes with battery change
