@@ -23,7 +23,28 @@ local decode_default = function( location_, device_, sensor_, value_ )
     .. sensor_ .. ','
     .. tostring( value_ )
 
-  return message
+  telegram_send_message( object_ptr, message )
+
+  end
+
+local ups_status = {}
+
+local decode_ups = function( location_, device_, sensor_, value_ )
+
+  local basic_status = string.match( value_, "%a%a")
+
+  if nil == ups_status[ device_ ] then
+    ups_status[ device_ ] = basic_status
+    decode_default( location_, device_, sensor_, value_ )
+  else
+    if basic_status ~= ups_status[ device_ ] then
+      ups_status[ device_ ] = basic_status
+      decode_default( location_, device_, sensor_, value_ )
+    else
+      -- ignore the non-change, remainder of message is charging state
+    end
+  end
+
 end
 
 -- locations, match in nut.lua
@@ -35,12 +56,12 @@ devices[ 'water03' ] = { 'kitchen', 'water_leak', decode_default }
 
 devices[ 'door05'  ] = { 'garage',  'closed',     decode_default }
 
-devices[ 'ups01' ] = { 'den apc 1500'    , 'ups_status', decode_default }
-devices[ 'ups02' ] = { 'sw01 apc 1500'   , 'ups_status', decode_default }
-devices[ 'ups03' ] = { 'eid internet'    , 'ups_status', decode_default }
-devices[ 'ups04' ] = { 'furnace ups'     , 'ups_status', decode_default }
-devices[ 'ups05' ] = { 'host01 eaton ups', 'ups_status', decode_default }
-devices[ 'ups06' ] = { 'den apc 750'     , 'ups_status', decode_default }
+devices[ 'ups01' ] = { 'den apc 1500'    , 'ups_status', decode_ups }
+devices[ 'ups02' ] = { 'sw01 apc 1500'   , 'ups_status', decode_ups }
+devices[ 'ups03' ] = { 'eid internet'    , 'ups_status', decode_ups }
+devices[ 'ups04' ] = { 'furnace ups'     , 'ups_status', decode_ups }
+devices[ 'ups05' ] = { 'host01 eaton ups', 'ups_status', decode_ups }
+devices[ 'ups06' ] = { 'den apc 750'     , 'ups_status', decode_ups }
 
 attach = function ( object_ptr_ )
 
@@ -69,11 +90,9 @@ event_sensor_changed = function( location_, device_, sensor_, value_ )
 
   local data = devices[ device_ ]
   local decode = data[ 3 ]
-  local message = decode( location_, device_, sensor_, value_ )
+  decode( location_, device_, sensor_, value_ )
 
-  io.write( message )
-
-  telegram_send_message( object_ptr, message )
+  -- io.write( message )
 
 end
 
