@@ -345,18 +345,19 @@ AppApparition::AppApparition( const config::Values& settings )
       sNow.imbue( localeDateTime );
       sNow << "Last Seen: " << now;
 
-      static const std::string sLocation( "*tbd*" ); // lookup to be fixed
+      mapDevice_t::const_iterator iterDevice = m_mapDevice.find( sDevice );
+      const Device& device( iterDevice->second );
+      const std::string sDeviceLabel( sDevice + " - " + device.sDisplayName );
       m_pWebServer->postAll(
-        [sNow_=std::move(sNow.str()), sLocation_=std::move( sLocation), sDevice_=std::move( sDevice ),vValue_ = std::move( vValue_ )](){
+        [sDeviceLabel_=std::move( sDeviceLabel ), sNow_=std::move(sNow.str()), vValue_ = std::move( vValue_ )](){
           Wt::WApplication* app = Wt::WApplication::instance();
           Dashboard* pDashboard = dynamic_cast<Dashboard*>( app );
-          const std::string sLocationDevice( sLocation_ + ' ' + sDevice_ );
           std::string formatted;
           for ( auto& value: vValue_ ) {
             std::visit(
               [&formatted]( auto&& arg ){ formatted = fmt::format( "{}", arg); }
             , value.value );
-            pDashboard->UpdateDeviceSensor( sNow_, sLocationDevice, value.sName, formatted + "&nbsp;" + value.sUnits );
+            pDashboard->UpdateDeviceSensor( sNow_, sDeviceLabel_, value.sName, formatted + "&nbsp;" + value.sUnits );
           }
           ;
         } );
