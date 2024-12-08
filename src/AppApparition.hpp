@@ -75,26 +75,31 @@ private:
   using mapDevice_t = std::unordered_map<std::string,Device>;
   mapDevice_t m_mapDevice;  // will be using device as basic part, an incoporate location tags into device
 
-  struct Location {
-    mapDevice_t mapDevice;
-  };
+  //struct Location {
+  //  mapDevice_t mapDevice;
+  //};
 
-  using mapLocation_t = std::unordered_map<std::string,Location>;
-  mapLocation_t m_mapLocation;
+  //using mapLocation_t = std::unordered_map<std::string,Location>;
+  //mapLocation_t m_mapLocation;
 
-  Location m_dummy; // used in SensorPath until m_mapLocation is removed
+  //Location m_dummy; // used in SensorPath until m_mapLocation is removed
+
+  Device m_dummyDevice;
+
+  using mapLocationToDevice_t = std::unordered_map<std::string,std::string>;
+  mapLocationToDevice_t m_mapLocationToDevice;
 
   struct SensorPath {
-    bool bInserted;
-    Location& location;
+    const enum State { found, device_added, sensor_added } state;
     Device& device;
     Sensor& sensor;
-    SensorPath( bool bInserted_, Location& location_, Device& device_, Sensor& sensor_ )
-    : bInserted( bInserted_ ), location( location_ ), device( device_ ), sensor( sensor_ ) {}
+    setLocationTag_t& LocationTags;
+
+    SensorPath( const State state_, Device& device_, Sensor& sensor_, setLocationTag_t& LocationTags_ )
+    : state( state_ ), device( device_ ), sensor( sensor_ ), LocationTags( LocationTags_)
+    {}
   };
 
-  SensorPath LookupSensor_Insert( const std::string& location, const std::string& device, const std::string& sensor );
-  SensorPath LookupSensor_Exists( const std::string& location, const std::string& device, const std::string& sensor );
-  SensorPath LookupSensor_Exists( const std::string& device, const std::string& sensor );
+  SensorPath BuildSensorPath( const std::string& device, const std::string& sensor, bool bConstruct = false );
 
 };

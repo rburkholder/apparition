@@ -106,7 +106,7 @@ local ws90 = function( jvalues_ )
       local extract = value[ 1 ]
       extract( jvalues_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
     end
-    mqtt_device_data( object_ptr, "patio", c_name_ws90, #data, data );
+    mqtt_device_data( object_ptr, c_name_ws90, #data, data );
   end
 end
 
@@ -124,7 +124,7 @@ local neptune = function( jvalues_ )
       local extract = value[ 1 ]
       extract( jvalues_, data, value[ 2 ], value[ 3 ], value[ 4 ] )
     end
-    mqtt_device_data( object_ptr, "house", c_name_neptune, #data, data );
+    mqtt_device_data( object_ptr, c_name_neptune, #data, data );
   end
 end
 

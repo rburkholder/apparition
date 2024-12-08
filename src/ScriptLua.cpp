@@ -465,14 +465,15 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
 
   /*
     stack 1: userdata - this
-    stack 2: string - location
+    stack 2: string - location - deprecated
     stack 3: string - device
     stack 4: number - size of table of values
     stack 5: table - table of values( name(string), value(number), units(string))
   */
 
   int nStackEntries = lua_gettop( pLua );    /* number of arguments */
-  assert( 5 == nStackEntries );
+  //assert( 5 == nStackEntries );
+  assert( 4 == nStackEntries );
 
   int typeLuaData;
   int ixStack = 0; // stack index, pre-increment into entries
@@ -482,11 +483,11 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
   void* object = lua_touserdata( pLua, ixStack );
   ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
 
-  const char* szLocation;
+  //const char* szLocation;
 
-  typeLuaData = lua_type( pLua, ++ixStack ); // location of device
-  assert( LUA_TSTRING == typeLuaData );
-  szLocation = lua_tostring( pLua, ixStack );
+  //typeLuaData = lua_type( pLua, ++ixStack ); // location of device
+  //assert( LUA_TSTRING == typeLuaData );
+  //szLocation = lua_tostring( pLua, ixStack );
 
   const char* szDeviceName;
 
@@ -564,7 +565,8 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
   }
 
   // may require mutex on this
-  self->m_fMqttDeviceData( szLocation, szDeviceName, std::move( vValue ) );
+  //self->m_fMqttDeviceData( szLocation, szDeviceName, std::move( vValue ) );
+  self->m_fMqttDeviceData( szDeviceName, std::move( vValue ) );
 
   return 0;
 }
@@ -603,13 +605,14 @@ int ScriptLua::lua_event_register_add( lua_State* pLua ) {
 
   /*
     stack 1: userdata - this
-    stack 2: string - location
+    //stack 2: string - location - deprecated
     stack 3: string - device
     stack 4: string - sensor
   */
 
   int nStackEntries = lua_gettop( pLua );    /* number of arguments */
-  assert( 4 == nStackEntries );
+  //assert( 4 == nStackEntries );
+  assert( 3 == nStackEntries );
 
   int typeLuaData;
   int ixStack = 0; // stack index, pre-increment into entries
@@ -619,11 +622,11 @@ int ScriptLua::lua_event_register_add( lua_State* pLua ) {
   void* object = lua_touserdata( pLua, ixStack );
   ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
 
-  const char* szLocation;
+  //const char* szLocation;
 
-  typeLuaData = lua_type( pLua, ++ixStack ); // location of device
-  assert( LUA_TSTRING == typeLuaData );
-  szLocation = lua_tostring( pLua, ixStack );
+  //typeLuaData = lua_type( pLua, ++ixStack ); // location of device
+  //assert( LUA_TSTRING == typeLuaData );
+  //szLocation = lua_tostring( pLua, ixStack );
 
   const char* szDeviceName;
 
@@ -638,11 +641,11 @@ int ScriptLua::lua_event_register_add( lua_State* pLua ) {
   szSensorName = lua_tostring( pLua, ixStack );
 
   self->m_fEventRegisterAdd(
-    szLocation, szDeviceName, szSensorName, pLua,
-    [pLua](const std::string& location, const std::string& device,const std::string& sensor,
-           const value_t& prior, const value_t& current ){
+    /* szLocation, */ szDeviceName, szSensorName, pLua,
+    [pLua]( const std::string& device,const std::string& sensor,
+            const value_t& prior, const value_t& current ){
       lua_getglobal( pLua, "event_sensor_changed" );
-      lua_pushlstring( pLua, location.data(), location.size() );
+      //lua_pushlstring( pLua, location.data(), location.size() );
       lua_pushlstring( pLua, device.data(), device.size() );
       lua_pushlstring( pLua, sensor.data(), sensor.size() );
 
@@ -668,7 +671,7 @@ int ScriptLua::lua_event_register_add( lua_State* pLua ) {
         }
       }
 
-      int result = lua_pcall( pLua, 4, 0, 0 );
+      int result = lua_pcall( pLua, 3, 0, 0 );
 
       if ( LUA_OK != result ) {
         BOOST_LOG_TRIVIAL(error)
@@ -690,13 +693,14 @@ int ScriptLua::lua_event_register_del( lua_State* pLua ) {
 
   /*
     stack 1: userdata - this
-    stack 2: string - location
+    stack 2: string - location - deprecated
     stack 3: string - device
     stack 4: string - sensor
   */
 
   int nStackEntries = lua_gettop( pLua );    /* number of arguments */
-  assert( 4 == nStackEntries );
+  //assert( 4 == nStackEntries );
+  assert( 3 == nStackEntries );
 
   int typeLuaData;
   int ixStack = 0; // stack index, pre-increment into entries
@@ -706,11 +710,11 @@ int ScriptLua::lua_event_register_del( lua_State* pLua ) {
   void* object = lua_touserdata( pLua, ixStack );
   ScriptLua* self = reinterpret_cast<ScriptLua*>( object );
 
-  const char* szLocation;
+  //const char* szLocation;
 
-  typeLuaData = lua_type( pLua, ++ixStack ); // location of device
-  assert( LUA_TSTRING == typeLuaData );
-  szLocation = lua_tostring( pLua, ixStack );
+  //typeLuaData = lua_type( pLua, ++ixStack ); // location of device
+  //assert( LUA_TSTRING == typeLuaData );
+  //szLocation = lua_tostring( pLua, ixStack );
 
   const char* szDeviceName;
 
@@ -724,7 +728,8 @@ int ScriptLua::lua_event_register_del( lua_State* pLua ) {
   assert( LUA_TSTRING == typeLuaData );
   szSensorName = lua_tostring( pLua, ixStack );
 
-  self->m_fEventRegisterDel( szLocation, szDeviceName, szSensorName, pLua );
+  //self->m_fEventRegisterDel( szLocation, szDeviceName, szSensorName, pLua );
+  self->m_fEventRegisterDel( szDeviceName, szSensorName, pLua );
 
   return 0;
 }

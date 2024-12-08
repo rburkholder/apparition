@@ -148,7 +148,7 @@ zwave_value = function( jvalues_, zwave_ix_dev_, zwave_ix_var_, sensor_name_ )
       }
 
       data[ #data + 1 ] = record
-      mqtt_device_data( object_ptr, location, device_name, #data, data );
+      mqtt_device_data( object_ptr, device_name, #data, data );
     end
   end
 
@@ -207,7 +207,7 @@ zwave_37 = function( jvalues_, zwave_ix_dev_, zwave_ix_var_, sensor_name_ )
       }
       data[ #data + 1 ] = record
 
-      mqtt_device_data( object_ptr, location, device_name, #data, data );
+      mqtt_device_data( object_ptr, device_name, #data, data );
     end
   end
 
@@ -243,7 +243,7 @@ zwave_91 = function( json_, zwave_ix_dev_, zwave_ix_var_, sensor_ )
     }
     data[ #data + 1 ] = record
 
-    mqtt_device_data( object_ptr, location, device, #data, data );
+    mqtt_device_data( object_ptr, device, #data, data );
   end
 
 end

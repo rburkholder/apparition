@@ -235,7 +235,7 @@ AppApparition::AppApparition( const config::Values& settings )
           //std::cout << "mqtt connection: success" << std::endl;
         },
         [](){ // fFailure_t
-          std::cout << "mqtt connection: failure" << std::endl;
+          BOOST_LOG_TRIVIAL(error) << "mqtt connection: failure";
         } );
     } );
   m_lua.Set_MqttStartTopic(
@@ -243,7 +243,7 @@ AppApparition::AppApparition( const config::Values& settings )
       m_pMQTT->Subscribe( pLua, topic, std::move( fMqttIn ) );
     } );
   m_lua.Set_MqttDeviceData(
-    [this]( const std::string_view& svLocation, const std::string_view& svDevice, const vValue_t&& vValue_ ){
+    [this]( const std::string_view& svDevice, const vValue_t&& vValue_ ) {
 
       // TODO:
       // 1. publish to event handlers - via worker thread -- third?
@@ -251,7 +251,6 @@ AppApparition::AppApparition( const config::Values& settings )
       // 3. append to time series database for retention/charting -- second?
       // 4. send updates to database, along with 'last seen' -- first?
 
-      const std::string sLocation( svLocation );
       const std::string sDevice( svDevice );
       const auto now( boost::posix_time::microsec_clock::local_time() );
 
@@ -262,60 +261,65 @@ AppApparition::AppApparition( const config::Values& settings )
         //  << sDevice << ','
         //  << vt.sName
         //  ;
-        SensorPath path( LookupSensor_Insert( sLocation, sDevice, vt.sName ) );
-        Sensor& sensor( path.sensor );
-        if ( path.bInserted || ( boost::posix_time::not_a_date_time == path.sensor.dtLastSeen ) ) {
-          sensor.sUnits = vt.sUnits;
-        }
-        value_t priorValue( path.sensor.value );
-        sensor.value = vt.value;
-        sensor.dtLastSeen = now;
+        try {
+          SensorPath sp( BuildSensorPath( sDevice, vt.sName, false ) ); // possible exception
+          Sensor& sensor( sp.sensor );
+          if ( boost::posix_time::not_a_date_time == sensor.dtLastSeen ) {
+            sensor.sUnits = vt.sUnits; // see the comment in Common.hpp:41, shouldn't this be registered?
+          }
 
-        bool bChanged( false );
-        if ( priorValue.index() == vt.value.index() ) {
-          if ( priorValue != vt.value ) {
+          value_t priorValue( sensor.value );
+          sensor.value = vt.value;
+          sensor.dtLastSeen = now;
+
+          bool bChanged( false );
+          if ( priorValue.index() == vt.value.index() ) {
+            if ( priorValue != vt.value ) {
+              bChanged = true;
+            }
+          }
+          else {
             bChanged = true;
           }
-        }
-        else {
-          bChanged = true;
-        }
 
-        // TODO post to m_context to close out this mqtt event faster
-        // TODO check if duplicate from last?  or if last seen has changed?
+          // TODO post to m_context to close out this mqtt event faster
+          // TODO check if duplicate from last?  or if last seen has changed?
 
-        if ( bChanged ) {
+          if ( bChanged ) {
 
-          // Event Process:  lua callbacks
-          for ( mapEventSensorChanged_t::value_type& event: sensor.mapEventSensorChanged ) {
-            //BOOST_LOG_TRIVIAL(info) << "event: " << sLocation << ',' << sDevice << ',' << vt.sName;
-            event.second( sLocation, sDevice, vt.sName, priorValue, sensor.value );
-          }
-
-          // Event Process:  send changes to prometheus
-          if ( sensor.pGauge ) {
-            if ( std::holds_alternative<double>( vt.value ) ) {
-              sensor.pGauge->Set( std::get<double>( vt.value ) );
+            // Event Process:  lua callbacks
+            for ( mapEventSensorChanged_t::value_type& event: sensor.mapEventSensorChanged ) {
+              //BOOST_LOG_TRIVIAL(info) << "event: " << sLocation << ',' << sDevice << ',' << vt.sName;
+              event.second( sDevice, vt.sName, priorValue, sensor.value );
             }
-            else {
-              if ( std::holds_alternative<int64_t>( vt.value ) ) {
-                sensor.pGauge->Set( std::get<int64_t>( vt.value ) );
+
+            // Event Process:  send changes to prometheus
+            if ( sensor.pGauge ) {
+              if ( std::holds_alternative<double>( vt.value ) ) {
+                sensor.pGauge->Set( std::get<double>( vt.value ) );
               }
               else {
-                if ( std::holds_alternative<bool>( vt.value ) ) {
-                  const bool value( std::get<bool>( vt.value ) );
-                  sensor.pGauge->Set( (int64_t) (value ? 1 : 0 ) );
+                if ( std::holds_alternative<int64_t>( vt.value ) ) {
+                  sensor.pGauge->Set( std::get<int64_t>( vt.value ) );
+                }
+                else {
+                  if ( std::holds_alternative<bool>( vt.value ) ) {
+                    const bool value( std::get<bool>( vt.value ) );
+                    sensor.pGauge->Set( (int64_t) (value ? 1 : 0 ) );
+                  }
                 }
               }
             }
           }
         }
-
+        catch ( const runtime_error_sensor& e ) {
+          // device/sensor has to be already inserted
+          // then might have a logic issues regardin registration of active sensors
+        }
       }
 
       if ( false ) {
-        std::cout
-          << sLocation << '\\' << sDevice;
+        std::cout << sDevice;
         for ( const Value& value: vValue_ ) {
           std::cout << "," << value.sName << ':';
           std::visit([](auto&& arg){ std::cout << arg; }, value.value );
@@ -341,6 +345,7 @@ AppApparition::AppApparition( const config::Values& settings )
       sNow.imbue( localeDateTime );
       sNow << "Last Seen: " << now;
 
+      static const std::string sLocation( "*tbd*" ); // lookup to be fixed
       m_pWebServer->postAll(
         [sNow_=std::move(sNow.str()), sLocation_=std::move( sLocation), sDevice_=std::move( sDevice ),vValue_ = std::move( vValue_ )](){
           Wt::WApplication* app = Wt::WApplication::instance();
@@ -376,7 +381,7 @@ AppApparition::AppApparition( const config::Values& settings )
         } );
     } );
   m_lua.Set_EventRegisterAdd(
-    [this](const std::string_view& svLocation, const std::string_view& svDevice, const std::string_view& svSensor,
+    [this]( const std::string_view& svDevice, const std::string_view& svSensor,
                 void* key, fEvent_SensorChanged_t&& fEvent ){
 
       // Note: SensorRegisterDel breaks this
@@ -385,42 +390,42 @@ AppApparition::AppApparition( const config::Values& settings )
       //   use connection counter to release (in the case of device/sensor renaming)
       //     use shared_ptr?
 
-      const std::string sLocation( svLocation );
+      //const std::string sLocation( svLocation );
       const std::string sDevice( svDevice );
       const std::string sSensor( svSensor );
       try {
-        SensorPath path( LookupSensor_Insert( sLocation, sDevice, sSensor ) );
+        SensorPath path( BuildSensorPath( sDevice, sSensor ) );
         mapEventSensorChanged_t& map( path.sensor.mapEventSensorChanged );
         mapEventSensorChanged_t::iterator iterEvent = map.find( key );
         if ( map.end() != iterEvent ) {
-          throw std::runtime_error( "event for " + sLocation + '\\' + sDevice + '\\' + sSensor + " exists" );
+          throw std::runtime_error( "event for " + sDevice + '\\' + sSensor + " exists" );
           }
         auto result = map.emplace( mapEventSensorChanged_t::value_type( key, std::move( fEvent ) ) );
         assert( result.second );
         iterEvent = result.first;
-        if ( !path.bInserted ) { // TODO: maybe flag this as optional? or can be filtered by the requestor
-          if ( boost::posix_time::not_a_date_time != path.sensor.dtLastSeen ) {
+        //if ( !path.bInserted ) { // TODO: maybe flag this as optional? or can be filtered by the requestor
+          //if ( boost::posix_time::not_a_date_time != path.sensor.dtLastSeen ) {
             //iterEvent->second( sLocation, sDevice, sSensor, path.sensor.value, path.sensor.value );
             // NOTE: will need to check for recursion
-          }
-        }
+          //}
+        //}
       }
       catch ( const std::runtime_error& e ) {
-        std::cout << e.what() << std::endl;
+        BOOST_LOG_TRIVIAL(error) << e.what();
       }
     } );
   m_lua.Set_EventRegisterDel(
-    [this](const std::string_view& svLocation, const std::string_view& svDevice, const std::string_view& svSensor,
+    [this]( const std::string_view& svDevice, const std::string_view& svSensor,
                 void* key ){
-      const std::string sLocation( svLocation );
+      //const std::string sLocation( svLocation );
       const std::string sDevice( svDevice );
       const std::string sSensor( svSensor );
       try {
-        SensorPath path( LookupSensor_Exists( sLocation, sDevice, sSensor ) );
+        SensorPath path( BuildSensorPath( sDevice, sSensor ) );
         mapEventSensorChanged_t& map( path.sensor.mapEventSensorChanged );
         mapEventSensorChanged_t::iterator iterEvent = map.find( key );
         if ( map.end() == iterEvent ) {
-          throw std::runtime_error( "event for " + sLocation + '\\' + sDevice + '\\' + sSensor + " not found" );
+          throw std::runtime_error( "event for " + sDevice + '\\' + sSensor + " not found" );
           }
         map.erase( iterEvent );
       }
@@ -459,6 +464,7 @@ AppApparition::AppApparition( const config::Values& settings )
 
   m_lua.Set_DeviceRegisterDel(
     [this](const std::string_view& unique_name )->bool{
+
       assert( 0 < unique_name.size() );
       const std::string sUniqueName( unique_name );
 
@@ -470,6 +476,8 @@ AppApparition::AppApparition( const config::Values& settings )
         bStatus = false;
       }
       else {
+        const Device& device( iterDevice->second );
+        assert( device.mapSensor.empty() );
         m_mapDevice.erase( iterDevice );
       }
 
@@ -588,6 +596,7 @@ AppApparition::AppApparition( const config::Values& settings )
             m_clientPrometheus.RemoveFamily( *sensor.pFamily );
             sensor.pFamily = nullptr;
           }
+          assert( sensor.mapEventSensorChanged.empty() );
           device.mapSensor.erase( iterSensor );
         }
       }
@@ -597,6 +606,7 @@ AppApparition::AppApparition( const config::Values& settings )
 
   m_lua.Set_DeviceLocationAdd(
     [this]( const std::string_view& device_name, const std::string_view& location_tag ){
+
       assert( 0 < device_name.size() );
       assert( 0 < location_tag.size() );
       const std::string sDeviceName( device_name );
@@ -668,107 +678,47 @@ AppApparition::AppApparition( const config::Values& settings )
   }
 }
 
-// old data structure starting with m_mapLocation
-AppApparition::SensorPath AppApparition::LookupSensor_Insert(
-  const std::string& sLocation, const std::string& sDevice, const std::string& sSensor
-) {
-  try {
-    return LookupSensor_Exists( sDevice, sSensor );
-  }
-  catch ( const std::runtime_error& e ) {
+AppApparition::SensorPath AppApparition::BuildSensorPath( const std::string& sDevice, const std::string& sSensor, bool bConstruct ) {
 
-    // this may happen in an event registration occurs prior to sensor registration
-    //   eg light.lua prior to zwave.lua?
-    //   ie, reload of zwave.lua breaks event registration of light.lua
-    BOOST_LOG_TRIVIAL(warning)
-      << "AppApparition::LookupSensor_Insert non-exist: "
-      << sDevice << ',' << sLocation << ',' << sSensor
-      << ',' << e.what()
-      ;
-
-    bool bInserted( false );
-
-    mapLocation_t::iterator iterMapLocation = m_mapLocation.find( sLocation );
-    if ( m_mapLocation.end() == iterMapLocation ) {
-      auto result = m_mapLocation.emplace( mapLocation_t::value_type( sLocation, Location() ) );
-      assert( result.second );
-      iterMapLocation = result.first;
-    }
-
-    Location& location( iterMapLocation->second );
-
-    mapDevice_t::iterator iterMapDevice = location.mapDevice.find( sDevice );
-    if ( location.mapDevice.end() == iterMapDevice ) {
-      auto result = location.mapDevice.emplace( mapDevice_t::value_type( sDevice, Device() ) );
-      assert( result.second );
-      iterMapDevice = result.first;
-    }
-
-    Device& device( iterMapDevice->second );
-
-    mapSensor_t::iterator iterMapSensor = device.mapSensor.find( sSensor );
-    if ( device.mapSensor.end() == iterMapSensor ) {
-      auto result = device.mapSensor.emplace( mapSensor_t::value_type( sSensor, Sensor( value_t(), "" ) ) );
-      assert( result.second );
-      iterMapSensor = result.first;
-      bInserted = true;
-    }
-
-    Sensor& sensor( iterMapSensor->second );
-
-    return SensorPath( bInserted, location, device, sensor );
-  }
-}
-
-// old data structure starting with m_mapLocation
-AppApparition::SensorPath AppApparition::LookupSensor_Exists(
-  const std::string& sLocation, const std::string& sDevice, const std::string& sSensor
-) {
-  try {
-    return LookupSensor_Exists( sDevice, sSensor );
-  }
-  catch( const std::runtime_error& e ) {
-    mapLocation_t::iterator iterMapLocation = m_mapLocation.find( sLocation );
-    if ( m_mapLocation.end() == iterMapLocation ) {
-      throw runtime_error_location( "location " + sLocation + " not found" );
-    }
-
-    Location& location( iterMapLocation->second );
-
-    mapDevice_t::iterator iterMapDevice = location.mapDevice.find( sDevice );
-    if ( location.mapDevice.end() == iterMapDevice ) {
-      throw runtime_error_device( "device " + sLocation + '\\' + sDevice + " not found" );
-    }
-
-    Device& device( iterMapDevice->second );
-
-    mapSensor_t::iterator iterMapSensor = device.mapSensor.find( sSensor );
-    if ( device.mapSensor.end() == iterMapSensor ) {
-      throw runtime_error_sensor( "sensor " + sLocation + '\\' + sDevice + '\\' + sSensor + " not found" );
-    }
-
-    return SensorPath( false, location, device, iterMapSensor->second );
-  }
-}
-
-// new data structure starting with m_mapDevice, and multiple location tags
-AppApparition::SensorPath AppApparition::LookupSensor_Exists(
-  const std::string& sDevice, const std::string& sSensor
-) {
+  assert( 0 < sDevice.size() );
+  assert( 0 < sSensor.size() );
+  SensorPath::State state( SensorPath::found );
 
   mapDevice_t::iterator iterMapDevice = m_mapDevice.find( sDevice );
   if ( m_mapDevice.end() == iterMapDevice ) {
-    throw runtime_error_device( "device " + sDevice + " not found" );
+    if ( !bConstruct ) {
+      BOOST_LOG_TRIVIAL(error)
+        << "AppApparition::BuildSensorPath non-exist device: "
+        << sDevice << '/' << sSensor
+        ;
+      throw runtime_error_device( "device " + sDevice + " not found" );
+    }
+    auto result = m_mapDevice.emplace( sDevice, Device( sDevice ) );
+    assert( result.second );
+    iterMapDevice = result.first;
+    state = SensorPath::device_added;
   }
 
   Device& device( iterMapDevice->second );
 
   mapSensor_t::iterator iterMapSensor = device.mapSensor.find( sSensor );
   if ( device.mapSensor.end() == iterMapSensor ) {
-    throw runtime_error_sensor( "sensor " + sDevice + '\\' + sSensor + " not found" );
+    if ( !bConstruct ) {
+      BOOST_LOG_TRIVIAL(error)
+        << "AppApparition::BuildSensorPath non-exist sensor: "
+        << sDevice << '/' << sSensor
+        ;
+      throw runtime_error_sensor( "sensor " + sDevice + '\\' + sSensor + " not found" );
+    }
+    auto result = device.mapSensor.emplace( sSensor, Sensor( sSensor ) );
+    assert( result.second );
+    iterMapSensor = result.first;
+    if ( SensorPath::found == state ) state = SensorPath::sensor_added;
   }
 
-  return SensorPath( false, m_dummy, device, iterMapSensor->second );
+  Sensor& sensor( iterMapSensor->second );
+
+  return SensorPath( state, device, sensor, device.setLocationTag );
 
 }
 

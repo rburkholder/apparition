@@ -44,10 +44,10 @@ attach = function ( object_ptr_ )
   mqtt_connect( object_ptr )
 
   for key, registration in ipairs( registrations ) do
-    local location = registration[ 1 ]
+    --local location = registration[ 1 ]
     local device   = registration[ 2 ]
     local sensor   = registration[ 3 ]
-    event_register_add( object_ptr, location, device, sensor )
+    event_register_add( object_ptr, device, sensor )
   end
 
   mqtt_start_topic( object_ptr, topic ); -- needed?
@@ -58,10 +58,10 @@ detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic ) -- needed?
 
   for key, registration in ipairs( registrations ) do
-    local location = registration[ 1 ]
+    --local location = registration[ 1 ]
     local device   = registration[ 2 ]
     local sensor   = registration[ 3 ]
-    event_register_del( object_ptr, location, device, sensor )
+    event_register_del( object_ptr, device, sensor )
   end
 
   mqtt_disconnect( object_ptr )
@@ -241,12 +241,11 @@ device[ 'scene01' ] = controllor_scene01
 device[ 'scene02' ] = controllor_scene02
 device[ 'scene03' ] = controllor_scene03
 
-event_sensor_changed = function( location_, device_, sensor_, value_ )
+event_sensor_changed = function( device_, sensor_, value_ )
 
   if false then
     io.write(
       "light.lua event_sensor_changed: "
-      .. location_ .. ','
       .. device_ .. ','
       .. sensor_ .. ','
       .. type(value_) ..
@@ -267,4 +266,3 @@ end
 
 -- scene control is going to need to remember state
 --   and needs to query controller to determine current state?
-

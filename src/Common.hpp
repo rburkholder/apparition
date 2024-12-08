@@ -38,7 +38,7 @@
 
     std::string sName;
     value_t value;
-    std::string sUnits;
+    std::string sUnits;  // is this used?  Sensor has sUnits as well
 
     Value(): value( false ) {} // not sure how to identify in lua, maybe pass a string and use spirit to decode
     Value( const std::string& sName_, const value_t value_, const std::string& sUnits_ )
@@ -52,41 +52,46 @@
   using vValue_t = std::vector<Value>;
 
   using fEvent_SensorChanged_t = std::function<
-    void(const std::string& location, const std::string& device,const std::string& sensor,
+    void(const std::string& device,const std::string& sensor,
          const value_t& prior, const value_t& current
     )>;
 
   using fEventRegisterAdd_t = std::function<
-    void(const std::string_view& location, const std::string_view& device, const std::string_view& sensor,
-         void* key, fEvent_SensorChanged_t&&
+    void(const std::string_view& device, const std::string_view& sensor, void* key,
+         fEvent_SensorChanged_t&&
     )>;
 
   using fEventRegisterDel_t = std::function<
-    void(const std::string_view& location, const std::string_view& device, const std::string_view& sensor,
-         void* key
+    void(const std::string_view& device, const std::string_view& sensor, void* key
     )>;
 
   using mapEventSensorChanged_t = std::unordered_map<void*, fEvent_SensorChanged_t>;
 
   struct Sensor {
+
     std::string sDisplayName;
-    value_t value;
     std::string sUnits;
-    boost::posix_time::ptime dtLastSeen;
-    prometheus::Family<prometheus::Gauge>* pFamily;
-    prometheus::Gauge* pGauge;
-    mapEventSensorChanged_t mapEventSensorChanged;
     bool bHidden; // used for internal signalling between scripts
 
+    mapEventSensorChanged_t mapEventSensorChanged;
+
+    value_t value;
+    boost::posix_time::ptime dtLastSeen;
+    prometheus::Gauge* pGauge;
+    prometheus::Family<prometheus::Gauge>* pFamily;
+
     Sensor() = delete;
+    Sensor( const std::string& sDisplayName )
+    : bHidden( false ), dtLastSeen( boost::posix_time::not_a_date_time )
+    , pFamily( nullptr ), pGauge( nullptr ) {}
     Sensor( value_t value_, const std::string sUnits_ )
-    : bHidden( false ), value( value_ ), sUnits( sUnits_ ), dtLastSeen(/*not a datetime*/)
+    : bHidden( false ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
     , pFamily( nullptr ), pGauge( nullptr ) {}
     Sensor( const std::string& sDisplayName_, value_t value_, const std::string sUnits_ )
-    : bHidden( false ), sDisplayName( sDisplayName_ ), value( value_ ), sUnits( sUnits_ ), dtLastSeen(/*not a datetime*/)
+    : bHidden( false ), sDisplayName( sDisplayName_ ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
     , pFamily( nullptr ), pGauge( nullptr ) {}
     Sensor( const std::string& sDisplayName_, const std::string& sUnits_ )
-    : bHidden( false ), sDisplayName( sDisplayName_ ), sUnits( sUnits_ ), dtLastSeen(/*not a datetime*/)
+    : bHidden( false ), sDisplayName( sDisplayName_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
     , pFamily( nullptr ), pGauge( nullptr ) {}
     Sensor( const Sensor& ) = delete;
     Sensor( Sensor&& rhs )

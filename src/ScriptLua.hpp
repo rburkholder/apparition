@@ -59,8 +59,7 @@ public:
 
   using fMqttConnect_t = std::function<void(void*)>;
   using fMqttStartTopic_t = std::function<void(void*, const std::string_view&, fMqttIn_t&&)>;
-  using fMqttDeviceData_t
-    = std::function<void(const std::string_view& location, const std::string_view& name, const vValue_t&&)>;
+  using fMqttDeviceData_t = std::function<void( const std::string_view& name, const vValue_t&& )>;
   using fMqttStopTopic_t = std::function<void(void*, const std::string_view&)>;
   using fMqttPublish_t = std::function<void(void*, const std::string_view& topic, const std::string_view& msg )>;
   using fMqttDisconnect_t = std::function<void(void*)>;

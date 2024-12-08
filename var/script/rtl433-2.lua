@@ -44,7 +44,7 @@ local meta_sensor_thermapro = {
 }
 
 local device_data = {}
---                          display name,   location tags
+--                                display name,                                 location tags
 device_data[ 'door01' ]      = { 'side door',          meta_sensor_dsc,       { 'side entry' } }
 device_data[ 'door02' ]      = { 'laundry door',       meta_sensor_dsc,       { 'laundry' } }
 device_data[ 'door03' ]      = { 'patio door',         meta_sensor_dsc,       { 'patio' } }
@@ -102,9 +102,9 @@ dsc = function( jvalues_ )
   if nil ~= device_name then
     local device = device_data[ device_name ]
     local table_extract = device[ 2 ]
-    local location_tags = device[ 3 ]
-    local location = location_tags[ 1 ]
-    sensor_list_data_v2( object_ptr, jvalues_, device_name, location, table_extract )
+    --local location_tags = device[ 3 ]
+    --local location = location_tags[ 1 ]
+    sensor_list_data_v2( object_ptr, jvalues_, device_name, table_extract )
   else
     io.write( 'mqtt_in dsc unknown id ' .. id .. '\n' )
   end
@@ -126,9 +126,9 @@ thermapro = function( jvalues_ )
   if nil ~= device_name then
     local device_template = device_data[ device_name ]
     local table_extract = device_template[ 2 ]
-    local location_tags = device_template[ 3 ]
-    local location = location_tags[ 1 ]
-    sensor_list_data_v2( object_ptr, jvalues_, device_name, location, table_extract )
+    --local location_tags = device_template[ 3 ]
+    --local location = location_tags[ 1 ]
+    sensor_list_data_v2( object_ptr, jvalues_, device_name, table_extract )
   end
 end
 

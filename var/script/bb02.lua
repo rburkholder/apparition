@@ -37,7 +37,7 @@ zwave_discovery = function( json_, type_, device_, sensor_ )
   local data = {}
 
 
-  -- mqtt_device_data( object_ptr, location_, "bme680", #data, data );
+  -- mqtt_device_data( object_ptr, "bme680", #data, data );
 end
 
 mqtt_in = function( topic_, message_ )

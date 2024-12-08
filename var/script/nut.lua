@@ -120,9 +120,9 @@ mqtt_in = function( topic_, message_ )
     if nil ~= device then
       local name = device[ 1 ]
       local device_template = device[ 3 ]
-      local location_tags = device[ 4 ]
-      local location = location_tags[ 1 ]
-      sensor_list_data_v2( object_ptr, jvalues, name, location, device_template )
+      --local location_tags = device[ 4 ]
+      --local location = location_tags[ 1 ]
+      sensor_list_data_v2( object_ptr, jvalues, name, device_template )
     end
   end
 

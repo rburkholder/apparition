@@ -71,9 +71,9 @@ end
 bme680 = function( jvalues_, device_name_ )
   local device = device_data[ device_name_ ]
   local table_extract = device[ 2 ]
-  local location_tags = device[ 3 ]
-  local location = location_tags[ 1 ]
-  sensor_list_data_v2( object_ptr, jvalues_, device_name_, location, table_extract )
+  --local location_tags = device[ 3 ]
+  --local location = location_tags[ 1 ]
+  sensor_list_data_v2( object_ptr, jvalues_, device_name_, table_extract )
 end
 
 mqtt_in = function( topic_, message_ )

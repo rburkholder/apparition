@@ -14,11 +14,10 @@ package.cpath='lib/lua/?.so' -- dedicate to custom directory for now
 local cjson = require( 'cjson' )
 local json = cjson.new()
 
-local decode_default = function( location_, device_, sensor_, value_ )
+local decode_default = function( device_, sensor_, value_ )
 
   local message =
     "event_sensor_changed,"
-    .. location_ .. ','
     .. device_ .. ','
     .. sensor_ .. ','
     .. tostring( value_ )
@@ -29,17 +28,17 @@ local decode_default = function( location_, device_, sensor_, value_ )
 
 local ups_status = {}
 
-local decode_ups = function( location_, device_, sensor_, value_ )
+local decode_ups = function( device_, sensor_, value_ )
 
   local basic_status = string.match( value_, "%a%a")
 
   if nil == ups_status[ device_ ] then
     ups_status[ device_ ] = basic_status
-    decode_default( location_, device_, sensor_, value_ )
+    decode_default( device_, sensor_, value_ )
   else
     if basic_status ~= ups_status[ device_ ] then
       ups_status[ device_ ] = basic_status
-      decode_default( location_, device_, sensor_, value_ )
+      decode_default( device_, sensor_, value_ )
     else
       -- ignore the non-change, remainder of message is charging state
     end
@@ -68,9 +67,9 @@ attach = function ( object_ptr_ )
   object_ptr = object_ptr_
 
   for device, data in pairs( devices ) do
-    local location = data[ 1 ]
+    --local location = data[ 1 ]
     local sensor = data[ 2 ]
-    event_register_add( object_ptr, location, device, sensor )
+    event_register_add( object_ptr, device, sensor )
   end
 
 end
@@ -78,21 +77,21 @@ end
 detach = function ( object_ptr_ )
 
   for device, data in ipairs( devices ) do
-    local location = data[ 1 ]
+    --local location = data[ 1 ]
     local sensor = data[ 2 ]
-    event_register_del( object_ptr, location, device, sensor )
+    event_register_del( object_ptr, device, sensor )
   end
 
   object_ptr = nil
 end
 
-event_sensor_changed = function( location_, device_, sensor_, value_ )
+event_sensor_changed = function( device_, sensor_, value_ )
+
+  io.write( 'telegram,' .. device_ .. ',' .. sensor_ .. ',' .. tostring( value_ ) .. '\n' )
 
   local data = devices[ device_ ]
   local decode = data[ 3 ]
-  decode( location_, device_, sensor_, value_ )
-
-  -- io.write( message )
+  decode( device_, sensor_, value_ )
 
 end
 
