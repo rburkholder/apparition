@@ -14,28 +14,41 @@ package.cpath='lib/lua/?.so' -- dedicate to custom directory for now
 local cjson = require( 'cjson' )
 local json = cjson.new()
 
+local decode_default = function( location_, device_, sensor_, value_ )
+
+  local message =
+    "event_sensor_changed,"
+    .. location_ .. ','
+    .. device_ .. ','
+    .. sensor_ .. ','
+    .. tostring( value_ )
+
+  return message
+end
+
 -- locations, match in nut.lua
-local registrations = {
-  { 'furnace', "water01", "water_leak" }
-, { 'sewer',   "water02", "water_leak" }
-, { 'kitchen', "water03", "water_leak" }
-, { 'garage',  "door05",  "closed" }
-, { 'den apc 1500',     "ups01", "ups_status" }
-, { 'sw01 apc 1500',    "ups02", "ups_status" }
-, { 'eid internet',     "ups03", "ups_status" }
-, { 'furnace ups', "ups04", "ups_status" }
-, { 'host01 eaton ups',  "ups05", "ups_status" }
---, { 'den',     "ups06", "ups_status" }
-}
+local devices = {}
+--
+devices[ 'water01' ] = { 'furnace', 'water_leak', decode_default }
+devices[ 'water02' ] = { 'sewer',   'water_leak', decode_default }
+devices[ 'water03' ] = { 'kitchen', 'water_leak', decode_default }
+
+devices[ 'door05'  ] = { 'garage',  'closed',     decode_default }
+
+devices[ 'ups01' ] = { 'den apc 1500'    , 'ups_status', decode_default }
+devices[ 'ups02' ] = { 'sw01 apc 1500'   , 'ups_status', decode_default }
+devices[ 'ups03' ] = { 'eid internet'    , 'ups_status', decode_default }
+devices[ 'ups04' ] = { 'furnace ups'     , 'ups_status', decode_default }
+devices[ 'ups05' ] = { 'host01 eaton ups', 'ups_status', decode_default }
+devices[ 'ups06' ] = { 'den apc 750'     , 'ups_status', decode_default }
 
 attach = function ( object_ptr_ )
 
   object_ptr = object_ptr_
 
-  for key, registration in ipairs( registrations ) do
-    local location = registration[ 1 ]
-    local device = registration[ 2 ]
-    local sensor = registration[ 3 ]
+  for device, data in pairs( devices ) do
+    local location = data[ 1 ]
+    local sensor = data[ 2 ]
     event_register_add( object_ptr, location, device, sensor )
   end
 
@@ -43,10 +56,9 @@ end
 
 detach = function ( object_ptr_ )
 
-  for key, registration in ipairs( registrations ) do
-    local location = registration[ 1 ]
-    local device = registration[ 2 ]
-    local sensor = registration[ 3 ]
+  for device, data in ipairs( devices ) do
+    local location = data[ 1 ]
+    local sensor = data[ 2 ]
     event_register_del( object_ptr, location, device, sensor )
   end
 
@@ -55,16 +67,11 @@ end
 
 event_sensor_changed = function( location_, device_, sensor_, value_ )
 
-  local message =
-    "lua event_sensor_changed: "
-    .. location_ .. ','
-    .. device_ .. ','
-    .. sensor_ .. ','
-    .. tostring( value_ )
-    -- .. type( value_ )
-    -- .. '\n'
+  local data = devices[ device_ ]
+  local decode = data[ 3 ]
+  local message = decode( location_, device_, sensor_, value_ )
 
-  -- io.write( message )
+  io.write( message )
 
   telegram_send_message( object_ptr, message )
 
