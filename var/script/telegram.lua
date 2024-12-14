@@ -46,21 +46,20 @@ local decode_ups = function( display_name_, device_, sensor_, value_ )
 
 end
 
--- locations, match in nut.lua
 local devices = {}
---
-devices[ 'water01' ] = { 'furnace leak', 'water_leak', decode_default }
-devices[ 'water02' ] = { 'sewer leak',   'water_leak', decode_default }
-devices[ 'water03' ] = { 'kitchen leak', 'water_leak', decode_default }
+--        device          display_name        sensor       process
+devices[ 'water01' ] = { 'furnace leak',     'water_leak', decode_default }
+devices[ 'water02' ] = { 'sewer leak',       'water_leak', decode_default }
+devices[ 'water03' ] = { 'kitchen leak',     'water_leak', decode_default }
 
-devices[ 'door05'  ] = { 'garage door',  'closed',     decode_default }
+devices[ 'door05' ]  = { 'garage door',      'closed',     decode_default }
 
-devices[ 'ups01' ] = { 'den apc 1500'    , 'ups_status', decode_ups }
-devices[ 'ups02' ] = { 'sw01 apc 1500'   , 'ups_status', decode_ups }
-devices[ 'ups03' ] = { 'eid internet'    , 'ups_status', decode_ups }
-devices[ 'ups04' ] = { 'furnace ups'     , 'ups_status', decode_ups }
-devices[ 'ups05' ] = { 'host01 eaton ups', 'ups_status', decode_ups }
-devices[ 'ups06' ] = { 'den apc 750'     , 'ups_status', decode_ups }
+devices[ 'ups01' ]   = { 'den apc 1500',     'ups_status', decode_ups }
+devices[ 'ups02' ]   = { 'sw01 apc 1500',    'ups_status', decode_ups }
+devices[ 'ups03' ]   = { 'eid internet',     'ups_status', decode_ups }
+devices[ 'ups04' ]   = { 'furnace ups',      'ups_status', decode_ups }
+devices[ 'ups05' ]   = { 'host01 eaton ups', 'ups_status', decode_ups }
+devices[ 'ups06' ]   = { 'den apc 750',      'ups_status', decode_ups }
 
 attach = function ( object_ptr_ )
 
@@ -76,7 +75,7 @@ end
 
 detach = function ( object_ptr_ )
 
-  for device, data in ipairs( devices ) do
+  for device, data in pairs( devices ) do
     local sensor = data[ 2 ]
     event_register_del( object_ptr, device, sensor )
   end
