@@ -1,4 +1,4 @@
--- file:    telegram.lua
+-- file:    state_change_to_telegram.lua
 -- author:  raymond@burkholder.net
 -- created: 2023/10/09 10:05:04
 
@@ -11,8 +11,8 @@ local object_ptr = nil -- TODO - use the oops version of function registration h
 
 package.path='' -- can not have ?.so in script path
 package.cpath='lib/lua/?.so' -- dedicate to custom directory for now
-local cjson = require( 'cjson' )
-local json = cjson.new()
+-- local cjson = require( 'cjson' )
+-- local json = cjson.new()
 
 local decode_default = function( display_name_, device_, sensor_, value_ )
 
@@ -24,7 +24,7 @@ local decode_default = function( display_name_, device_, sensor_, value_ )
 
   telegram_send_message( object_ptr, message )
 
-  end
+end
 
 local ups_status = {}
 
@@ -61,12 +61,15 @@ devices[ 'ups04' ]   = { 'furnace ups',      'ups_status', decode_ups }
 devices[ 'ups05' ]   = { 'host01 eaton ups', 'ups_status', decode_ups }
 devices[ 'ups06' ]   = { 'den apc 750',      'ups_status', decode_ups }
 
+-- todo:  decode multiple sensors per device
+-- todo:  add battery state
+-- todo:  persist state to file?  - performed in caller in serialization?
+
 attach = function ( object_ptr_ )
 
   object_ptr = object_ptr_
 
   for device, data in pairs( devices ) do
-    --local location = data[ 1 ]
     local sensor = data[ 2 ]
     event_register_add( object_ptr, device, sensor )
   end
@@ -93,4 +96,3 @@ event_sensor_changed = function( device_, sensor_, value_ )
   decode( display_name, device_, sensor_, value_ )
 
 end
-
