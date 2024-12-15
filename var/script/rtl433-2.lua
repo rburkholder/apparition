@@ -51,8 +51,8 @@ device_data[ 'door03' ]      = { 'patio door',         meta_sensor_dsc,       { 
 device_data[ 'door04' ]      = { 'front door',         meta_sensor_dsc,       { 'front entry' } }
 device_data[ 'pir02' ]       = { 'family room pir',    meta_sensor_dsc,       { 'family room' } }
 device_data[ 'smoke01' ]     = { 'top floor smoke',    meta_sensor_dsc,       { 'top floor', 'upstairs' } }
-device_data[ 'tpro01' ]      = { 'garage thermapro',   meta_sensor_thermapro, { 'garage' } }
-device_data[ 'tpro02' ]      = { 'basement thermapro', meta_sensor_thermapro, { 'basement' } }
+device_data[ 'tpro01' ]      = { 'garage thermapro',   meta_sensor_thermapro, { 'garage', 'outside' } }
+device_data[ 'tpro02' ]      = { 'basement thermapro', meta_sensor_thermapro, { 'basement', 'inside' } }
 device_data[ 'tpro03' ]      = { 'walkway thermapro',  meta_sensor_thermapro, { 'walkway', 'outside' } }
 
 attach = function ( object_ptr_ )
