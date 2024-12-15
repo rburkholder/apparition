@@ -15,9 +15,9 @@ package.cpath='lib/lua/?.so' -- dedicate to custom directory for now
 -- local json = cjson.new()
 
 -- todo: set colour
--- todo: message destination(s)
+-- todo: table of message destination(s)
 
-local send_message = function( display_name_, device_, sensor_, message_ )
+local send_to_telegram = function( display_name_, device_, sensor_, message_ )
 
   local message =
     "event_sensor_level,"
@@ -41,9 +41,9 @@ end
 local device_sensor_ops = {
   [ 'ups04' ] = {
     [ 'battery_runtime' ] = {
-      { 'furnace pump (via ups)', op_gt, 7000,
+      { 'furnace pump (via ups)', op_gt, 7200,
         'off',
-        { 'furnace pump (via ups)', op_lt, 5000, 'heavy load', 'light load' }
+        { 'furnace pump (via ups)', op_lt, 4500, 'heavy load', 'light load' }
       }
     }
   }
@@ -68,12 +68,12 @@ op_sensor = function( device_, sensor_, value_, sensor_op_ )
     local state_sensor = state_device[ sensor_ ]
     if nil == state_sensor then
       if result then
-        send_message( sensor_op_[ 1 ], device_, sensor_, result_state )
+        send_to_telegram( sensor_op_[ 1 ], device_, sensor_, result_state )
       end
       state_device[ sensor_ ] = result_state
     else
       if state_sensor ~= result_state then
-        send_message( sensor_op_[ 1 ], device_, sensor_, result_state )
+        send_to_telegram( sensor_op_[ 1 ], device_, sensor_, result_state )
         state_device[ sensor_ ] = result_state
       end
     end
