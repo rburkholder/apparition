@@ -132,13 +132,6 @@ bool ScriptLua::TestExtension( const std::filesystem::path& path ) {
   return bResult;
 }
 
-void ScriptLua::RegisterLuaModule( lua_State* pLua, LuaModule& module ) {
-  lua_createtable( pLua, 0, module.luaRegistration().size() - 1 );
-  int nUpValues = module.luaPushUpValues( pLua );
-  luaL_setfuncs( pLua, module.luaRegistration().data(), nUpValues );
-  lua_setglobal( pLua, module.luaInstanceName().c_str() );
-}
-
 ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
 
   mapScript_t::iterator iterScript( m_mapScript.end() );
@@ -152,8 +145,6 @@ ScriptLua::mapScript_t::iterator ScriptLua::Parse( const std::string& sPath ) {
   // TODO: send category tags for sensors: thermostat, humidity, rssi, ...
 
   Lua lua;
-
-  //RegisterLuaModule( lua(), module );
 
   // can ultimately replace the following function assignments
   lua_pushcfunction( lua(), lua_mqtt_connect );

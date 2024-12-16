@@ -124,8 +124,6 @@ private:
   void Attach( mapScript_t::iterator );
   void Detach( mapScript_t::iterator );
 
-  void RegisterLuaModule( lua_State* lua, LuaModule& );
-
   static int lua_mqtt_connect( lua_State* );
   static int lua_mqtt_start_topic( lua_State* );
   static int lua_mqtt_stop_topic( lua_State* );
