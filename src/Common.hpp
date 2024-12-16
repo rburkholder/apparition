@@ -34,11 +34,15 @@
 
   using value_t = std::variant<bool, int64_t, double, std::string>;
 
-  struct Value {
+  struct Value { // lua based sensors use to send data updates via mqtt
 
     std::string sName;
     value_t value;
-    std::string sUnits;  // is this used?  Sensor has sUnits as well
+    std::string sUnits;  // used to set units in Sensor
+
+    // https://templatebootstrap.com/docs/bootstrap/bootstrap-colors/bootstrap-text-colors/
+    // optional text or background colour: primary, secondary, success, danger, warning, info, light, dark
+    std::string sColour;
 
     Value(): value( false ) {} // not sure how to identify in lua, maybe pass a string and use spirit to decode
     Value( const std::string& sName_, const value_t value_, const std::string& sUnits_ )
@@ -48,7 +52,6 @@
     Value( Value&& rhs )
     : sName( std::move( rhs.sName ) ), value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) ) {}
   };
-
   using vValue_t = std::vector<Value>;
 
   using fEvent_SensorChanged_t = std::function<
