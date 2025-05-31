@@ -53,6 +53,7 @@ local meta_sensor_smoke = {}
 meta_sensor_smoke[ "alarmType" ] = { "", "type" }
 meta_sensor_smoke[ "alarmLevel" ] = { "", "level" }
 meta_sensor_smoke[ "isLow" ] = { "", "battery_low" }
+meta_sensor_smoke[ "level" ] = { "%", "battery_level" }
 
 local meta_sensor_thermostat = {}
 meta_sensor_thermostat[ "Air_temperature" ] = { "degC", "temperature" }
