@@ -61,10 +61,11 @@ local meta_outlet_sensor = { -- Third Reality	3RSP02028BZ
   { extract3, "linkquality", "", "link_quality" },
   { extract2, "kwh", "kWh", "" }
 }
-local meta_outlet02_location_tag = { 'den' }
+local meta_outlet02_location_tag = { 'den', 'desk1' }
 local meta_outlet03_location_tag = { 'basement', 'fridge' }
 local meta_outlet04_location_tag = { 'furnace' }
 local meta_outlet05_location_tag = { 'basement', 'dehumidifier' }
+local meta_outlet07_location_tag = { 'den', 'desk2' }
 
 local meta_water_sensor = { -- Xiaomi	SJCGQ11LM
   { extract3, "battery", "%", "battery_level" },
@@ -76,16 +77,17 @@ local meta_water_sensor = { -- Xiaomi	SJCGQ11LM
   { extract3, "linkquality", "", "link_quality" }
 }
 
-local devices = {}
+local devices = {} -- for outlet at least, the first text matches the zigbee /name
 devices[ 'pir03' ]   = { 'laundry', 'laundry pir', meta_pir_sensor, meta_pir03_location_tag }
 devices[ 'light01' ] = { 'den', 'den light 1',  meta_light_sensor, meta_light01_location_tag }
 devices[ 'light02' ] = { 'den', 'den light 2',  meta_light_sensor, meta_light02_location_tag }
 devices[ 'light03' ] = { 'back_entry', 'back entry light',  meta_light_sensor, meta_light03_location_tag }
 devices[ 'light04' ] = { 'eating_area', 'eating area light',  meta_light_sensor, meta_light04_location_tag }
-devices[ 'outlet02' ] = { 'den', 'den outlet', meta_outlet_sensor, meta_outlet02_location_tag }
+devices[ 'outlet02' ] = { 'dendesk1', 'den desk1', meta_outlet_sensor, meta_outlet02_location_tag }
 devices[ 'outlet03' ] = { 'fridge', 'basement fridge', meta_outlet_sensor, meta_outlet03_location_tag }
 devices[ 'outlet04' ] = { 'furnace', 'furnace ups', meta_outlet_sensor, meta_outlet04_location_tag }
 devices[ 'outlet05' ] = { 'dehumidifier', 'basement dehumidifier', meta_outlet_sensor, meta_outlet05_location_tag }
+devices[ 'outlet07' ] = { 'dendesk2', 'den desk2', meta_outlet_sensor, meta_outlet07_location_tag }
 devices[ 'door05' ] = { 'garage', 'garage entry', meta_mag_sensor, meta_door05_location_tag }
 devices[ 'water01' ] = { 'furnace', 'furnace water', meta_water_sensor, { "furnace_floor" } }
 devices[ 'water02' ] = { 'sewer' , 'sewer water', meta_water_sensor, { "basement" } }
