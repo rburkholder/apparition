@@ -43,7 +43,7 @@ local device_sensor_ops = {
     [ 'battery_runtime' ] = {
       { 'furnace pump (via ups)', op_gt, 7200,
         'off',
-        { 'furnace pump (via ups)', op_lt, 4500, 'heavy load', 'light load' }
+        { 'furnace pump (via ups)', op_lt, 3600, 'heavy load', 'light load' }
       }
     }
   }
