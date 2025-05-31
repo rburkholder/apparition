@@ -23,7 +23,6 @@
 
 #pragma once
 
-#include <luajit-2.1/lua.h>
 #include <string>
 #include <vector>
 
