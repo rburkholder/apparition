@@ -6,8 +6,8 @@ description = 'common extraction functions'
 
 package.path='' -- can not have ?.so in script path
 package.cpath='lib/lua/?.so' -- dedicate to custom directory for now
-local cjson = require( 'cjson' )
-local json = cjson.new()
+-- local cjson = require( 'cjson' )
+-- local json = cjson.new()
 
 extract2 = function( json_, table_, column_, units_ )
   -- name, value, units
