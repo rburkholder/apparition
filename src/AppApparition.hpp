@@ -45,7 +45,6 @@ namespace telegram {
 } // telegram
 } // ou
 
-
 class AppApparition: public LuaModule {
 public:
   AppApparition( const config::Values& settings );
