@@ -10,4 +10,4 @@
 * cmake .. -DBUILD_SHARED_LIBS=ON -DENABLE_PUSH=ON -DENABLE_COMPRESSION=OFF
 * cmake --build . --parallel 4
 * sudo cmake --install .
-
+* popd
