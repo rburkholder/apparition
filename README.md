@@ -44,11 +44,12 @@ On the immediate todo list:
 * add time-of-day and recurring events
 
 Order of install:
-* need to build and install https://github.com/rburkholder/repertory for MQTT
+* build https://github.com/rburkholder/repertory for MQTT
+  * uses [libs-build](https://github.com/rburkholder/libs-build)
+  * includes build of [C++ library: boost](docs/boost.md) for asio, datetime, fusion, spirit
 * install packages:
   * [C++ library: mqtt-paho](docs/mqtt-paho.md) - mqtt client
-* build libs-build libraries - use [libs-build](https://github.com/rburkholder/libs-build)
-  * [C++ library: boost](docs/boost.md) - asio, datetime, fusion, spirit
+* install web frontend via [libs-build](https://github.com/rburkholder/libs-build)
   * [C++ library: wt](docs/wt.md) - web page rendering, database access, depends upon boost
 * build 3rdparty tools:
   * [C++ library: fmt](docs/fmt.md) - fast format library
