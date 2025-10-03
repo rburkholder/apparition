@@ -1,7 +1,8 @@
 # wt - webtoolkit installation
 
 * use [libs-build](https://github.com/rburkholder/libs-build)
-  * ./build.sh wt
+
+    ./build.sh wt
 
 * reference materials:
   * https://www.webtoolkit.eu/wt/doc/reference/html/overview.html
