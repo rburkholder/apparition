@@ -1,11 +1,11 @@
 # apparition build notes
 
-* git clone git@github.com:rburkholder/apparition.git
-* cd apparition
-* mkdir build
-* cd build
-* cmake ..
-* make
+    git clone git@github.com:rburkholder/apparition.git
+    cd apparition
+    mkdir build
+    cd build
+    cmake ..
+    make
 
 # Invocation
 
