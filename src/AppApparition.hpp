@@ -72,18 +72,7 @@ private:
   std::unique_ptr<DashboardFactory> m_pDashboardFactory;
 
   using mapDevice_t = std::unordered_map<std::string,Device>;
-  mapDevice_t m_mapDevice;  // will be using device as basic part, an incoporate location tags into device
-
-  //struct Location {
-  //  mapDevice_t mapDevice;
-  //};
-
-  //using mapLocation_t = std::unordered_map<std::string,Location>;
-  //mapLocation_t m_mapLocation;
-
-  //Location m_dummy; // used in SensorPath until m_mapLocation is removed
-
-  Device m_dummyDevice;
+  mapDevice_t m_mapDevice;
 
   using mapLocationToDevice_t = std::unordered_map<std::string,std::string>;
   mapLocationToDevice_t m_mapLocationToDevice;
