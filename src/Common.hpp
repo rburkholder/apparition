@@ -72,6 +72,8 @@ using mapEventSensorChanged_t = std::unordered_map<void*, fEvent_SensorChanged_t
 
 struct Sensor {
 
+  bool bOwned; // out of order registration by consumer rather than publisher, todo: poll to find consumer only entries
+
   std::string sDisplayName;
   std::string sUnits;
   bool bHidden; // used for internal signalling between scripts
@@ -84,21 +86,21 @@ struct Sensor {
   prometheus::Family<prometheus::Gauge>* pFamily;
 
   Sensor() = delete;
-  Sensor( const std::string& sDisplayName )
-  : bHidden( false ), dtLastSeen( boost::posix_time::not_a_date_time )
+  Sensor( const std::string& sDisplayName, bool bOwned_ = true )
+  : bOwned( bOwned_ ), bHidden( false ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
   Sensor( value_t value_, const std::string sUnits_ )
-  : bHidden( false ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
+  : bOwned( true ), bHidden( false ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
   Sensor( const std::string& sDisplayName_, value_t value_, const std::string sUnits_ )
-  : bHidden( false ), sDisplayName( sDisplayName_ ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
+  : bOwned( true ), bHidden( false ), sDisplayName( sDisplayName_ ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
   Sensor( const std::string& sDisplayName_, const std::string& sUnits_ )
-  : bHidden( false ), sDisplayName( sDisplayName_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
+  : bOwned( true ), bHidden( false ), sDisplayName( sDisplayName_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
   Sensor( const Sensor& ) = delete;
   Sensor( Sensor&& rhs )
-  : bHidden( rhs.bHidden )
+  : bOwned( rhs.bOwned ), bHidden( rhs.bHidden )
   , sDisplayName( std::move( rhs.sDisplayName ) )
   , value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) )
   , dtLastSeen( rhs.dtLastSeen ), mapEventSensorChanged( std::move( rhs.mapEventSensorChanged ))
@@ -120,13 +122,14 @@ using mapSensor_t = std::unordered_map<std::string,Sensor>;
 using setLocationTag_t = std::set<std::string>; // use lower case names for ease of matching
 
 struct Device {
+  bool bOwned; // false: out of order registration by consumer rather than publisher, todo: poll to find consumer-only entries
   std::string sDisplayName;
-  std::string sDescription;
-  std::string sSource; // zwave, rtl, zigbee, etc (mqtt: use subscribed topic)
+  //std::string sDescription; // future use
+  //std::string sSource; // zwave, rtl, zigbee, etc (mqtt: use subscribed topic) - deprecated?
   mapSensor_t mapSensor;
   setLocationTag_t setLocationTag;
-  Device() {}
-  Device( const std::string& sDisplayName_ )
-  : sDisplayName( sDisplayName_ ) {}
+  Device() = delete;
+  Device( const std::string& sDisplayName_, bool bOwned_ = true )
+  : bOwned( bOwned_ ), sDisplayName( sDisplayName_ ) {}
 };
 

@@ -395,7 +395,7 @@ AppApparition::AppApparition( const config::Values& settings )
       const std::string sDevice( svDevice );
       const std::string sSensor( svSensor );
       try {
-        SensorPath path( BuildSensorPath( sDevice, sSensor ) );
+        SensorPath path( BuildSensorPath( sDevice, sSensor, true ) );
         mapEventSensorChanged_t& map( path.sensor.mapEventSensorChanged );
         mapEventSensorChanged_t::iterator iterEvent = map.find( key );
         if ( map.end() != iterEvent ) {
@@ -422,7 +422,7 @@ AppApparition::AppApparition( const config::Values& settings )
       const std::string sDevice( svDevice );
       const std::string sSensor( svSensor );
       try {
-        SensorPath path( BuildSensorPath( sDevice, sSensor ) );
+        SensorPath path( BuildSensorPath( sDevice, sSensor, true ) );
         mapEventSensorChanged_t& map( path.sensor.mapEventSensorChanged );
         mapEventSensorChanged_t::iterator iterEvent = map.find( key );
         if ( map.end() == iterEvent ) {
@@ -456,8 +456,13 @@ AppApparition::AppApparition( const config::Values& settings )
         assert( result.second );
       }
       else {
-        BOOST_LOG_TRIVIAL(warning) << "Device Registration add" << sUniqueName << " already exists, addition skipped";
-        bStatus = false;
+        if ( iterDevice->second.bOwned ) {
+          BOOST_LOG_TRIVIAL(warning) << "Device Registration add" << sUniqueName << " already exists, addition skipped";
+          bStatus = false;
+        }
+        else {
+          iterDevice->second.bOwned = true;
+        }
       }
 
       return bStatus;
@@ -526,17 +531,27 @@ AppApparition::AppApparition( const config::Values& settings )
         }
         else {
           Device& device( iterDevice->second );
-          mapSensor_t::iterator iterSensor = device.mapSensor.find( sDisplayName ); // why use the display name for lookup?
-          if ( device.mapSensor.end() != iterSensor ) {
-            bStatus = false;
-            BOOST_LOG_TRIVIAL(warning)
-              << "Sensor Registration add (2) " << sDeviceName << ":" << sDisplayName
-              << " already exists, addition skipped";
-          }
-          else {
+
+          mapSensor_t::iterator iterSensor = device.mapSensor.find( sDisplayName ); // why use the display name for lookup? 
+          if ( device.mapSensor.end() == iterSensor ) [[likely]] {
             auto result = device.mapSensor.emplace( sDisplayName, Sensor( sDisplayName, sUnits ) );
             assert( result.second );
-            Sensor& sensor( result.first->second );
+            iterSensor = result.first;
+          }
+          else [[unlikely]] {
+            if ( !iterSensor->second.bOwned ) [[likely]] {
+              iterSensor->second.bOwned = true;
+              iterSensor->second.sUnits = sUnits;            }
+            else [[unlikely]] {
+              bStatus = false;
+              BOOST_LOG_TRIVIAL(warning)
+                << "Sensor Registration add (2) " << sDeviceName << ":" << sDisplayName
+                << " already exists, addition skipped";
+            }
+          }
+
+          if ( bStatus ) {
+            Sensor& sensor( iterSensor->second );
             try {
               sensor.pFamily = &m_clientPrometheus.AddSensor_Gauge( "apparition_" + sDeviceName + '_' + sDisplayName );
               sensor.pGauge = &sensor.pFamily->Add( {} );
@@ -695,7 +710,7 @@ AppApparition::SensorPath AppApparition::BuildSensorPath( const std::string& sDe
         ;
       throw runtime_error_device( "device " + sDevice + " not found" );
     }
-    auto result = m_mapDevice.emplace( sDevice, Device( sDevice ) );
+    auto result = m_mapDevice.emplace( sDevice, Device( sDevice, false ) );
     assert( result.second );
     iterMapDevice = result.first;
     state = SensorPath::device_added;
@@ -712,7 +727,7 @@ AppApparition::SensorPath AppApparition::BuildSensorPath( const std::string& sDe
         ;
       throw runtime_error_sensor( "sensor " + sDevice + '\\' + sSensor + " not found" );
     }
-    auto result = device.mapSensor.emplace( sSensor, Sensor( sSensor ) );
+    auto result = device.mapSensor.emplace( sSensor, Sensor( sSensor, false ) );
     assert( result.second );
     iterMapSensor = result.first;
     if ( SensorPath::found == state ) state = SensorPath::sensor_added;
