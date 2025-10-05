@@ -489,7 +489,8 @@ AppApparition::AppApparition( const config::Values& settings )
     [this]( const std::string_view& device_name
           , const std::string_view& unique_name
           , const std::string_view& display_name
-          , const std::string_view& units)->bool{
+          , const std::string_view& units
+    )->bool{
 
       bool bStatus( true );
       assert( 0 < device_name.size() );
@@ -525,7 +526,7 @@ AppApparition::AppApparition( const config::Values& settings )
         }
         else {
           Device& device( iterDevice->second );
-          mapSensor_t::iterator iterSensor = device.mapSensor.find( sDisplayName );
+          mapSensor_t::iterator iterSensor = device.mapSensor.find( sDisplayName ); // why use the display name for lookup?
           if ( device.mapSensor.end() != iterSensor ) {
             bStatus = false;
             BOOST_LOG_TRIVIAL(warning)
