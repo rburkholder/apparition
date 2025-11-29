@@ -78,6 +78,7 @@ device_data[ 'thermostat03' ] = { 'family room thermostat', meta_sensor_thermost
 device_data[ 'thermostat04' ] = { 'laundry thermostat', meta_sensor_thermostat, { 'laundry', 'main floor' } }
 device_data[ 'thermostat05' ] = { 'top floor thermostat', meta_sensor_thermostat, { 'top floor' } }
 device_data[ 'thermostat06' ] = { 'master bedroom thermostat', meta_sensor_thermostat, { 'master bedroom' } }
+device_data[ 'thermostat07' ] = { 'basement spare thermostat', meta_sensor_thermostat, { 'basement' } }
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
