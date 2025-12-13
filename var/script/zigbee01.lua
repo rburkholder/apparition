@@ -89,9 +89,9 @@ devices[ 'outlet04' ] = { 'furnace', 'furnace ups', meta_outlet_sensor, meta_out
 devices[ 'outlet05' ] = { 'dehumidifier', 'basement dehumidifier', meta_outlet_sensor, meta_outlet05_location_tag }
 devices[ 'outlet07' ] = { 'dendesk2', 'den desk2', meta_outlet_sensor, meta_outlet07_location_tag }
 devices[ 'door05' ] = { 'garage', 'garage entry', meta_mag_sensor, meta_door05_location_tag }
-devices[ 'water01' ] = { 'furnace', 'furnace water', meta_water_sensor, { "furnace_floor" } }
+devices[ 'water01' ] = { 'furnace', 'furnace water', meta_water_sensor, { "basement", "furnace_floor" } }
 devices[ 'water02' ] = { 'sewer' , 'sewer water', meta_water_sensor, { "basement" } }
-devices[ 'water03' ] = { 'kitchen', 'kitchen water', meta_water_sensor, { "kitchen" } }
+devices[ 'water03' ] = { 'water_heater', 'water heater', meta_water_sensor, { "basement", "furnace_floor" } }
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
