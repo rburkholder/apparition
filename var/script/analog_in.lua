@@ -19,11 +19,16 @@ local json = cjson.new()
 local extraction = assert( loadfile( "lib/lua/extract.lua" ) )
 extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 
+local device_id = "bb05"
+local display_name = "bb05"
+
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
 
-  local key1 = "bb05"
-  local display_name = "bb05"
+  device_register_add( object_ptr, device_id, display_name )
+
+  sensor_register_add( object_ptr, device_id, "ain0", "ain0", "raw" )
+  sensor_register_add( object_ptr, device_id, "ain1", "ain1", "raw" )
 
   mqtt_connect( object_ptr )
   mqtt_start_topic( object_ptr, mqtt_topic );
@@ -32,6 +37,8 @@ end
 detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, mqtt_topic )
   mqtt_disconnect( object_ptr )
+
+  device_register_del( object_ptr, device_id )
 
   object_ptr = nil
 end
@@ -60,6 +67,11 @@ mqtt_in = function( mqtt_topic_, message_ )
         count_down = count_down_start
       end
     end
+
+    data = {}
+    extract2( json_values, data, "ain0", "raw" )
+    extract2( json_values, data, "ain1", "raw" )
+    mqtt_device_data( object_ptr, device_id, #data, data );
   end
 
 end
