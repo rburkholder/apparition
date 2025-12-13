@@ -43,8 +43,10 @@ detach = function ( object_ptr_ )
   object_ptr = nil
 end
 
-local lower_limit = 1990
-local count_down_start = 10 -- seconds (a reading per second)
+local upper_max = 0 -- only alarm as this rises above up_trigger
+local cross_up_trigger = 2005
+local cross_dn_trigger = 2000
+local count_down_start = 5 -- seconds (a reading per second)
 local count_down = 1
 
 mqtt_in = function( mqtt_topic_, message_ )
@@ -54,17 +56,25 @@ mqtt_in = function( mqtt_topic_, message_ )
   if mqtt_topic == mqtt_topic_ then
     json_values = json.decode( message_ )
     local value = json_values[ "ain1" ]
-    if lower_limit < value then
-      io.write( '** ' .. value .. ' exceeds ' .. lower_limit .. '\n' )
+    if cross_up_trigger < value then
+      -- io.write( '** ' .. value .. ' exceeds ' .. cross_up_trigger .. '\n' )
       count_down = count_down - 1
       if 0 == count_down then
-        local message =
-          'furnace high value ' .. value
-          .. ' exceeds ' .. lower_limit
 
-        telegram_send_message( object_ptr, message )
-
+        if upper_max < value then
+          upper_max = value
+          local message =
+            'furnace high value ' .. value
+            .. ' exceeds ' .. cross_up_trigger
+          telegram_send_message( object_ptr, message )
+        end
         count_down = count_down_start
+      end
+    else
+      if 0 < upper_max then
+        if cross_dn_trigger > value then
+          upper_max = 0
+        end
       end
     end
 
