@@ -36,17 +36,29 @@ detach = function ( object_ptr_ )
   object_ptr = nil
 end
 
-local lower_limit = 1910
+local lower_limit = 1990
+local count_down_start = 10 -- seconds (a reading per second)
+local count_down = 1
 
 mqtt_in = function( mqtt_topic_, message_ )
 
-  io.write( "mqtt_in ".. mqtt_topic_ .. ": ".. message_.. '\n' )
+  -- io.write( "mqtt_in ".. mqtt_topic_ .. ": ".. message_.. '\n' )
 
   if mqtt_topic == mqtt_topic_ then
     json_values = json.decode( message_ )
     local value = json_values[ "ain1" ]
     if lower_limit < value then
-      io.write( 'lower limit of ' .. lower_limit .. ' exceeded: ' .. value .. '\n' )
+      io.write( '** ' .. value .. ' exceeds ' .. lower_limit .. '\n' )
+      count_down = count_down - 1
+      if 0 == count_down then
+        local message =
+          'furnace high value ' .. value
+          .. ' exceeds ' .. lower_limit
+
+        telegram_send_message( object_ptr, message )
+
+        count_down = count_down_start
+      end
     end
   end
 
