@@ -30,18 +30,20 @@ local meta_ups_sensor_eaton = { -- prometheus does not like dots in the name
 
 local meta_ups01_location_tag = { 'room:den',      'floor:main' }
 local meta_ups02_location_tag = { 'server:host01', 'floor:basement' }
-local meta_ups03_location_tag = { 'server:host01', 'floor:basement' }
+-- local meta_ups03_location_tag = { 'server:host01', 'floor:basement' }
 local meta_ups04_location_tag = { 'room:furnace',  'floor:basement' }
 local meta_ups05_location_tag = { 'server:host01', 'floor:basement' }
 local meta_ups06_location_tag = { 'room:den',      'floor:main' }
+local meta_ups07_location_tag = { 'server:host01', 'floor:basement' }
 
 local devices = {} -- key based upon second word in topic
-devices[ 'den-sm1500' ]     = { 'ups01', 'den apc 1500',      meta_ups_sensor_apc,   meta_ups01_location_tag }
-devices[ 'host01-sm1500' ]  = { 'ups02', 'sw01 apc 1500',     meta_ups_sensor_apc,   meta_ups02_location_tag }
-devices[ 'host01-xs1300' ]  = { 'ups03', 'eid internet',      meta_ups_sensor_apc,   meta_ups03_location_tag }
-devices[ 'furnace-sm1500' ] = { 'ups04', 'furnace ups',       meta_ups_sensor_apc,   meta_ups04_location_tag }
-devices[ 'host01-5p1500' ]  = { 'ups05', 'host01 eaton ups',  meta_ups_sensor_eaton, meta_ups05_location_tag }
-devices[ 'den-es750' ]  =     { 'ups06', 'den apc 750',       meta_ups_sensor_apc,   meta_ups06_location_tag }
+devices[ 'den-sm1500' ]     = { 'ups01', 'den apc 1500',     meta_ups_sensor_apc,   meta_ups01_location_tag }
+devices[ 'host01-sm1500' ]  = { 'ups02', 'sw01 apc 1500',    meta_ups_sensor_apc,   meta_ups02_location_tag }
+-- devices[ 'host01-xs1300-01' ] = { 'ups03', 'eid internet',   meta_ups_sensor_apc,   meta_ups03_location_tag }
+devices[ 'furnace-sm1500' ] = { 'ups04', 'furnace ups',      meta_ups_sensor_apc,   meta_ups04_location_tag }
+devices[ 'host01-5p1500' ]  = { 'ups05', 'host01 eaton ups', meta_ups_sensor_eaton, meta_ups05_location_tag }
+devices[ 'den-es750' ]  =     { 'ups06', 'den apc 750',      meta_ups_sensor_apc,   meta_ups06_location_tag }
+devices[ 'host01-xs1300-02' ] = { 'ups07', 'host02 eid',     meta_ups_sensor_apc,   meta_ups07_location_tag }
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
