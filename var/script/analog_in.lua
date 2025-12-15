@@ -39,6 +39,10 @@ detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, mqtt_topic )
   mqtt_disconnect( object_ptr )
 
+  sensor_register_del( object_ptr, device_id, "ain2" );
+  sensor_register_del( object_ptr, device_id, "ain1" );
+  sensor_register_del( object_ptr, device_id, "ain0" );
+
   device_register_del( object_ptr, device_id )
 
   object_ptr = nil
