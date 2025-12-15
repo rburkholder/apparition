@@ -29,6 +29,7 @@ attach = function ( object_ptr_ )
 
   sensor_register_add( object_ptr, device_id, "ain0", "ain0", "raw" )
   sensor_register_add( object_ptr, device_id, "ain1", "ain1", "raw" )
+  sensor_register_add( object_ptr, device_id, "ain2", "ain2", "raw" )
 
   mqtt_connect( object_ptr )
   mqtt_start_topic( object_ptr, mqtt_topic );
@@ -46,6 +47,7 @@ end
 local upper_max = 0 -- only alarm as this rises above up_trigger
 local cross_up_trigger = 2005
 local cross_dn_trigger = 2000
+local light_trigger = 500
 local count_down_start = 5 -- seconds (a reading per second)
 local count_down = 1
 
@@ -55,25 +57,28 @@ mqtt_in = function( mqtt_topic_, message_ )
 
   if mqtt_topic == mqtt_topic_ then
     json_values = json.decode( message_ )
-    local value = json_values[ "ain1" ]
-    if cross_up_trigger < value then
-      -- io.write( '** ' .. value .. ' exceeds ' .. cross_up_trigger .. '\n' )
-      count_down = count_down - 1
-      if 0 == count_down then
+    local heat_value = json_values[ "ain1" ]
+    local light_value = 4095 - json_values[ "ain2" ] -- invert
+    if light_trigger < light_value then
+      if cross_up_trigger < heat_value then
+        io.write( '** ' .. heat_value .. ' exceeds ' .. cross_up_trigger .. '\n' )
+        count_down = count_down - 1
+        if 0 == count_down then
 
-        if upper_max < value then
-          upper_max = value
-          local message =
-            'furnace high value ' .. value
-            .. ' exceeds ' .. cross_up_trigger
-          telegram_send_message( object_ptr, message )
+          if upper_max < heat_value then
+            upper_max = heat_value
+            local message =
+              'furnace high heat_value ' .. heat_value
+              .. ' exceeds ' .. cross_up_trigger
+            telegram_send_message( object_ptr, message )
+          end
+          count_down = count_down_start
         end
-        count_down = count_down_start
-      end
-    else
-      if 0 < upper_max then
-        if cross_dn_trigger > value then
-          upper_max = 0
+      else
+        if 0 < upper_max then
+          if cross_dn_trigger > heat_value then
+            upper_max = 0
+          end
         end
       end
     end
@@ -81,6 +86,7 @@ mqtt_in = function( mqtt_topic_, message_ )
     data = {}
     extract2( json_values, data, "ain0", "raw" )
     extract2( json_values, data, "ain1", "raw" )
+    extract2( json_values, data, "ain2", "raw" )
     mqtt_device_data( object_ptr, device_id, #data, data );
   end
 
