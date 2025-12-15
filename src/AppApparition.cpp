@@ -94,7 +94,7 @@ AppApparition::AppApparition( const config::Values& settings )
   try {
     m_pFileNotify = std::make_unique<FileNotify>(
       [this, sDir=settings.sDirConfig ]( FileNotify::EType type, const std::string& s ){ // fConfig
-        std::filesystem::path path( sDir + '/' + s );
+        std::filesystem::path path( std::filesystem::absolute( sDir + '/' + s ) );
         //std::cout << path << ' ';
 
         if ( ConfigYaml::TestExtension( path ) ) {
@@ -121,7 +121,7 @@ AppApparition::AppApparition( const config::Values& settings )
         }
       },
       [this, sDir=settings.sDirScript ]( FileNotify::EType type, const std::string& s ){ // fScript
-        std::filesystem::path path( sDir + '/' + s );
+        std::filesystem::path path( std::filesystem::absolute( sDir + '/' + s ) );
 
         std::cout << "iFileNotify ";
 
@@ -532,7 +532,7 @@ AppApparition::AppApparition( const config::Values& settings )
         else {
           Device& device( iterDevice->second );
 
-          mapSensor_t::iterator iterSensor = device.mapSensor.find( sDisplayName ); // why use the display name for lookup? 
+          mapSensor_t::iterator iterSensor = device.mapSensor.find( sDisplayName ); // why use the display name for lookup?
           if ( device.mapSensor.end() == iterSensor ) [[likely]] {
             auto result = device.mapSensor.emplace( sDisplayName, Sensor( sDisplayName, sUnits ) );
             assert( result.second );
@@ -672,7 +672,7 @@ AppApparition::AppApparition( const config::Values& settings )
     } );
 
   // TODO: start loading after mqtt connection completion
-  static const std::filesystem::path pathConfig( "config" );
+  static const std::filesystem::path pathConfig( std::filesystem::absolute( "config" ) );
   for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathConfig } ) {
     if ( dir_entry.is_regular_file() ) {
       if ( ConfigYaml::TestExtension( dir_entry.path() ) ) {
@@ -683,7 +683,7 @@ AppApparition::AppApparition( const config::Values& settings )
   }
 
   // TODO: start loading after mqtt connection completion
-  static const std::filesystem::path pathScript( "script" );
+  static const std::filesystem::path pathScript( std::filesystem::absolute( "script" ) );
   for ( auto const& dir_entry: std::filesystem::recursive_directory_iterator{ pathScript } ) {
     if ( dir_entry.is_regular_file() ) {
       if ( ScriptLua::TestExtension( dir_entry.path() ) ) {
