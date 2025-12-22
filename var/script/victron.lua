@@ -30,6 +30,9 @@ local mqtt_subscribe_topic = 'victron/#'
 local t_device_data = {}
 t_device_data[ "AcInL1" ] = { "AC Input L1", { 'basement' } } -- vebus
 t_device_data[ "AcOutL1" ] = { "AC Output L1", { 'basement' } } -- vebus
+
+t_device_data[ "MPPT0" ] = { "mppt #1", { 'basement' } } -- solarcharger
+t_device_data[ "MPPT1" ] = { "mppt #2", { 'basement' } } -- solarcharger
 --t_device_data[ "AcGridL1" ] = { "AC Grid L1", { 'basement' } } -- system
 
 local t_sensor_lu = {}  --            device      sensor           units
@@ -43,20 +46,17 @@ t_sensor_lu[ "276/Ac/ActiveIn/L1/P" ] = { "AcInL1", "power", "Watt" }
 t_sensor_lu[ "276/Ac/ActiveIn/L1/S" ] = { "AcInL1", "apparent_power", "Watt" }
 t_sensor_lu[ "276/Ac/ActiveIn/L1/V" ] = { "AcInL1", "volts", "Volt" }
 
+t_sensor_lu[ "0/Pv/V" ] = { "MPPT0", "pv_volts", "Volt" }
+t_sensor_lu[ "1/Pv/V" ] = { "MPPT1", "pv_volts", "Volt" }
+
 --t_sensor_lu[ "0/Ac/Grid/L1/Power" ] = { "AcGridL1", "power", "Watt" }
 
 --
 -- parse value composition
 --
 
-local f_basic_type_system = function( word_list_, topic_, message_ )
-  --local jvalues = json.decode( message_ )
-  --local value = jvalues[ "value" ]
-end
-
-local f_basic_type_vebus = function( word_list_, topic_, message_ )
+local f_basic_type_common = function( word_list_, topic_, message_ )
   local sensor_topic = table.concat( word_list_, '/' )
-  --io.write( "vebus: ".. topic_ .. ",".. sensor_topic .. '\n' )
   local t_sensor = t_sensor_lu[ sensor_topic ]
   if nil ~= t_sensor then
     local device_name = t_sensor[ 1 ]
@@ -71,14 +71,24 @@ local f_basic_type_vebus = function( word_list_, topic_, message_ )
   end
 end
 
+local f_basic_type_system = function( word_list_, topic_, message_ )
+  --local jvalues = json.decode( message_ )
+  --local value = jvalues[ "value" ]
+end
+
+local f_basic_type_vebus = function( word_list_, topic_, message_ )
+  --io.write( "vebus: ".. topic_ .. ",".. sensor_topic .. '\n' )
+  f_basic_type_common( word_list_, toic_, message_ )
+end
+
 local f_basic_type_vecan = function( word_list_, topic_, message_ )
   --local jvalues = json.decode( message_ )
   --local value = jvalues[ "value" ]
 end
 
 local f_basic_type_solarcharger = function( word_list_, topic_, message_ )
-  --local jvalues = json.decode( message_ )
-  --local value = jvalues[ "value" ]
+  --io.write( "vebus: ".. topic_ .. ",".. sensor_topic .. '\n' )
+  f_basic_type_common( word_list_, toic_, message_ )
 end
 
 local f_basic_type_platform = function( word_list_, topic_, message_ )
