@@ -33,6 +33,8 @@ t_device_data[ "AcOutL1" ] = { "AC Output L1", { 'basement' } } -- vebus
 
 t_device_data[ "MPPT0" ] = { "mppt #1", { 'basement' } } -- solarcharger
 t_device_data[ "MPPT1" ] = { "mppt #2", { 'basement' } } -- solarcharger
+
+t_device_data[ "Volthium" ] = { "battery", { "basement" } } -- battery
 --t_device_data[ "AcGridL1" ] = { "AC Grid L1", { 'basement' } } -- system
 
 local t_sensor_lu = {}  --            device      sensor           units
@@ -48,6 +50,8 @@ t_sensor_lu[ "276/Ac/ActiveIn/L1/V" ] = { "AcInL1", "volts", "Volt" }
 
 t_sensor_lu[ "0/Pv/V" ] = { "MPPT0", "pv_volts", "Volt" }
 t_sensor_lu[ "1/Pv/V" ] = { "MPPT1", "pv_volts", "Volt" }
+
+t_sensor_lu[ "512/Dc/0/Voltage" ] = { "Volthium", "volts", "Volt" }
 
 --t_sensor_lu[ "0/Ac/Grid/L1/Power" ] = { "AcGridL1", "power", "Watt" }
 
@@ -114,9 +118,9 @@ local f_basic_type_hub4 = function( word_list_, topic_, message_ )
 end
 
 local f_basic_type_battery = function( word_list_, topic_, message_ )
-  -- io.write( "hub4: ".. topic_ .. ": ".. value_ .. '\n' )
-  --local jvalues = json.decode( message_ )
-  --local value = jvalues[ "value" ]
+  --io.write( "vebus: ".. topic_ .. ",".. sensor_topic .. '\n' )
+  f_basic_type_common( word_list_, toic_, message_ )
+  -- victron/N/c0619ab50f49/system/0/Batteries {"value":[{"active_battery_service":true,"current":0.0,"id":"com.victronenergy.battery.socketcan_can1","instance":512,"name":"Volthium Battery","power":0.0,"soc":95.0,"state":0,"temperature":17.799999237060547,"voltage":53.20000076293945}]}
 end
 
 local f_basic_type_logger = function( word_list_, topic_, message_ )
