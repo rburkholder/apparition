@@ -82,18 +82,49 @@ local f_basic_type_logger = function( word_list_, topic_, message_ )
   --local value = jvalues[ "value" ]
 end
 
+local f_basic_type_fronius = function( word_list_, topic_, message_ )
+  --victron/N/c0619ab50f49/fronius/0/AutoDetect: {"value":0}
+  --victron/N/c0619ab50f49/fronius/0/ScanProgress: {"value":100.0}
+end
+
+local f_basic_type_adc = function( word_list_, topic_, message_ )
+  -- victron/N/c0619ab50f49/adc/0/Devices/adc_builtin0_1/Function: {"max":1,"min":0,"value":0}
+  -- victron/N/c0619ab50f49/adc/0/Devices/adc_builtin0_3/Label: {"value":"Tank Level input 2"}
+  -- victron/N/c0619ab50f49/adc/0/Devices/adc_builtin0_4/Function: {"max":1,"min":0,"value":0}
+  -- victron/N/c0619ab50f49/adc/0/Devices/adc_builtin0_8/Label: {"value":"Temperature input 1"}
+end
+
+local f_basic_type_modbusclient = function( word_list_, topic_, message_ )
+  -- victron/N/c0619ab50f49/modbusclient/0/Scan: {"value":false}
+  -- victron/N/c0619ab50f49/modbusclient/0/ScanProgress: {"value":null}
+end
+
+local f_basic_type_digitalinputs = function( word_list_, topic_, message_ )
+  -- victron/N/c0619ab50f49/digitalinputs/0/Devices/1/Label: {"value":"GX Built-in - Digital input 1"}
+  -- victron/N/c0619ab50f49/digitalinputs/0/Devices/1/Type: {"value":0}
+end
+
+local f_basic_type_full_publish_completed = function( word_list_, topic_, message_ )
+  -- victron/N/c0619ab50f49/full_publish_completed: {"value":1766376237}
+end
+
 local t_basic_type = {}
+t_basic_type[ "adc" ]          = f_basic_type_adc
+t_basic_type[ "battery" ]      = f_basic_type_battery
+t_basic_type[ "digitalinputs" ] = f_basic_type_digitalinputs
+t_basic_type[ "fronius" ]      = f_basic_type_fronius
+t_basic_type[ "full_publish_completed" ] = f_basic_type_full_publish_completed
+t_basic_type[ "heartbeat" ]    = f_basic_type_heartbeat
+t_basic_type[ "hub4" ]         = f_basic_type_hub4
+t_basic_type[ "keepalive" ]    = f_basic_type_keepalive
+t_basic_type[ "logger" ]       = f_basic_type_logger
+t_basic_type[ "modbusclient" ] = f_basic_type_modbusclient
+t_basic_type[ "platform" ]     = f_basic_type_platform
+t_basic_type[ "settings" ]     = f_basic_type_settings
+t_basic_type[ "solarcharger" ] = f_basic_type_solarcharger
 t_basic_type[ "system" ]       = f_basic_type_system
 t_basic_type[ "vebus" ]        = f_basic_type_vebus
 t_basic_type[ "vecan" ]        = f_basic_type_vecan
-t_basic_type[ "solarcharger" ] = f_basic_type_solarcharger
-t_basic_type[ "platform" ]     = f_basic_type_platform
-t_basic_type[ "settings" ]     = f_basic_type_settings
-t_basic_type[ "heartbeat" ]    = f_basic_type_heartbeat
-t_basic_type[ "keepalive" ]    = f_basic_type_keepalive
-t_basic_type[ "hub4" ]         = f_basic_type_hub4
-t_basic_type[ "battery" ]      = f_basic_type_battery
-t_basic_type[ "logger" ]       = f_basic_type_logger
 
 --
 -- mqtt function registration
