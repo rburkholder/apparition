@@ -23,65 +23,58 @@ local display_name = "victron"
 
 local mqtt_subscribe_topic = 'victron/#'
 
--- process system messages
+--
+-- parse value composition
+--
+
 local f_basic_type_system = function( word_list_, topic_, message_ )
   --local jvalues = json.decode( message_ )
   --local value = jvalues[ "value" ]
 end
 
--- process vebus messages
 local f_basic_type_vebus = function( word_list_, topic_, message_ )
   --local jvalues = json.decode( message_ )
   --local value = jvalues[ "value" ]
 end
 
--- process vecan messages
 local f_basic_type_vecan = function( word_list_, topic_, message_ )
   --local jvalues = json.decode( message_ )
   --local value = jvalues[ "value" ]
 end
 
--- process solarcharger messages
 local f_basic_type_solarcharger = function( word_list_, topic_, message_ )
   --local jvalues = json.decode( message_ )
   --local value = jvalues[ "value" ]
 end
 
--- process platform messages
 local f_basic_type_platform = function( word_list_, topic_, message_ )
   -- victron/R/c0619ab50f49/platform/0/Device/Time:
 end
 
--- process settings messages
 local f_basic_type_settings = function( word_list_, topic_, message_ )
   --local jvalues = json.decode( message_ )
   --local value = jvalues[ "value" ]
 end
 
--- process heartbeat messages
 local f_basic_type_heartbeat = function( word_list_, topic_, message_ )
 end
 
--- process keepalive messages
 local f_basic_type_keepalive = function( word_list_, topic_, message_ )
 -- victron/R/c0619ab50f49/keepalive:{ "keepalive-options" : ["suppress-republish"] }
 end
 
--- process hub4 messages
 local f_basic_type_hub4 = function( word_list_, topic_, message_ )
   -- io.write( "hub4: ".. topic_ .. ": ".. value_ .. '\n' )
   --local jvalues = json.decode( message_ )
   --local value = jvalues[ "value" ]
 end
 
--- process battery messages
 local f_basic_type_battery = function( word_list_, topic_, message_ )
   -- io.write( "hub4: ".. topic_ .. ": ".. value_ .. '\n' )
   --local jvalues = json.decode( message_ )
   --local value = jvalues[ "value" ]
 end
 
--- process logger messages
 local f_basic_type_logger = function( word_list_, topic_, message_ )
   -- victron/N/c0619ab50f49/logger/0/Vrm/TimeLastContact: {"value":1766375751}
   -- io.write( "hub4: ".. topic_ .. ": ".. value_ .. '\n' )
@@ -101,6 +94,10 @@ t_basic_type[ "keepalive" ]    = f_basic_type_keepalive
 t_basic_type[ "hub4" ]         = f_basic_type_hub4
 t_basic_type[ "battery" ]      = f_basic_type_battery
 t_basic_type[ "logger" ]       = f_basic_type_logger
+
+--
+-- mqtt function registration
+--
 
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
@@ -122,6 +119,10 @@ detach = function ( object_ptr_ )
 
   object_ptr = nil
 end
+
+--
+-- topic parsing - initial words
+--
 
 local basic_type = ""
 local word_list = {}
