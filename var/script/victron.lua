@@ -51,7 +51,17 @@ t_sensor_lu[ "276/Ac/ActiveIn/L1/V" ] = { "AcInL1", "volts", "Volt" }
 t_sensor_lu[ "0/Pv/V" ] = { "MPPT0", "pv_volts", "Volt" }
 t_sensor_lu[ "1/Pv/V" ] = { "MPPT1", "pv_volts", "Volt" }
 
+t_sensor_lu[ "0/Dc/0/Current" ] = { "MPPT0", "dc_current", "Amp" }
+t_sensor_lu[ "1/Dc/0/Current" ] = { "MPPT1", "dc_currant", "Amp" }
+
+t_sensor_lu[ "0/Yield/Power" ] = { "MPPT0", "yield_power", "Watt" }
+t_sensor_lu[ "1/Yield/Power" ] = { "MPPT1", "yield_power", "Watt" }
+
+t_sensor_lu[ "0/Link/Yield/Power" ] = { "MPPT0", "link_yield_power", "Watt" }
+t_sensor_lu[ "1/Link/Yield/Power" ] = { "MPPT1", "link_yield_power", "Watt" }
+
 t_sensor_lu[ "512/Dc/0/Voltage" ] = { "Volthium", "volts", "Volt" }
+t_sensor_lu[ "512/Dc/0/Current" ] = { "Volthium", "current", "Amp" }
 
 --t_sensor_lu[ "0/Ac/Grid/L1/Power" ] = { "AcGridL1", "power", "Watt" }
 
