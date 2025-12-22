@@ -24,6 +24,28 @@ local display_name = "victron"
 local mqtt_subscribe_topic = 'victron/#'
 
 --
+-- device data
+--
+
+local t_device_data = {}
+t_device_data[ "AcInL1" ] = { "AC Input L1", { 'basement' } } -- vebus
+t_device_data[ "AcOutL1" ] = { "AC Output L1", { 'basement' } } -- vebus
+--t_device_data[ "AcGridL1" ] = { "AC Grid L1", { 'basement' } } -- system
+
+local t_sensor_lu = {}  --            device      sensor           units
+t_sensor_lu[ "276/Ac/Out/L1/I" ] = { "AcOutL1", "current", "Amp" }
+t_sensor_lu[ "276/Ac/Out/L1/F" ] = { "AcOutL1", "frequency", "Hz" }
+t_sensor_lu[ "276/Ac/Out/L1/P" ] = { "AcOutL1", "power", "Watt" }
+t_sensor_lu[ "276/Ac/Out/L1/S" ] = { "AcOutL1", "apparent_power", "Watt" }
+t_sensor_lu[ "276/Ac/Out/L1/V" ] = { "AcOutL1", "volts", "Volt" }
+
+t_sensor_lu[ "276/Ac/ActiveIn/L1/P" ] = { "AcInL1", "power", "Watt" }
+t_sensor_lu[ "276/Ac/ActiveIn/L1/S" ] = { "AcInL1", "apparent_power", "Watt" }
+t_sensor_lu[ "276/Ac/ActiveIn/L1/V" ] = { "AcInL1", "volts", "Volt" }
+
+--t_sensor_lu[ "0/Ac/Grid/L1/Power" ] = { "AcGridL1", "power", "Watt" }
+
+--
 -- parse value composition
 --
 
@@ -33,8 +55,20 @@ local f_basic_type_system = function( word_list_, topic_, message_ )
 end
 
 local f_basic_type_vebus = function( word_list_, topic_, message_ )
-  --local jvalues = json.decode( message_ )
-  --local value = jvalues[ "value" ]
+  local sensor_topic = table.concat( word_list_, '/' )
+  --io.write( "vebus: ".. topic_ .. ",".. sensor_topic .. '\n' )
+  local t_sensor = t_sensor_lu[ sensor_topic ]
+  if nil ~= t_sensor then
+    local device_name = t_sensor[ 1 ]
+    local sensor_name = t_sensor[ 2 ]
+    local sensor_units = t_sensor[ 3 ]
+    local jvalues = json.decode( message_ )
+    local value = jvalues[ "value" ]
+    -- io.write( "vebus: ".. sensor_topic .. ": ".. value .. '\n' )
+    local record = { sensor_name, value, sensor_units }
+    local data = { record }
+    mqtt_device_data( object_ptr, device_name, #data, data )
+  end
 end
 
 local f_basic_type_vecan = function( word_list_, topic_, message_ )
@@ -133,10 +167,21 @@ t_basic_type[ "vecan" ]        = f_basic_type_vecan
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
 
-  device_register_add( object_ptr, device_id, display_name )
+  for device_name, device_data in pairs( t_device_data ) do
+    local display_name = device_data[ 1 ]
+    local t_device_location = device_data[ 2 ]
+    device_register_add( object_ptr, device_name, display_name )
+    for ix, location in ipairs( t_device_location ) do
+      device_location_tag_add( object_ptr, device_name, location )
+    end
+  end
 
-  -- sensor_register_add( object_ptr, device_id, "ain0", "ain0", "raw" )
-  -- sensor_register_add( object_ptr, device_id, "ain1", "ain1", "raw" )
+  for sensor_topic, t_sensor in pairs( t_sensor_lu ) do
+    local device_name = t_sensor[ 1 ]
+    local sensor_name = t_sensor[ 2 ]
+    local sensor_units = t_sensor[ 3 ]
+    sensor_register_add( object_ptr, device_name, sensor_name, sensor_name, sensor_units )
+  end
 
   mqtt_connect( object_ptr )
   mqtt_start_topic( object_ptr, mqtt_subscribe_topic );
@@ -146,7 +191,15 @@ detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, mqtt_subscribe_topic )
   mqtt_disconnect( object_ptr )
 
-  device_register_del( object_ptr, device_id )
+  for sensor_topic, t_sensor in pairs( t_sensor_lu ) do
+    local device_name = t_sensor[ 1 ]
+    local sensor_name = t_sensor[ 2 ]
+    sensor_register_del( object_ptr, device_name, sensor_name )
+  end
+
+  for device_name, device_data in pairs( t_device_data ) do
+    device_register_del( object_ptr, device_name )
+  end
 
   object_ptr = nil
 end
@@ -179,6 +232,7 @@ end
 
 local f_parse_topic_basic_type = function( word_ )
   basic_type = word_
+  word_list = {}
   return true
 end
 
@@ -213,7 +267,7 @@ mqtt_in = function( topic_, message_ )
 
     if result then
     else
-      io.write( "broken topic: ".. topic_ .. ":".. message_.. '\n' )
+      io.write( "broken topic: ".. topic_ .. ":".. message_ .. '\n' )
       break;
     end
 
@@ -221,13 +275,13 @@ mqtt_in = function( topic_, message_ )
   end
 
   if 4 > ix then
-    io.write( "short topic: ".. topic_ .. ": ".. message_.. '\n' )
+    io.write( "short topic: ".. topic_ .. ": ".. message_ .. '\n' )
   else
     local process = t_basic_type[ basic_type ]
     if nil ~= process then
-      process( word_list, topic_, value )
+      process( word_list, topic_, message_ )
     else
-      io.write( "basic type not found: ".. topic_ .. ": ".. message_.. '\n' )
+      io.write( "basic type not found: ".. topic_ .. ": ".. message_ .. '\n' )
     end
   end
 
