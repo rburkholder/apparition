@@ -85,11 +85,11 @@ attach = function ( object_ptr_ )
 
   for key1, value1 in pairs( device_data ) do
     local display_name = value1[ 1 ]
-    local table_extract = value1[ 2 ]
+    local table_meta = value1[ 2 ]
     local table_location = value1[ 3 ]
     device_register_add( object_ptr, key1, display_name )
 
-    for key2, value2 in pairs( table_extract ) do
+    for key2, value2 in pairs( table_meta ) do
       sensor_register_add( object_ptr, key1, value2[ 2 ], value2[ 2 ], value2[ 1 ] )
     end
 
