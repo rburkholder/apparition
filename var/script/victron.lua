@@ -31,6 +31,8 @@ local t_device_data = {}
 t_device_data[ "AcInL1" ] = { "AC Input L1", { 'basement' } } -- vebus
 t_device_data[ "AcOutL1" ] = { "AC Output L1", { 'basement' } } -- vebus
 
+--t_device_data[ "Inverter" ]
+
 t_device_data[ "MPPT0" ] = { "mppt #1", { 'basement' } } -- solarcharger
 t_device_data[ "MPPT1" ] = { "mppt #2", { 'basement' } } -- solarcharger
 
@@ -57,14 +59,20 @@ t_sensor_lu[ "1/Dc/0/Current" ] = { "MPPT1", "dc_currant", "Amp" }
 t_sensor_lu[ "0/Yield/Power" ] = { "MPPT0", "yield_power", "Watt" }
 t_sensor_lu[ "1/Yield/Power" ] = { "MPPT1", "yield_power", "Watt" }
 
-t_sensor_lu[ "0/Link/Yield/Power" ] = { "MPPT0", "link_yield_power", "Watt" }
-t_sensor_lu[ "1/Link/Yield/Power" ] = { "MPPT1", "link_yield_power", "Watt" }
+-- not sure what these are, but are creating 'type userdata: 1/Link/Yield/Power:{"value":null}'
+--t_sensor_lu[ "0/Link/Yield/Power" ] = { "MPPT0", "link_yield_power", "Watt" }
+--t_sensor_lu[ "1/Link/Yield/Power" ] = { "MPPT1", "link_yield_power", "Watt" }
 
 t_sensor_lu[ "512/Dc/0/Voltage" ] = { "Volthium", "volts", "Volt" }
 t_sensor_lu[ "512/Dc/0/Current" ] = { "Volthium", "current", "Amp" }
 
 t_sensor_lu[ "512/System/MaxCellVoltage" ] = { "Volthium", "max_cell_volt", "Volt" }
 t_sensor_lu[ "512/System/MinCellVoltage" ] = { "Volthium", "min_cell_volt", "Volt" }
+
+-- manual entries from system decoder, but registered here
+t_sensor_lu[ "state_of_charge" ] = { "Volthium", "state_of_charge", "%" }
+t_sensor_lu[ "state" ] = { "Volthium", "state", "" }
+t_sensor_lu[ "temperature" ] = { "Volthium", "temperature", "degC" }
 
 --t_sensor_lu[ "0/Ac/Grid/L1/Power" ] = { "AcGridL1", "power", "Watt" }
 
@@ -82,44 +90,92 @@ local f_basic_type_common = function( word_list_, topic_, message_ )
     local jvalues = json.decode( message_ )
     local value = jvalues[ "value" ]
     local data_type = type( value )
-    if "number" ~= data_type then
-      io.write( topic_ .. ':' .. message_ .. ":" .. value .. " is " .. data_type .. '\n' )
+    if "userdata" == data_type then -- {"value":null}
+      io.write( "type userdata: " .. sensor_topic .. ':' .. message_ .. '\n' )
     else
-      -- io.write( "basic_type_common: ".. sensor_topic .. ": ".. value .. '\n' )
-      local record = { sensor_name, value, sensor_units }
-      local data = { record }
-      mqtt_device_data( object_ptr, device_name, #data, data )
+      if "number" ~= data_type then
+        -- topic_ can be nil?
+        io.write( "non number: " .. topic_ .. ':' .. message_ .. " is " .. data_type .. '\n' )
+        -- io.write( "type problem: " .. sensor_topic .. ':' .. message_ .. " is " .. data_type .. '\n' )
+      else
+        -- io.write( "basic_type_common: ".. sensor_topic .. ": ".. value .. '\n' )
+        local record = { sensor_name, value, sensor_units }
+        local data = { record }
+        -- io.write( "mqtt_device_data: " .. sensor_name .. ',' .. value .. ',' .. sensor_units .. '\n' )
+        mqtt_device_data( object_ptr, device_name, #data, data )
+      end
     end
   end
 end
 
 local f_basic_type_system = function( word_list_, topic_, message_ )
-  -- local sensor_topic = table.concat( word_list_, '/' )
-  local jvalues = json.decode( message_ )
-  local value = jvalues[ "value" ]
-  local data_type = type( value )
-  if "number" == data_type then
-    f_basic_type_common( word_list_, topic_, message_ )
+  --io.write( "system: " .. topic_ .. ": ".. message_.. '\n' )
+  if 0 == #topic_ then
+    io.write( "system topic is zero" .. '\n' )
   else
-    if "table" == data_type then
-      local table_size = #value
-      if 1 == table_size then
-        local entry1 = value[ 1 ]
-        data_type = type( entry1 )
-        --io.write( "system " .. topic_ .. " value type " .. data_type .. ',' .. table_size .. '\n' )
-        if "table" == data_type then
-          table_size = #entry1
-          io.write( "system table size #2 (" .. table_size .. ") " .. topic_ .. ':' .. message_ .. '\n' )
-        else
-          io.write( "system unexpected type #2 " .. topic_ .. ':' .. message_ .. " => type " .. data_type .. '\n' )
-        end
-      else
-        io.write( "system unexpected table size #1 (" .. table_size .. ") " .. topic_ .. ':' .. message_ .. '\n' )
-      end
+    if 0 == #message_ then
+      io.write( "system message is zero" .. '\n' )
     else
-      io.write( "system unexpected type #1 " .. topic_ .. ':' .. message_ .. " => type " .. data_type .. '\n' )
+      local jvalues = json.decode( message_ )
+      local value = jvalues[ "value" ]
+      local data_type = type( value )
+      if "userdata" == data_type then -- {"value":null}
+        -- ignore for now, but has some enumeration capabilities
+        --io.write( "system nil: " .. topic_ .. ':' .. message_ .. '\n' )
+      else
+        if 0 == #word_list_ then
+          io.write( "system word list is 0: " .. topic_ .. ':' .. message_ .. '\n' )
+        else
+          if "number" == data_type then
+            f_basic_type_common( word_list_, topic_, message_ )
+          else
+            local sensor_topic = table.concat( word_list_, '/' )
+            if "0/Batteries" == sensor_topic then
+              if "table" == data_type then
+                local table_size = #value
+                if 1 == table_size then
+                  local t_entry = value[ 1 ]
+                  data_type = type( t_entry )
+                  --io.write( "system " .. topic_ .. " value type " .. data_type .. ',' .. table_size .. '\n' )
+                  if "table" == data_type then
+                    -- table_size = #t_entry - does not work on hash
+                    -- io.write( "system table size #2 (" .. table_size .. ") " .. topic_ .. ':' .. message_ .. '\n' )
+                    --io.write( "system: " .. topic_ .. ": ".. message_.. '\n' )
+                    --for key1, value1 in pairs( t_entry ) do
+                    --  io.write( "table entry key: " .. key1 .. '\n')
+                    --end
+                    local data = {}
+                    local e_soc = t_entry[ "soc" ]
+                    data[ #data + 1 ] = { "state_of_charge", e_soc, "%" }
+                    local e_state = t_entry[ "state" ]
+                    data[ #data + 1 ] = { "state", e_state, "" }
+                    local e_temp = t_entry[ "temperature" ]
+                    data[ #data + 1 ] = { "temperature", e_temp, "degC" }
+                    --data[ #data + 1 ] = { "voltage", t_entry[ "voltage" ], "Volt" } -- provided elsewhere
+                    --data[ #data + 1 ] = { "current", t_entry[ "current" ], "Amp" } -- provided elsewhere
+                    --data[ #data + 1 ] = { "power", t_entry[ "power" ], "Watt" } -- is this provided elsewhere?
+                    local device_name = "Volthium"
+                    --io.write( "mqtt_device_data: volthium: " .. #data .. ',' .. e_soc .. ',' .. e_state .. ',' .. e_temp .. '\n' )
+                    mqtt_device_data( object_ptr, device_name, #data, data )
+                  else
+                    io.write( "system unexpected type #2 " .. topic_ .. ':' .. message_ .. " => type " .. data_type .. '\n' )
+                  end
+                else
+                  io.write( "system unexpected table size #1 (" .. table_size .. ") " .. topic_ .. ':' .. message_ .. '\n' )
+                end
+              else
+                -- ignore non-numeric stuff for now
+                -- io.write( "system unexpected type #1 " .. topic_ .. ':' .. message_ .. " => type " .. data_type .. '\n' )
+              end
+            else
+              -- future string matching
+            end
+          end
+        end
+      end
     end
   end
+  -- local sensor_topic = table.concat( word_list_, '/' )
   --local jvalues = json.decode( message_ )
   --local value = jvalues[ "value" ]
 end
@@ -313,7 +369,7 @@ t_parse_topic[ 5 ] = f_parse_topic_word_list
 
 mqtt_in = function( topic_, message_ )
 
-  -- io.write( "mqtt_in ".. topic_ .. ": ".. message_.. '\n' )
+  -- io.write( "mqtt_in: " .. topic_ .. ": ".. message_.. '\n' )
 
   local ix = 1
   local result
