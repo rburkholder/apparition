@@ -456,7 +456,7 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
 
   /*
     stack 1: userdata - this
-    stack 2: string - location - deprecated
+    stack 2: string - location - deprecated - no longer on stack
     stack 3: string - device
     stack 4: number - size of table of values
     stack 5: table - table of values( name(string), value(number), units(string))
@@ -536,6 +536,12 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
         break;
       case LUA_TLIGHTUSERDATA:
         BOOST_LOG_TRIVIAL(error) << "assert line " <<  __LINE__ << " value (LUA_TLIGHTUSERDATA)";
+        assert( false );
+        break;
+      case LUA_TNIL:
+        BOOST_LOG_TRIVIAL(error) << "assert line " <<  __LINE__ << " value (LUA_TNIL)";
+        assert( false );
+        break;
       default:
         BOOST_LOG_TRIVIAL(error) << "assert line " <<  __LINE__ << " value: " << typeLuaData;
         assert( false );  // not sure if integers are provided
