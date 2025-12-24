@@ -44,14 +44,15 @@ t_device_data[ "Volthium" ] = { "battery", { "basement" } } -- battery
 -- sensor data
 
 local t_sensor_lu = {}  --            device      sensor           units
-t_sensor_lu[ "276/Ac/Out/L1/I" ] = { "AcOutL1", "current", "Amp" }
-t_sensor_lu[ "276/Ac/Out/L1/F" ] = { "AcOutL1", "frequency", "Hz" }
 t_sensor_lu[ "276/Ac/Out/L1/P" ] = { "AcOutL1", "power", "Watt" }
 t_sensor_lu[ "276/Ac/Out/L1/S" ] = { "AcOutL1", "apparent_power", "Watt" }
+t_sensor_lu[ "276/Ac/Out/L1/I" ] = { "AcOutL1", "current", "Amp" }
 t_sensor_lu[ "276/Ac/Out/L1/V" ] = { "AcOutL1", "volts", "Volt" }
+t_sensor_lu[ "276/Ac/Out/L1/F" ] = { "AcOutL1", "frequency", "Hz" }
 
 t_sensor_lu[ "276/Ac/ActiveIn/L1/P" ] = { "AcInL1", "power", "Watt" }
 t_sensor_lu[ "276/Ac/ActiveIn/L1/S" ] = { "AcInL1", "apparent_power", "Watt" }
+t_sensor_lu[ "276/Ac/ActiveIn/L1/I" ] = { "AcInL1", "current", "Amp" }
 t_sensor_lu[ "276/Ac/ActiveIn/L1/V" ] = { "AcInL1", "volts", "Volt" }
 
 t_sensor_lu[ "0/Dc/System/Power" ] = { "DC", "system_power", "Watt" } -- system
