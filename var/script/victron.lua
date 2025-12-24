@@ -245,6 +245,11 @@ local f_parse_topic_n = function( word_ )
   else
     if 'R' == word_ then -- typically keepalive without a wordlist
       return true
+    else
+      if 'W' == word_ then --
+        -- victron/W/c0619ab50f49/settings/0/Settings/Gui2/StartPageName: {"value":"{\"main\":{\"page\":\"OverviewPage.qml\",\"properties\":{}},\"stack\":[]}"}
+        return true
+      end
     end
   end
   return false
