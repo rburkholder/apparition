@@ -63,6 +63,9 @@ t_sensor_lu[ "1/Link/Yield/Power" ] = { "MPPT1", "link_yield_power", "Watt" }
 t_sensor_lu[ "512/Dc/0/Voltage" ] = { "Volthium", "volts", "Volt" }
 t_sensor_lu[ "512/Dc/0/Current" ] = { "Volthium", "current", "Amp" }
 
+t_sensor_lu[ "512/System/MaxCellVoltage" ] = { "Volthium", "max_cell_volt", "Volt" }
+t_sensor_lu[ "512/System/MinCellVoltage" ] = { "Volthium", "min_cell_volt", "Volt" }
+
 --t_sensor_lu[ "0/Ac/Grid/L1/Power" ] = { "AcGridL1", "power", "Watt" }
 
 --
@@ -80,7 +83,7 @@ local f_basic_type_common = function( word_list_, topic_, message_ )
     local value = jvalues[ "value" ]
     local data_type = type( value )
     if "number" ~= data_type then
-      io.write(  topic_ .. ':' .. message_ .. ":" .. value .. " is " .. data_type .. '\n' )
+      io.write( topic_ .. ':' .. message_ .. ":" .. value .. " is " .. data_type .. '\n' )
     else
       -- io.write( "basic_type_common: ".. sensor_topic .. ": ".. value .. '\n' )
       local record = { sensor_name, value, sensor_units }
@@ -91,6 +94,32 @@ local f_basic_type_common = function( word_list_, topic_, message_ )
 end
 
 local f_basic_type_system = function( word_list_, topic_, message_ )
+  -- local sensor_topic = table.concat( word_list_, '/' )
+  local jvalues = json.decode( message_ )
+  local value = jvalues[ "value" ]
+  local data_type = type( value )
+  if "number" == data_type then
+    f_basic_type_common( word_list_, topic_, message_ )
+  else
+    if "table" == data_type then
+      local table_size = #value
+      if 1 == table_size then
+        local entry1 = value[ 1 ]
+        data_type = type( entry1 )
+        --io.write( "system " .. topic_ .. " value type " .. data_type .. ',' .. table_size .. '\n' )
+        if "table" == data_type then
+          table_size = #entry1
+          io.write( "system table size #2 (" .. table_size .. ") " .. topic_ .. ':' .. message_ .. '\n' )
+        else
+          io.write( "system unexpected type #2 " .. topic_ .. ':' .. message_ .. " => type " .. data_type .. '\n' )
+        end
+      else
+        io.write( "system unexpected table size #1 (" .. table_size .. ") " .. topic_ .. ':' .. message_ .. '\n' )
+      end
+    else
+      io.write( "system unexpected type #1 " .. topic_ .. ':' .. message_ .. " => type " .. data_type .. '\n' )
+    end
+  end
   --local jvalues = json.decode( message_ )
   --local value = jvalues[ "value" ]
 end
