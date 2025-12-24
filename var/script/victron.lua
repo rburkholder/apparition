@@ -31,13 +31,17 @@ local t_device_data = {}
 t_device_data[ "AcInL1" ] = { "AC Input L1", { 'basement' } } -- vebus
 t_device_data[ "AcOutL1" ] = { "AC Output L1", { 'basement' } } -- vebus
 
---t_device_data[ "Inverter" ]
+t_device_data[ "Inverter" ] = { "Inverter", { 'basement' } } --system
+
+t_device_data[ "DC" ] = { "DC", { 'basement' } } -- system
 
 t_device_data[ "MPPT0" ] = { "mppt #1", { 'basement' } } -- solarcharger
 t_device_data[ "MPPT1" ] = { "mppt #2", { 'basement' } } -- solarcharger
 
 t_device_data[ "Volthium" ] = { "battery", { "basement" } } -- battery
 --t_device_data[ "AcGridL1" ] = { "AC Grid L1", { 'basement' } } -- system
+
+-- sensor data
 
 local t_sensor_lu = {}  --            device      sensor           units
 t_sensor_lu[ "276/Ac/Out/L1/I" ] = { "AcOutL1", "current", "Amp" }
@@ -49,6 +53,9 @@ t_sensor_lu[ "276/Ac/Out/L1/V" ] = { "AcOutL1", "volts", "Volt" }
 t_sensor_lu[ "276/Ac/ActiveIn/L1/P" ] = { "AcInL1", "power", "Watt" }
 t_sensor_lu[ "276/Ac/ActiveIn/L1/S" ] = { "AcInL1", "apparent_power", "Watt" }
 t_sensor_lu[ "276/Ac/ActiveIn/L1/V" ] = { "AcInL1", "volts", "Volt" }
+
+t_sensor_lu[ "0/Dc/System/Power" ] = { "DC", "system_power", "Watt" } -- system
+t_sensor_lu[ "0/Dc/System/Current" ] = { "DC", "system_current", "Amp" } -- system
 
 t_sensor_lu[ "0/Pv/V" ] = { "MPPT0", "pv_volts", "Volt" }
 t_sensor_lu[ "1/Pv/V" ] = { "MPPT1", "pv_volts", "Volt" }
@@ -68,6 +75,9 @@ t_sensor_lu[ "512/Dc/0/Current" ] = { "Volthium", "current", "Amp" }
 
 t_sensor_lu[ "512/System/MaxCellVoltage" ] = { "Volthium", "max_cell_volt", "Volt" }
 t_sensor_lu[ "512/System/MinCellVoltage" ] = { "Volthium", "min_cell_volt", "Volt" }
+
+t_sensor_lu[ "0/Dc/InverterCharger/Power" ] = { "Inverter", "charger_power", "Watt" } -- system
+t_sensor_lu[ "0/Dc/InverterCharger/Current" ] = { "Inverter", "charger_current" , "Amp" } -- system
 
 -- manual entries from system decoder, but registered here
 t_sensor_lu[ "state_of_charge" ] = { "Volthium", "state_of_charge", "%" }
