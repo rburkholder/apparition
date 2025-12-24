@@ -78,10 +78,15 @@ local f_basic_type_common = function( word_list_, topic_, message_ )
     local sensor_units = t_sensor[ 3 ]
     local jvalues = json.decode( message_ )
     local value = jvalues[ "value" ]
-    -- io.write( "vebus: ".. sensor_topic .. ": ".. value .. '\n' )
-    local record = { sensor_name, value, sensor_units }
-    local data = { record }
-    mqtt_device_data( object_ptr, device_name, #data, data )
+    local data_type = type( value )
+    if "number" ~= data_type then
+      io.write(  topic_ .. ':' .. message_ .. ":" .. value .. " is " .. data_type .. '\n' )
+    else
+      -- io.write( "basic_type_common: ".. sensor_topic .. ": ".. value .. '\n' )
+      local record = { sensor_name, value, sensor_units }
+      local data = { record }
+      mqtt_device_data( object_ptr, device_name, #data, data )
+    end
   end
 end
 
