@@ -76,6 +76,12 @@ t_sensor_lu[ "temperature" ] = { "Volthium", "temperature", "degC" }
 
 --t_sensor_lu[ "0/Ac/Grid/L1/Power" ] = { "AcGridL1", "power", "Watt" }
 
+-- https://tomer-w.github.io/victron_mqtt/
+-- cumulative kWhr
+--victron/N/c0619ab50f49/vebus/276/Energy/InverterToAcOut {"value":3.513457775115967}
+--victron/N/c0619ab50f49/vebus/276/Energy/AcIn1ToAcOut {"value":16.365795135498047}
+--victron/N/c0619ab50f49/vebus/276/Energy/AcIn1ToInverter {"value":0.40049776434898376}
+
 --
 -- parse value composition
 --
