@@ -534,7 +534,10 @@ int ScriptLua::lua_mqtt_device_data( lua_State* pLua ) { // called by lua to pre
         szValue = lua_tostring( pLua, ixStack_Value );
         value = szValue;
         break;
+      case LUA_TLIGHTUSERDATA:
+        BOOST_LOG_TRIVIAL(error) << "assert line " <<  __LINE__ << " value (LUA_TLIGHTUSERDATA)";
       default:
+        BOOST_LOG_TRIVIAL(error) << "assert line " <<  __LINE__ << " value: " << typeLuaData;
         assert( false );  // not sure if integers are provided
         break;
     }
