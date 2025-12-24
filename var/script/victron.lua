@@ -58,6 +58,9 @@ t_sensor_lu[ "276/Ac/ActiveIn/L1/V" ] = { "AcInL1", "volts", "Volt" }
 t_sensor_lu[ "0/Dc/System/Power" ] = { "DC", "system_power", "Watt" } -- system
 t_sensor_lu[ "0/Dc/System/Current" ] = { "DC", "system_current", "Amp" } -- system
 
+t_sensor_lu[ "0/Dc/Pv/Power" ] = { "DC", "pv_power", "Watt" } -- system, aggregate of mppt
+t_sensor_lu[ "0/Dc/Pv/Current" ] = { "DC", "pv_current", "Amp" } -- system, aggregate of mppt
+
 t_sensor_lu[ "0/Pv/V" ] = { "MPPT0", "pv_volts", "Volt" }
 t_sensor_lu[ "1/Pv/V" ] = { "MPPT1", "pv_volts", "Volt" }
 
@@ -68,6 +71,7 @@ t_sensor_lu[ "0/Yield/Power" ] = { "MPPT0", "yield_power", "Watt" }
 t_sensor_lu[ "1/Yield/Power" ] = { "MPPT1", "yield_power", "Watt" }
 
 -- not sure what these are, but are creating 'type userdata: 1/Link/Yield/Power:{"value":null}'
+-- these are the sum of the two mppt units
 --t_sensor_lu[ "0/Link/Yield/Power" ] = { "MPPT0", "link_yield_power", "Watt" }
 --t_sensor_lu[ "1/Link/Yield/Power" ] = { "MPPT1", "link_yield_power", "Watt" }
 
