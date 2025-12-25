@@ -61,6 +61,9 @@ t_sensor_lu[ "0/Dc/System/Current" ] = { "DC", "system_current", "Amp" } -- syst
 t_sensor_lu[ "0/Dc/Pv/Power" ] = { "DC", "pv_power", "Watt" } -- system, aggregate of mppt
 t_sensor_lu[ "0/Dc/Pv/Current" ] = { "DC", "pv_current", "Amp" } -- system, aggregate of mppt
 
+t_sensor_lu[ "0/Dc/Battery/Power" ] = { "DC", "battery_power", "Watt" } -- system
+t_sensor_lu[ "0/Dc/Battery/Current" ] = { "DC", "battery_current", "Amp" } -- system
+
 t_sensor_lu[ "0/Pv/V" ] = { "MPPT0", "pv_volts", "Volt" }
 t_sensor_lu[ "1/Pv/V" ] = { "MPPT1", "pv_volts", "Volt" }
 
