@@ -670,6 +670,10 @@ AppApparition::AppApparition( const config::Values& settings )
         m_telegram_bot->SendMessage( std::string( sMessage ) ); // TODO: create a string_view SendMessage
       }
     } );
+  m_lua.Set_LogMessage(
+    [this]( const std::string_view& sMessage ){
+      BOOST_LOG_TRIVIAL(info) << sMessage;
+    } );
 
   // TODO: start loading after mqtt connection completion
   static const std::filesystem::path pathConfig( std::filesystem::absolute( "config" ) );

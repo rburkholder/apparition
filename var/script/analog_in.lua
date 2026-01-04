@@ -30,7 +30,8 @@ local f_hysteresis_record = function( text_, v_flame_, json_values_ )
   local v_ain0 = json_values_[ "ain0" ]
   local v_ain1 = json_values_[ "ain1" ]
   local v_ain2 = json_values_[ "ain2" ]
-  io.write( "analog," .. text_ .. ',' .. v_flame_ .. ',' .. v_ain0 .. ',' .. v_ain1 .. ',' .. v_ain2 .. '\n' )
+  local message = "analog," .. text_ .. ',' .. v_flame_ .. ',' .. v_ain0 .. ',' .. v_ain1 .. ',' .. v_ain2
+  log_message( object_ptr, message )
 end
 
 f_hysteresis_gt_1000 = function( v_flame_, json_values_ )

@@ -64,8 +64,9 @@ public:
   using fMqttPublish_t = std::function<void(void*, const std::string_view& topic, const std::string_view& msg )>;
   using fMqttDisconnect_t = std::function<void(void*)>;
 
-  //using fTelegramSendMessage_t = std::function<void(const std::string_view&, const value_t& )>;
   using fTelegramSendMessage_t = std::function<void(const std::string_view& )>;
+
+  using fLogMessage_t = std::function<void(const std::string_view& )>;
 
   ScriptLua();
   ~ScriptLua();
@@ -94,6 +95,8 @@ public:
 
   void Set_TelegramSendMessage( fTelegramSendMessage_t&& );
 
+  void Set_LogMessage( fLogMessage_t&& );
+
 protected:
 private:
 
@@ -119,6 +122,8 @@ private:
 
   fTelegramSendMessage_t m_fTelegramSendMessage;
 
+  fLogMessage_t m_fLogMessage;
+
   mapScript_t::iterator Parse( const std::string& );
 
   void Attach( mapScript_t::iterator );
@@ -142,6 +147,8 @@ private:
   static int lua_device_location_tag_del( lua_State* );
 
   static int lua_telegram_send_message( lua_State* );
+
+  static int lua_log_message( lua_State* );
 
   void Run_Test01( const std::string& name );
 
