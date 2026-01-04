@@ -92,7 +92,7 @@ public:
   void Set_EventRegisterAdd( fEventRegisterAdd_t&& );
   void Set_EventRegisterDel( fEventRegisterDel_t&& );
 
-  void SetTelegramSendMessage( fTelegramSendMessage_t&& );
+  void Set_TelegramSendMessage( fTelegramSendMessage_t&& );
 
 protected:
 private:

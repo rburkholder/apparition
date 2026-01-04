@@ -118,7 +118,7 @@ void ScriptLua::Set_DeviceLocationDel( fDeviceLocationTagDel_t&& f ) {
   m_fDeviceLocationTagDel = std::move( f );
 }
 
-void ScriptLua::SetTelegramSendMessage( fTelegramSendMessage_t&& f ) {
+void ScriptLua::Set_TelegramSendMessage( fTelegramSendMessage_t&& f ) {
   m_fTelegramSendMessage = std::move( f );
 }
 

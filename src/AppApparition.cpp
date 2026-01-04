@@ -664,7 +664,7 @@ AppApparition::AppApparition( const config::Values& settings )
       }
     } );
 
-  m_lua.SetTelegramSendMessage(
+  m_lua.Set_TelegramSendMessage(
     [this]( const std::string_view& sMessage ){
       if ( m_telegram_bot ) {
         m_telegram_bot->SendMessage( std::string( sMessage ) ); // TODO: create a string_view SendMessage
