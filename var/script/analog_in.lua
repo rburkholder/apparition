@@ -22,6 +22,53 @@ extraction() -- https://www.corsix.org/content/common-lua-pitfall-loading-code
 local device_id = "bb05"
 local display_name = "bb05"
 
+local f_hysteresis_jump = nil
+local f_hysteresis_gt_1000 = nil
+local f_hysteresis_lt_500 = nil
+
+local f_hysteresis_record = function( text_, v_flame_, json_values_ )
+  local v_ain0 = json_values_[ "ain0" ]
+  local v_ain1 = json_values_[ "ain1" ]
+  local v_ain2 = json_values_[ "ain2" ]
+  io.write( "analog," .. text_ .. ',' .. v_flame_ .. ',' .. v_ain0 .. ',' .. v_ain1 .. ',' .. v_ain2 .. '\n' )
+end
+
+f_hysteresis_gt_1000 = function( v_flame_, json_values_ )
+  --io.write( "f_hysteresis_gt_1000," .. v_flame_ .. '\n' )
+  if 500 > v_flame_ then
+    f_hysteresis_record( 'dn', v_flame_, json_values_ )
+    f_hysteresis_jump = f_hysteresis_lt_500
+  end
+end
+
+f_hysteresis_lt_500 = function( v_flame_, json_values_ )
+  --io.write( "f_hysteresis_lt_500," .. v_flame_ .. '\n' )
+  if 1000 < v_flame_ then
+    f_hysteresis_record( 'up', v_flame_, json_values_ )
+    f_hysteresis_jump = f_hysteresis_gt_1000
+  end
+end
+
+local f_hysteresis_start = function( v_flame_, json_values_ )
+  --io.write( "f_hysteresis_start," .. v_flame_ .. '\n' )
+  if 500 > v_flame_ then
+    --io.write( "f_hysteresis_start," .. v_flame_ .. ",500" .. '\n' )
+    f_hysteresis_jump = f_hysteresis_lt_500
+  else
+    if 1000 < v_flame_ then
+      --io.write( "f_hysteresis_start," .. v_flame_ .. ",1k" .. '\n' )
+      f_hysteresis_jump = f_hysteresis_gt_1000
+    end
+  end
+end
+
+f_hysteresis_jump = f_hysteresis_start -- v_flame_, json_values_
+
+local f_hysteresis = function( json_values_ )
+  local v_flame = 4095 - json_values_[ "ain2" ]
+  f_hysteresis_jump( v_flame, json_values_ )
+end
+
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
 
@@ -86,6 +133,8 @@ mqtt_in = function( mqtt_topic_, message_ )
         end
       end
     end
+
+    f_hysteresis( json_values )
 
     data = {}
     extract2( json_values, data, "ain0", "raw" )
