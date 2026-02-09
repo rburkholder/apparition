@@ -38,10 +38,10 @@ local op_lt = function( left_, right_ )
 end
 
 -- todo:  validate table, type(value) and structure
-local device_sensor_ops = {
+local device_sensor_ops = {  -- high mark was 7200
   [ 'ups04' ] = {
     [ 'battery_runtime' ] = {
-      { 'furnace pump (via ups)', op_gt, 7200,
+      { 'furnace pump (via ups)', op_gt, 8400,
         'off',
         { 'furnace pump (via ups)', op_lt, 3600, 'heavy load', 'light load' }
       }
