@@ -63,9 +63,10 @@ local meta_outlet_sensor = { -- Third Reality	3RSP02028BZ
 }
 local meta_outlet02_location_tag = { 'den', 'desk1' }
 local meta_outlet03_location_tag = { 'basement', 'fridge' }
-local meta_outlet04_location_tag = { 'furnace' }
+local meta_outlet04_location_tag = { 'basement', 'furnace' }
 local meta_outlet05_location_tag = { 'basement', 'dehumidifier' }
 local meta_outlet07_location_tag = { 'den', 'desk2' }
+local meta_outlet08_location_tag = { 'basement', 'furnace' }
 
 local meta_water_sensor = { -- Xiaomi	SJCGQ11LM
   { extract3, "battery", "%", "battery_level" },
@@ -88,6 +89,7 @@ devices[ 'outlet03' ] = { 'fridge', 'basement fridge', meta_outlet_sensor, meta_
 devices[ 'outlet04' ] = { 'furnace', 'furnace ups', meta_outlet_sensor, meta_outlet04_location_tag }
 devices[ 'outlet05' ] = { 'dehumidifier', 'basement dehumidifier', meta_outlet_sensor, meta_outlet05_location_tag }
 devices[ 'outlet07' ] = { 'dendesk2', 'den desk2', meta_outlet_sensor, meta_outlet07_location_tag }
+devices[ 'outlet08' ] = { 'furnace', 'furnace direct', meta_outlet_sensor, meta_outlet08_location_tag }
 devices[ 'door05' ] = { 'garage', 'garage entry', meta_mag_sensor, meta_door05_location_tag }
 devices[ 'water01' ] = { 'furnace', 'furnace water', meta_water_sensor, { "basement", "furnace_floor" } }
 devices[ 'water02' ] = { 'sewer' , 'sewer water', meta_water_sensor, { "basement" } }
