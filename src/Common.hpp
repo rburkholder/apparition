@@ -86,6 +86,8 @@ struct Sensor {
   prometheus::Family<prometheus::Gauge>* pFamily;
 
   Sensor() = delete;
+  Sensor( const Sensor& ) = delete;
+
   Sensor( const std::string& sDisplayName, bool bOwned_ = true )
   : bOwned( bOwned_ ), bHidden( false ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
@@ -98,7 +100,6 @@ struct Sensor {
   Sensor( const std::string& sDisplayName_, const std::string& sUnits_ )
   : bOwned( true ), bHidden( false ), sDisplayName( sDisplayName_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
-  Sensor( const Sensor& ) = delete;
   Sensor( Sensor&& rhs )
   : bOwned( rhs.bOwned ), bHidden( rhs.bHidden )
   , sDisplayName( std::move( rhs.sDisplayName ) )
@@ -128,8 +129,17 @@ struct Device {
   //std::string sSource; // zwave, rtl, zigbee, etc (mqtt: use subscribed topic) - deprecated?
   mapSensor_t mapSensor;
   setLocationTag_t setLocationTag;
+
   Device() = delete;
+
   Device( const std::string& sDisplayName_, bool bOwned_ = true )
   : bOwned( bOwned_ ), sDisplayName( sDisplayName_ ) {}
+
+  Device( Device&& rhs )
+  : bOwned( rhs.bOwned )
+  , sDisplayName( std::move( rhs.sDisplayName ) )
+  , mapSensor( std::move( rhs.mapSensor ) )
+  , setLocationTag( std::move( rhs.setLocationTag ) )
+  {}
 };
 
