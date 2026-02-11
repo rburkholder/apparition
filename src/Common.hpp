@@ -35,8 +35,8 @@
 class Reference {
 public:
 
-  static const bool c_Owned = true;
-  static const bool c_Avail = false;
+  static const bool c_AsOwner = true;
+  static const bool c_AsUser = false;
 
   Reference()
   : m_bOwned( false )

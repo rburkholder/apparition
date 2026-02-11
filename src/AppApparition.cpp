@@ -459,11 +459,11 @@ AppApparition::AppApparition( const config::Values& settings )
 
       if ( iterDevice->second.Owned() ) {
         BOOST_LOG_TRIVIAL(warning) << "Device Registration add" << sUniqueName << " already exists, addition skipped";
-        iterDevice->second.RefInc( Reference::c_Avail );
+        iterDevice->second.RefInc( Reference::c_AsUser );
         bStatus = false;
       }
       else {
-        iterDevice->second.RefInc( Reference::c_Owned );
+        iterDevice->second.RefInc( Reference::c_AsOwner );
       }
 
       return bStatus;
@@ -479,17 +479,25 @@ AppApparition::AppApparition( const config::Values& settings )
 
       mapDevice_t::iterator iterDevice = m_mapDevice.find( sUniqueName );
       if ( m_mapDevice.end() == iterDevice ) {
-        BOOST_LOG_TRIVIAL(warning) << "Device Registration del" << sUniqueName << " does not exist, deletion skipped";
+        BOOST_LOG_TRIVIAL(error) << "Device Registration del" << sUniqueName << " does not exist, deletion skipped";
         bStatus = false;
       }
       else {
-        const Device& device( iterDevice->second );
+        Device& device( iterDevice->second );
         // to think about, if mapSensor is not empty:
         //   scan for 0 reference counted sensors?
         //   scan for 'bOwned = false' sensors
         //   how to determine permanent deletion vs temporary removal by script reload
-        assert( device.mapSensor.empty() );
-        m_mapDevice.erase( iterDevice );
+        //assert( device.mapSensor.empty() );
+        // m_mapDevice.erase( iterDevice ); // todo: createa garbage collection step
+        if ( device.Owned() ) {
+          device.RefDec( Reference::c_AsOwner );
+        }
+        else {
+          BOOST_LOG_TRIVIAL(error) << "Device Registration del" << sUniqueName << " does not own the reference";
+          device.RefDec( Reference::c_AsUser );
+          bStatus = false;
+        }
       }
 
       return bStatus;
