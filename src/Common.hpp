@@ -32,9 +32,57 @@
 
 #include "PrometheusClient.hpp"
 
+class Reference {
+public:
+
+  static const bool c_Owned = true;
+  static const bool c_Avail = false;
+
+  Reference()
+  : m_bOwned( false )
+  , m_nReferenceCount {}
+  {}
+
+  Reference( const Reference& rhs )
+  : m_bOwned( rhs.m_bOwned )
+  , m_nReferenceCount( rhs. m_nReferenceCount )
+  {}
+
+  Reference( Reference&& rhs )
+  : m_bOwned( rhs.m_bOwned )
+  , m_nReferenceCount( rhs. m_nReferenceCount )
+  {}
+
+  void RefInc( bool bOwned = false ) {
+    ++m_nReferenceCount;
+    if ( bOwned ) {
+      assert( !m_bOwned );  // may turn this into log statement instead
+      m_bOwned = true;
+    }
+  }
+
+  void RefDec( bool bOwned = false ) {
+    assert( 0 < m_nReferenceCount );
+    --m_nReferenceCount;
+    if ( bOwned ) {
+      assert( m_bOwned ); // may turn this into log statement instead
+      m_bOwned = false;
+    }
+  }
+
+  size_t RefGet() const { return m_nReferenceCount; }
+  bool Owned() const { return m_bOwned; }
+
+protected:
+private:
+  size_t m_nReferenceCount; // use for post detach/attach garbage collection
+  bool m_bOwned; // false: out of order registration by consumer rather than publisher
+};
+
 using value_t = std::variant<bool, int64_t, double, std::string>;
 
-struct Value { // lua based sensors use to send data updates via mqtt
+struct Value
+{ // lua based sensors use to send data updates via mqtt
 
   std::string sName;
   value_t value;
@@ -72,7 +120,8 @@ using mapEventSensorChanged_t = std::unordered_map<void*, fEvent_SensorChanged_t
 
 struct Sensor {
 
-  bool bOwned; // out of order registration by consumer rather than publisher, todo: poll to find consumer only entries
+  bool bOwned; // out of order registration by consumer rather than publisher
+  size_t nReferenceCount; // convert to referenece count for post detach/attach garbage collection
 
   std::string sDisplayName;
   std::string sUnits;
@@ -89,19 +138,28 @@ struct Sensor {
   Sensor( const Sensor& ) = delete;
 
   Sensor( const std::string& sDisplayName, bool bOwned_ = true )
-  : bOwned( bOwned_ ), bHidden( false ), dtLastSeen( boost::posix_time::not_a_date_time )
+  : bOwned( false ), nReferenceCount {}
+  , bHidden( false ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
+
   Sensor( value_t value_, const std::string sUnits_ )
-  : bOwned( true ), bHidden( false ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
+  : bOwned( false ), nReferenceCount {}
+  , bHidden( false ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
+
   Sensor( const std::string& sDisplayName_, value_t value_, const std::string sUnits_ )
-  : bOwned( true ), bHidden( false ), sDisplayName( sDisplayName_ ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
+  : bOwned( false ), nReferenceCount {}
+  , bHidden( false ), sDisplayName( sDisplayName_ ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
+
   Sensor( const std::string& sDisplayName_, const std::string& sUnits_ )
-  : bOwned( true ), bHidden( false ), sDisplayName( sDisplayName_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
+  : bOwned( false ), nReferenceCount {}
+  , bHidden( false ), sDisplayName( sDisplayName_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
+
   Sensor( Sensor&& rhs )
-  : bOwned( rhs.bOwned ), bHidden( rhs.bHidden )
+  : bOwned( rhs.bOwned ), nReferenceCount( rhs.nReferenceCount )
+  , bHidden( rhs.bHidden )
   , sDisplayName( std::move( rhs.sDisplayName ) )
   , value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) )
   , dtLastSeen( rhs.dtLastSeen ), mapEventSensorChanged( std::move( rhs.mapEventSensorChanged ))
@@ -122,22 +180,22 @@ struct runtime_error_sensor: public virtual std::runtime_error {
 using mapSensor_t = std::unordered_map<std::string,Sensor>;
 using setLocationTag_t = std::set<std::string>; // use lower case names for ease of matching
 
-struct Device {
-  bool bOwned; // false: out of order registration by consumer rather than publisher, todo: poll to find consumer-only entries
+struct Device
+: public Reference
+{
   std::string sDisplayName;
   //std::string sDescription; // future use
-  //std::string sSource; // zwave, rtl, zigbee, etc (mqtt: use subscribed topic) - deprecated?
   mapSensor_t mapSensor;
   setLocationTag_t setLocationTag;
 
   Device() = delete;
+  Device( const Device& ) = delete;
 
   Device( const std::string& sDisplayName_, bool bOwned_ = true )
-  : bOwned( bOwned_ ), sDisplayName( sDisplayName_ ) {}
+  : sDisplayName( sDisplayName_ ) {}
 
   Device( Device&& rhs )
-  : bOwned( rhs.bOwned )
-  , sDisplayName( std::move( rhs.sDisplayName ) )
+  : sDisplayName( std::move( rhs.sDisplayName ) )
   , mapSensor( std::move( rhs.mapSensor ) )
   , setLocationTag( std::move( rhs.setLocationTag ) )
   {}

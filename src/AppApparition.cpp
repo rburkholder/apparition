@@ -454,15 +454,16 @@ AppApparition::AppApparition( const config::Values& settings )
       if ( m_mapDevice.end() == iterDevice ) {
         auto result = m_mapDevice.emplace( mapDevice_t::value_type( sUniqueName, Device( sDisplayName ) ) );
         assert( result.second );
+        iterDevice = result.first;
+      }
+
+      if ( iterDevice->second.Owned() ) {
+        BOOST_LOG_TRIVIAL(warning) << "Device Registration add" << sUniqueName << " already exists, addition skipped";
+        iterDevice->second.RefInc( Reference::c_Avail );
+        bStatus = false;
       }
       else {
-        if ( iterDevice->second.bOwned ) {
-          BOOST_LOG_TRIVIAL(warning) << "Device Registration add" << sUniqueName << " already exists, addition skipped";
-          bStatus = false;
-        }
-        else {
-          iterDevice->second.bOwned = true;
-        }
+        iterDevice->second.RefInc( Reference::c_Owned );
       }
 
       return bStatus;
@@ -483,6 +484,10 @@ AppApparition::AppApparition( const config::Values& settings )
       }
       else {
         const Device& device( iterDevice->second );
+        // to think about, if mapSensor is not empty:
+        //   scan for 0 reference counted sensors?
+        //   scan for 'bOwned = false' sensors
+        //   how to determine permanent deletion vs temporary removal by script reload
         assert( device.mapSensor.empty() );
         m_mapDevice.erase( iterDevice );
       }
@@ -613,6 +618,8 @@ AppApparition::AppApparition( const config::Values& settings )
             m_clientPrometheus.RemoveFamily( *sensor.pFamily );
             sensor.pFamily = nullptr;
           }
+          // TODO: need to de-register events,
+          //   or place them in a holding structure to re-attach when sensors are re-registered
           assert( sensor.mapEventSensorChanged.empty() );
           device.mapSensor.erase( iterSensor );
         }
