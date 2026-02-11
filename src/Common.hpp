@@ -118,10 +118,9 @@ using fEventRegisterDel_t = std::function<
 
 using mapEventSensorChanged_t = std::unordered_map<void*, fEvent_SensorChanged_t>;
 
-struct Sensor {
-
-  bool bOwned; // out of order registration by consumer rather than publisher
-  size_t nReferenceCount; // convert to referenece count for post detach/attach garbage collection
+struct Sensor
+: public Reference
+{
 
   std::string sDisplayName;
   std::string sUnits;
@@ -138,28 +137,23 @@ struct Sensor {
   Sensor( const Sensor& ) = delete;
 
   Sensor( const std::string& sDisplayName, bool bOwned_ = true )
-  : bOwned( false ), nReferenceCount {}
-  , bHidden( false ), dtLastSeen( boost::posix_time::not_a_date_time )
+  : bHidden( false ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
 
   Sensor( value_t value_, const std::string sUnits_ )
-  : bOwned( false ), nReferenceCount {}
-  , bHidden( false ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
+  : bHidden( false ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
 
   Sensor( const std::string& sDisplayName_, value_t value_, const std::string sUnits_ )
-  : bOwned( false ), nReferenceCount {}
-  , bHidden( false ), sDisplayName( sDisplayName_ ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
+  : bHidden( false ), sDisplayName( sDisplayName_ ), value( value_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
 
   Sensor( const std::string& sDisplayName_, const std::string& sUnits_ )
-  : bOwned( false ), nReferenceCount {}
-  , bHidden( false ), sDisplayName( sDisplayName_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
+  : bHidden( false ), sDisplayName( sDisplayName_ ), sUnits( sUnits_ ), dtLastSeen( boost::posix_time::not_a_date_time )
   , pFamily( nullptr ), pGauge( nullptr ) {}
 
   Sensor( Sensor&& rhs )
-  : bOwned( rhs.bOwned ), nReferenceCount( rhs.nReferenceCount )
-  , bHidden( rhs.bHidden )
+  : bHidden( rhs.bHidden )
   , sDisplayName( std::move( rhs.sDisplayName ) )
   , value( std::move( rhs.value ) ), sUnits( std::move( rhs.sUnits ) )
   , dtLastSeen( rhs.dtLastSeen ), mapEventSensorChanged( std::move( rhs.mapEventSensorChanged ))

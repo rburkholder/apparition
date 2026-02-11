@@ -457,13 +457,15 @@ AppApparition::AppApparition( const config::Values& settings )
         iterDevice = result.first;
       }
 
-      if ( iterDevice->second.Owned() ) {
+      Device& device( iterDevice->second );
+
+      if ( device.Owned() ) {
         BOOST_LOG_TRIVIAL(warning) << "Device Registration add" << sUniqueName << " already exists, addition skipped";
-        iterDevice->second.RefInc( Reference::c_AsUser );
+        device.RefInc( Reference::c_AsUser );
         bStatus = false;
       }
       else {
-        iterDevice->second.RefInc( Reference::c_AsOwner );
+        device.RefInc( Reference::c_AsOwner );
       }
 
       return bStatus;
@@ -551,20 +553,21 @@ AppApparition::AppApparition( const config::Values& settings )
             assert( result.second );
             iterSensor = result.first;
           }
-          else [[unlikely]] {
-            if ( !iterSensor->second.bOwned ) [[likely]] {
-              iterSensor->second.bOwned = true;
-              iterSensor->second.sUnits = sUnits;            }
-            else [[unlikely]] {
-              bStatus = false;
-              BOOST_LOG_TRIVIAL(warning)
-                << "Sensor Registration add (2) " << sDeviceName << ":" << sDisplayName
-                << " already exists, addition skipped";
-            }
+
+          Sensor& sensor( iterSensor->second );
+
+          if ( sensor.Owned() ) [[unlikely]] {
+            BOOST_LOG_TRIVIAL(warning)
+              << "Sensor Registration add (2) " << sDeviceName << ":" << sDisplayName
+              << " already exists, addition skipped";
+            sensor.RefInc( Reference::c_AsUser );
+            bStatus = false;
+          }
+          else [[likely]] {
+            sensor.RefInc( Reference::c_AsOwner );
           }
 
           if ( bStatus ) {
-            Sensor& sensor( iterSensor->second );
             try {
               sensor.pFamily = &m_clientPrometheus.AddSensor_Gauge( "apparition_" + sDeviceName + '_' + sDisplayName );
               sensor.pGauge = &sensor.pFamily->Add( {} );
@@ -609,6 +612,7 @@ AppApparition::AppApparition( const config::Values& settings )
       }
       else {
         Device& device( iterDevice->second );
+
         mapSensor_t::iterator iterSensor = device.mapSensor.find( sSensorName );
         if ( device.mapSensor.end() == iterSensor ) {
           bStatus = false;
@@ -618,18 +622,30 @@ AppApparition::AppApparition( const config::Values& settings )
         }
         else {
           Sensor& sensor( iterSensor->second );
-          if ( sensor.pFamily ) {
-            if ( sensor.pGauge ) {
-              sensor.pFamily->Remove( sensor.pGauge );
-              sensor.pGauge = nullptr;
+
+          if ( sensor.Owned() ) {
+            if ( sensor.pFamily ) {
+              if ( sensor.pGauge ) {
+                sensor.pFamily->Remove( sensor.pGauge );
+                sensor.pGauge = nullptr;
+              }
+              m_clientPrometheus.RemoveFamily( *sensor.pFamily );
+              sensor.pFamily = nullptr;
             }
-            m_clientPrometheus.RemoveFamily( *sensor.pFamily );
-            sensor.pFamily = nullptr;
+            sensor.RefDec( Reference::c_AsOwner );
           }
+          else {
+            BOOST_LOG_TRIVIAL(warning)
+              << "Sensor Registration del (3) " << sDeviceName << ":" << sSensorName
+              << " does not own the reference";
+            sensor.RefInc( Reference::c_AsUser );
+            bStatus = false;
+          }
+
           // TODO: need to de-register events,
           //   or place them in a holding structure to re-attach when sensors are re-registered
-          assert( sensor.mapEventSensorChanged.empty() );
-          device.mapSensor.erase( iterSensor );
+          //assert( sensor.mapEventSensorChanged.empty() );
+          //device.mapSensor.erase( iterSensor );
         }
       }
 
