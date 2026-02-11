@@ -246,21 +246,21 @@ void ScriptLua::Modify( const std::filesystem::path& path ) {
   }
   else {
     // TODO: undo existing config first
-    Delete( path );
+    UnLoad( path );
     Load( path );
   }
 }
 
-void ScriptLua::Delete( const std::filesystem::path& path ) {
+void ScriptLua::UnLoad( const std::filesystem::path& path ) {
   const std::string sPath( path );
   mapScript_t::iterator iterScript = m_mapScript.find( sPath );
   if ( m_mapScript.end() == iterScript ) {
-    BOOST_LOG_TRIVIAL(warning) << "ScriptLua::Delete - no script to delete - " << sPath;
+    BOOST_LOG_TRIVIAL(warning) << "ScriptLua::UnLoad - no script to unload - " << sPath;
   }
   else {
     Detach( iterScript );
     m_mapScript.erase( iterScript );
-    BOOST_LOG_TRIVIAL(info) << "ScriptLua::Delete - deleted " << sPath;
+    BOOST_LOG_TRIVIAL(info) << "ScriptLua::UnLoad - unloaded " << sPath;
   }
 }
 

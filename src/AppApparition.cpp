@@ -137,11 +137,11 @@ AppApparition::AppApparition( const config::Values& settings )
               break;
             case FileNotify::EType::delete_:
               std::cout << "delete " << path << std::endl;
-              m_lua.Delete( path );
+              m_lua.UnLoad( path );
               break;
             case FileNotify::EType::move_from_:
               std::cout << "move from " << path << std::endl;
-              m_lua.Delete( path );
+              m_lua.UnLoad( path );
               break;
             case FileNotify::EType::move_to_:
               std::cout << "move to " << path << std::endl;

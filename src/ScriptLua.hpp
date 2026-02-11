@@ -75,7 +75,7 @@ public:
 
   void Load( const std::filesystem::path& );
   void Modify( const std::filesystem::path& );
-  void Delete( const std::filesystem::path& );
+  void UnLoad( const std::filesystem::path& );
 
   void Set_MqttConnect( fMqttConnect_t&& );
   void Set_MqttStartTopic( fMqttStartTopic_t&& );
