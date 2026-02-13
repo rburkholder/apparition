@@ -83,8 +83,21 @@ detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic )
   mqtt_disconnect( object_ptr )
 
-  for key, device in pairs( devices ) do
+  for topic_device_name, device in pairs( devices ) do
+
     local device_name = device[ 1 ]
+
+    local meta_table = device[ 3 ]
+    for key2, meta in ipairs( meta_table ) do
+      -- io.write( 'ups key ' .. key .. '=' .. value[ 2 ] .. ',' .. value[ 3 ] .. ',' .. value[ 4 ] .. '\n' )
+      local sensor_name = meta[ 4 ]
+      if 0 == string.len( sensor_name ) then
+        sensor_name = meta[ 2 ]
+      end
+      -- io.write( 'sensor register: ' .. device_name .. ', ' .. sensor_name .. ', ' .. units .. '\n' )
+      sensor_register_del( object_ptr, device_name, sensor_name )
+    end
+
     device_register_del( object_ptr, device_name )
   end
 
