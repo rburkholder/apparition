@@ -36,20 +36,20 @@ device_data[ 'bb06' ] = { 'master bedroom bme680', meta_sensor_bme, { 'master be
 attach = function ( object_ptr_ )
   object_ptr = object_ptr_
 
-  for key1, value1 in pairs( device_data ) do
+  for device_name, value1 in pairs( device_data ) do
 
     local display_name = value1[ 1 ]
     local table_extract = value1[ 2 ]
     local table_location = value1[ 3 ]
 
-    device_register_add( object_ptr, key1, display_name )
+    device_register_add( object_ptr, device_name, display_name )
 
     for key2, value2 in ipairs( table_extract ) do
-      sensor_register_add( object_ptr, key1, value2[ 2 ], value2[ 4 ], value2[ 3 ] )
+      sensor_register_add( object_ptr, device_name, value2[ 2 ], value2[ 4 ], value2[ 3 ] )
     end
 
     for key3, value in ipairs( table_location ) do
-      device_location_tag_add( object_ptr, key1, value )
+      device_location_tag_add( object_ptr, device_name, value )
     end
     end
 
@@ -61,8 +61,15 @@ detach = function ( object_ptr_ )
   mqtt_stop_topic( object_ptr, topic )
   mqtt_disconnect( object_ptr )
 
-  for key, value in pairs( device_data ) do
-    device_register_del( object_ptr, key ) -- sensors, location tags auto deleted
+  for device_name, value1 in pairs( device_data ) do
+
+    local table_extract = value1[ 2 ]
+
+    for key2, value2 in ipairs( table_extract ) do
+      sensor_register_del( object_ptr, device_name, value2[ 2 ] )
+    end
+
+    device_register_del( object_ptr, device_name ) -- sensors, location tags auto deleted
   end
 
   object_ptr = nil
