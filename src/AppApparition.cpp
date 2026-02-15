@@ -313,6 +313,7 @@ AppApparition::AppApparition( const config::Values& settings )
           }
         }
         catch ( const runtime_error_sensor& e ) {
+          BOOST_LOG_TRIVIAL(error) << "MqttDeviceData " << sDevice; // e.something
           // device/sensor has to be already inserted
           // then might have a logic issues regardin registration of active sensors
         }
@@ -437,6 +438,7 @@ AppApparition::AppApparition( const config::Values& settings )
 
   m_lua.Set_DeviceRegisterAdd(
     [this](const std::string_view& unique_name, const std::string_view& display_name)->bool{
+
       assert( 0 < unique_name.size() );
       const std::string sUniqueName( unique_name );
 
@@ -568,18 +570,25 @@ AppApparition::AppApparition( const config::Values& settings )
           }
 
           if ( bStatus ) {
-            try {
-              sensor.pFamily = &m_clientPrometheus.AddSensor_Gauge( "apparition_" + sDeviceName + '_' + sDisplayName );
-              sensor.pGauge = &sensor.pFamily->Add( {} );
+            if ( nullptr == sensor.pFamily ) { // not yet registered
+              try {
+                //BOOST_LOG_TRIVIAL(trace)
+                //  << "prometheus add family " << sDeviceName << ',' << sDisplayName;
+                sensor.pFamily = &m_clientPrometheus.AddSensor_Gauge( "apparition_" + sDeviceName + '_' + sDisplayName );
+                sensor.pGauge = &sensor.pFamily->Add( {} );
+              }
+              catch (...) {
+                BOOST_LOG_TRIVIAL(error)
+                  << "Set_SensorRegisterAdd m_clientPrometheus error: "
+                  << sDeviceName << ','
+                  << sSensorName << ','
+                  << sDisplayName << ','
+                  << sUnits
+                  ;
+              }
             }
-            catch(...) {
-              BOOST_LOG_TRIVIAL(error)
-                << "Set_SensorRegisterAdd m_clientPrometheus error: "
-                << sDeviceName << ','
-                << sSensorName << ','
-                << sDisplayName << ','
-                << sUnits
-                ;
+            else {
+              assert( nullptr != sensor.pGauge );
             }
           }
         }
@@ -624,14 +633,17 @@ AppApparition::AppApparition( const config::Values& settings )
           Sensor& sensor( iterSensor->second );
 
           if ( sensor.Owned() ) {
-            if ( sensor.pFamily ) {
-              if ( sensor.pGauge ) {
-                sensor.pFamily->Remove( sensor.pGauge );
-                sensor.pGauge = nullptr;
-              }
-              m_clientPrometheus.RemoveFamily( *sensor.pFamily );
-              sensor.pFamily = nullptr;
-            }
+            // TODO: do this in cleanup
+            //if ( sensor.pFamily ) {
+            //  if ( sensor.pGauge ) {
+            //    sensor.pFamily->Remove( sensor.pGauge );
+            //    sensor.pGauge = nullptr;
+            //  }
+            //  BOOST_LOG_TRIVIAL(trace)
+            //    << "prometheus remove family " << sDeviceName << ',' << sSensorName;
+            //  m_clientPrometheus.RemoveFamily( *sensor.pFamily );
+            //  sensor.pFamily = nullptr;
+            //}
             sensor.RefDec( Reference::c_AsOwner );
           }
           else {
