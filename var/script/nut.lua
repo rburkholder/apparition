@@ -56,13 +56,10 @@ attach = function ( object_ptr_ )
 
     local meta_table = device[ 3 ]
     for key2, meta in ipairs( meta_table ) do
-      -- io.write( 'ups key ' .. key .. '=' .. value[ 2 ] .. ',' .. value[ 3 ] .. ',' .. value[ 4 ] .. '\n' )
+      -- io.write( 'attach ups key ' .. key2 .. '=' .. meta[ 2 ] .. ',' .. meta[ 3 ] .. ',' .. meta[ 4 ] .. '\n' )
       local sensor_name = meta[ 4 ]
-      if 0 == string.len( sensor_name ) then
-        sensor_name = meta[ 2 ]
-      end
       local units = meta[ 3 ]
-      -- io.write( 'sensor register: ' .. device_name .. ', ' .. sensor_name .. ', ' .. units .. '\n' )
+      -- io.write( 'attach sensor register: ' .. device_name .. ', ' .. sensor_name .. ', ' .. units .. '\n' )
       sensor_register_add( object_ptr, device_name, sensor_name, sensor_name, units )
     end
 
@@ -89,12 +86,9 @@ detach = function ( object_ptr_ )
 
     local meta_table = device[ 3 ]
     for key2, meta in ipairs( meta_table ) do
-      -- io.write( 'ups key ' .. key .. '=' .. value[ 2 ] .. ',' .. value[ 3 ] .. ',' .. value[ 4 ] .. '\n' )
+      -- io.write( 'detach ups key ' .. key2 .. '=' .. meta[ 2 ] .. ',' .. meta[ 3 ] .. ',' .. meta[ 4 ] .. '\n' )
       local sensor_name = meta[ 4 ]
-      if 0 == string.len( sensor_name ) then
-        sensor_name = meta[ 2 ]
-      end
-      -- io.write( 'sensor register: ' .. device_name .. ', ' .. sensor_name .. ', ' .. units .. '\n' )
+      -- io.write( 'detach sensor de-register: ' .. device_name .. ', ' .. sensor_name .. '\n' )
       sensor_register_del( object_ptr, device_name, sensor_name )
     end
 
@@ -130,7 +124,7 @@ mqtt_in = function( topic_, message_ )
 
   if 3 == ix then
     -- local (faster gc) or global (space cached)?
-    jvalues = json.decode( message_ )
+    local jvalues = json.decode( message_ )
     local device = devices[ device_name ]
     if nil ~= device then
       local name = device[ 1 ]
