@@ -130,8 +130,9 @@ struct Sensor
 
   value_t value;
   boost::posix_time::ptime dtLastSeen;
-  prometheus::Gauge* pGauge;
+
   prometheus::Family<prometheus::Gauge>* pFamily;
+  prometheus::Gauge* pGauge;
 
   Sensor() = delete;
   Sensor( const Sensor& ) = delete;
