@@ -37,7 +37,7 @@ end
 f_hysteresis_gt_1000 = function( v_flame_, json_values_ )
   --io.write( "f_hysteresis_gt_1000," .. v_flame_ .. '\n' )
   if 500 > v_flame_ then
-    f_hysteresis_record( 'dn', v_flame_, json_values_ )
+    -- f_hysteresis_record( 'dn', v_flame_, json_values_ )
     f_hysteresis_jump = f_hysteresis_lt_500
   end
 end
@@ -45,7 +45,7 @@ end
 f_hysteresis_lt_500 = function( v_flame_, json_values_ )
   --io.write( "f_hysteresis_lt_500," .. v_flame_ .. '\n' )
   if 1000 < v_flame_ then
-    f_hysteresis_record( 'up', v_flame_, json_values_ )
+    -- f_hysteresis_record( 'up', v_flame_, json_values_ )
     f_hysteresis_jump = f_hysteresis_gt_1000
   end
 end
