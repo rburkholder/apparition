@@ -40,10 +40,12 @@ namespace config {
 }
 
 namespace ou {
+namespace rest {
 namespace telegram {
   class Bot;
-} // telegram
-} // ou
+} // namespace telegram
+} // namespace rest
+} // namesapce ou
 
 class AppApparition: public LuaModule {
 public:
@@ -68,7 +70,7 @@ private:
   std::unique_ptr<MQTT> m_pMQTT;
   std::unique_ptr<WebServer> m_pWebServer;
   std::unique_ptr<FileNotify> m_pFileNotify;
-  std::unique_ptr<ou::telegram::Bot> m_telegram_bot;
+  std::unique_ptr<ou::rest::telegram::Bot> m_telegram_bot;
   std::unique_ptr<DashboardFactory> m_pDashboardFactory;
 
   using mapDevice_t = std::unordered_map<std::string,Device>;

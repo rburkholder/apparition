@@ -31,7 +31,7 @@
 
 #include <fmt/format.h>
 
-#include <ou/telegram/Bot.hpp>
+#include <ou/rest/telegram.hpp>
 
 #include "MQTT.hpp"
 #include "Config.hpp"
@@ -184,7 +184,7 @@ AppApparition::AppApparition( const config::Values& settings )
       BOOST_LOG_TRIVIAL(warning) << "telegram: no token available" << std::endl;
     }
     else {
-      m_telegram_bot = std::make_unique<ou::telegram::Bot>( settings.telegram.sToken );
+      m_telegram_bot = std::make_unique<ou::rest::telegram::Bot>( settings.telegram.sToken );
 
       auto id = m_telegram_bot->GetChatId();
       BOOST_LOG_TRIVIAL(info) << "telegram chat id " << id;

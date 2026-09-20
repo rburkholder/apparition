@@ -77,7 +77,7 @@ target_link_libraries(
     luajit-5.1
     libou_mqtt.a
     paho-mqtt3c.a
-    libou_telegram.a
+    libou_rest.a
     fmt
     prometheus-cpp-core
     prometheus-cpp-pull
