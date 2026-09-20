@@ -22,6 +22,7 @@
 #pragma once
 
 #include <set>
+#include <cassert>
 #include <cstdint>
 #include <functional>
 #include <string>
