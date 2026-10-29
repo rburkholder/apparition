@@ -206,7 +206,7 @@ end
 
 local f_basic_type_vebus = function( word_list_, topic_, message_ )
   --io.write( "vebus: ".. topic_ .. ",".. sensor_topic .. '\n' )
-  f_basic_type_common( word_list_, toic_, message_ )
+  f_basic_type_common( word_list_, topic_, message_ )
 end
 
 local f_basic_type_vecan = function( word_list_, topic_, message_ )
@@ -216,7 +216,7 @@ end
 
 local f_basic_type_solarcharger = function( word_list_, topic_, message_ )
   --io.write( "vebus: ".. topic_ .. ",".. sensor_topic .. '\n' )
-  f_basic_type_common( word_list_, toic_, message_ )
+  f_basic_type_common( word_list_, topic_, message_ )
 end
 
 local f_basic_type_platform = function( word_list_, topic_, message_ )
@@ -243,7 +243,7 @@ end
 
 local f_basic_type_battery = function( word_list_, topic_, message_ )
   --io.write( "vebus: ".. topic_ .. ",".. sensor_topic .. '\n' )
-  f_basic_type_common( word_list_, toic_, message_ )
+  f_basic_type_common( word_list_, topic_, message_ )
   -- victron/N/c0619ab50f49/system/0/Batteries {"value":[{"active_battery_service":true,"current":0.0,"id":"com.victronenergy.battery.socketcan_can1","instance":512,"name":"Volthium Battery","power":0.0,"soc":95.0,"state":0,"temperature":17.799999237060547,"voltage":53.20000076293945}]}
 end
 
