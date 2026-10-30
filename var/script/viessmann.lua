@@ -76,7 +76,6 @@ end
 
 local t_device_data = {} --    name,      array of location
 t_device_data[ "boiler" ] = { "boiler", { 'basement' } }
-t_device_data[ "call"   ] = { "call",   { 'basement' } }
 t_device_data[ "dhw"    ] = { "dhw",    { 'basement' } }
 t_device_data[ "tcu"    ] = { "tcu",    { 'basement' } }
 
@@ -86,9 +85,9 @@ t_device_data[ "tcu"    ] = { "tcu",    { 'basement' } }
 
 local t_sensor_lu = {}  --                                     device    sensor        units
 t_sensor_lu [ "boiler/sensors/temperature/commonSupply" ] = { "boiler", "supply",     "Celcius", f_basic_type_common_value }
+t_sensor_lu [ "callForHeat/sensors/temperature" ]         = { "boiler", "call_for_heat", "Celcius", f_basic_type_common_value }
 t_sensor_lu [ "burners/0/modulation" ]                    = { "boiler", "modulation", "%",       f_basic_type_common_value }
 t_sensor_lu [ "sensors/temperature/outside" ]             = { "boiler", "outside_temp", "Celcius", f_basic_type_common_value }
-t_sensor_lu [ "callForHeat/sensors/temperature" ]         = { "call",   "heat",       "Celcius", f_basic_type_common_value }
 t_sensor_lu [ "dhw/sensors/temperature/hotWaterStorage" ] = { "dhw",    "storage",    "Celcius", f_basic_type_common_value }
 t_sensor_lu [ "wifi" ]                                    = { "tcu",    "strength",   "db",      f_tcu_wifi_value }
 
