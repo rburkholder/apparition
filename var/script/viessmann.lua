@@ -30,14 +30,27 @@ local mqtt_subscribe_topic = 'viessmann/#'
 
 local f_basic_type_common_value = function( sensor_name_, t_sensor_, message_ )
   if nil ~= t_sensor_ then
+    -- io.write( "sensor: " .. sensor_name_ )
     local device_name = t_sensor_[ 1 ]
     local sensor_name = t_sensor_[ 2 ]
     local sensor_units = t_sensor_[ 3 ]
+    local value_key = t_sensor_[ 5 ]
+
     local jvalues = json.decode( message_ )
-    local obj_value = jvalues[ "value" ]
+    -- local obj_value = jvalues[ "value" ]
+    local obj_value = jvalues[ value_key ]
     local key_type = obj_value[ "type" ]
+
+    local value = nil
     if "number" == key_type then
-      local value = obj_value[ "value" ]
+      value = obj_value[ "value" ]
+    else
+      if "boolean" == key_type then
+        value = obj_value[ "value" ]
+      end
+    end
+
+    if nil ~= value then
       -- io.write( "basic_type_common: ".. sensor_name_ .. "(" .. sensor_name .. "): ".. value .. '\n' )
       local record = { sensor_name, value, sensor_units }
       local data = { record }
@@ -75,8 +88,9 @@ end
 --
 
 local t_device_data = {} --    name,      array of location
+t_device_data[ "cfh"    ] = { "call_for_heat",    { 'basement' } }
 t_device_data[ "boiler" ] = { "boiler", { 'basement' } }
-t_device_data[ "dhw"    ] = { "dhw",    { 'basement' } }
+t_device_data[ "dhw"    ] = { "domestic_hot_water",    { 'basement' } }
 t_device_data[ "tcu"    ] = { "tcu",    { 'basement' } }
 
 --
@@ -84,12 +98,18 @@ t_device_data[ "tcu"    ] = { "tcu",    { 'basement' } }
 --
 
 local t_sensor_lu = {}  --                                     device    sensor        units
-t_sensor_lu [ "boiler/sensors/temperature/commonSupply" ] = { "boiler", "supply",     "Celcius", f_basic_type_common_value }
-t_sensor_lu [ "callForHeat/sensors/temperature" ]         = { "boiler", "call_for_heat", "Celcius", f_basic_type_common_value }
-t_sensor_lu [ "burners/0/modulation" ]                    = { "boiler", "modulation", "%",       f_basic_type_common_value }
-t_sensor_lu [ "sensors/temperature/outside" ]             = { "boiler", "outside_temp", "Celcius", f_basic_type_common_value }
-t_sensor_lu [ "dhw/sensors/temperature/hotWaterStorage" ] = { "dhw",    "storage",    "Celcius", f_basic_type_common_value }
-t_sensor_lu [ "wifi" ]                                    = { "tcu",    "strength",   "db",      f_tcu_wifi_value }
+t_sensor_lu [ "callForHeat/sensors/temperature" ]         = { "cfh", "temperature", "Celcius", f_basic_type_common_value, "value" }
+t_sensor_lu [ "callForHeat/demand" ]                      = { "cfh", "demand", "on/off",       f_basic_type_common_value, "value" }
+t_sensor_lu [ "callForHeat/pump" ]                        = { "cfh", "pump", "on/off",         f_basic_type_common_value, "active" }
+
+t_sensor_lu [ "burners/0" ]                               = { "boiler", "state", "on/off",       f_basic_type_common_value, "active" }
+t_sensor_lu [ "burners/0/modulation" ]                    = { "boiler", "modulation", "%",       f_basic_type_common_value, "value" }
+t_sensor_lu [ "boiler/sensors/temperature/commonSupply" ] = { "boiler", "supply",     "Celcius", f_basic_type_common_value, "value" }
+t_sensor_lu [ "sensors/temperature/outside" ]             = { "boiler", "outside_temp", "Celcius", f_basic_type_common_value, "value" }
+
+t_sensor_lu [ "dhw/sensors/temperature/hotWaterStorage" ] = { "dhw",    "storage",    "Celcius", f_basic_type_common_value, "value" }
+
+t_sensor_lu [ "wifi" ]                                    = { "tcu",    "strength",   "db",      f_basic_type_common_value, "strength" }
 
 --
 -- primary divisions - at index 4 - all same for now
