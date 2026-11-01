@@ -62,16 +62,22 @@ local f_basic_type_common_value = function( sensor_name_, t_sensor_, message_ )
   end
 end
 
-local f_tcu_wifi_value = function( sensor_name_, t_sensor_, message_ )
+local f_dhw_pump_decode = function( sensor_name_, t_sensor_, message_ )
   if nil ~= t_sensor_ then
     local device_name = t_sensor_[ 1 ]
     local sensor_name = t_sensor_[ 2 ]
     local sensor_units = t_sensor_[ 3 ]
     local jvalues = json.decode( message_ )
-    local obj_strength = jvalues[ "strength" ]
-    local key_type = obj_strength[ "type" ]
-    if "number" == key_type then
-      local value = obj_strength[ "value" ]
+
+    local obj_value = jvalues[ "status" ]
+    local key_type = obj_value[ "type" ]
+    if "string" == key_type then
+      local value = obj_value[ "value" ]
+      if "off" == value then
+        value = 0
+      else
+        value = 1
+      end
       -- io.write( "basic_type_common: ".. sensor_name_ .. "(" .. sensor_name .. "): ".. value .. '\n' )
       local record = { sensor_name, value, sensor_units }
       local data = { record }
@@ -106,8 +112,9 @@ t_sensor_lu [ "burners/0" ]                               = { "boiler", "state",
 t_sensor_lu [ "burners/0/modulation" ]                    = { "boiler", "modulation", "%",       f_basic_type_common_value, "value" }
 t_sensor_lu [ "boiler/sensors/temperature/commonSupply" ] = { "boiler", "supply",     "Celcius", f_basic_type_common_value, "value" }
 t_sensor_lu [ "sensors/temperature/outside" ]             = { "boiler", "outside_temp", "Celcius", f_basic_type_common_value, "value" }
-
-t_sensor_lu [ "dhw/sensors/temperature/hotWaterStorage" ] = { "dhw",    "storage",    "Celcius", f_basic_type_common_value, "value" }
+t_sensor_lu [ "dhw/sensors/temperature/dhwCylinder" ]     = { "dhw",    "storage",    "Celcius", f_basic_type_common_value, "value" }
+t_sensor_lu [ "heating/dhw/pumps/primary" ]               = { "dhw",    "pump",    "on/off",     f_dhw_pump_decode }
+t_sensor_lu [ "heating/dhw/temperature/main" ]            = { "dhw",    "main",       "Celcius", f_basic_type_common_value, "value" }
 
 t_sensor_lu [ "wifi" ]                                    = { "tcu",    "strength",   "db",      f_basic_type_common_value, "strength" }
 
